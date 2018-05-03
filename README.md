@@ -1,0 +1,2 @@
+# cg
+Cartographic generalization
