@@ -1,3 +1,11 @@
+require('babel-register')({
+  "only": [
+      "/src/",
+      "/node_modules/ol/",
+  ],
+  "presets": ["es2015"]
+});
+
 //import Symbolizer from "../src/cg/Symbolizer";
 let Symbolizer = require('../src/cg/Symbolizer').default;
 let Style = require("ol/style/style").default;
