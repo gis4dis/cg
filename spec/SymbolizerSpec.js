@@ -1,16 +1,8 @@
-require('babel-register')({
-  "only": [
-      "/src/",
-      "/node_modules/ol/",
-  ],
-  "presets": ["es2015"]
-});
-
 //import Symbolizer from "../src/cg/Symbolizer";
-let Symbolizer = require('../src/cg/Symbolizer').default;
-let Style = require("ol/style/style").default;
-let Fill = require("ol/style/fill").default;
-let Stroke = require("ol/style/stroke").default;
+import Symbolizer from '../src/cg/Symbolizer';
+import Style from "ol/style/style";
+import Fill from "ol/style/fill";
+import Stroke from "ol/style/stroke";
 
 describe('Symbolizer tests', function () {
 
