@@ -1,4 +1,8 @@
 import ol_format_GeoJSON from "ol/format/geojson";
+import Polygon from 'ol/geom/polygon';
+import Style from 'ol/style/style';
+import Stroke from 'ol/style/stroke';
+import Fill from 'ol/style/fill';
 let ol_style_fill = require('ol/style/fill').default;
 let ol_style_style = require('ol/style/style').default;
 let ol_style_circle = require('ol/style/circle').default;
@@ -30,13 +34,38 @@ export default class Symbolizer {
      * @returns {_ol_style_Style_} builded style for vector layer
      */
     static buildStyle() {
-        return new ol_style_style({
-            image: new ol_style_circle({
-                fill: new ol_style_fill({ color: [255,0,0,1] }),
-                stroke: new ol_style_stroke({ color: [0,0,0,1] }),
-                radius: 5,//this.feature.values_.property_values[this.valueIdx],
-            }),
-        });
+        let real_lon = 16.5965222;
+        let real_lat = 49.2050162;
+
+        let first_lon = 16.5965222 - 0.001;
+        let first_lat = 49.2050162;
+
+        let second_lon = 16.5965222;
+        let second_lat = 49.2050162;
+
+        let column1 = new Polygon([[[first_lon, first_lat], [first_lon, first_lat + 0.005], [first_lon + 0.001, first_lat + 0.005], [first_lon + 0.001, first_lat], [first_lon, first_lat]]]);
+        let column2 = new Polygon([[[second_lon, second_lat], [second_lon, second_lat + 0.003], [second_lon + 0.001, second_lat + 0.003], [second_lon + 0.001, second_lat], [second_lon, second_lat]]]);
+        column1.transform('EPSG:4326', 'EPSG:3857');
+        column2.transform('EPSG:4326', 'EPSG:3857');
+        return [new Style({
+            geometry: column1,
+            stroke: new Stroke({ color: [0,0,0,0], width: 0 }),
+                fill: new Fill({ color: [255,0,0,0.5] }),
+        }),
+            new Style({
+                geometry: column2,
+                stroke: new Stroke({ color: [0,0,0,0], width: 0 }),
+                fill: new Fill({ color: [106,160,247,0.5] }),
+            })
+        ]
+
+        // return new ol_style_style({
+        //     image: new ol_style_circle({
+        //         fill: new ol_style_fill({ color: [255,0,0,1] }),
+        //         stroke: new ol_style_stroke({ color: [0,0,0,1] }),
+        //         radius: 5,//this.feature.values_.property_values[this.valueIdx],
+        //     }),
+        // });
     }
 
     //TODO set some defult property
