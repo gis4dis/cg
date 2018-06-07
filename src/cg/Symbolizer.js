@@ -1,7 +1,11 @@
 import ol_format_GeoJSON from "ol/format/geojson";
-import Fill from 'ol/style/fill';
-import Stroke from 'ol/style/stroke';
-import Style from 'ol/style/style';
+let ol_style_fill = require('ol/style/fill').default;
+let ol_style_style = require('ol/style/style').default;
+let ol_style_circle = require('ol/style/circle').default;
+let ol_style_stroke = require('ol/style/stroke').default;
+let ol_geom_polygon = require('ol/geom/polygon').default;
+let ol_style_regularshape = require('ol/style/regularshape').default;
+
 
 /** Represents Symbolizer for Vector layer and features. Contains set of operations over features and styles */
 export default class Symbolizer {
@@ -9,13 +13,16 @@ export default class Symbolizer {
     /**
      * Instantiating of Symbolizer object
      * @constructor
-     * @param {geojson} geojson - array of GeoJSON Features
+     * @param {feature} feature - array of GeoJSON Features
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(geojson) {
-        this.features = Symbolizer.makeOlFeatures(geojson);
+    constructor(features, valueIdx) {
+        this.valueIdx = valueIdx;
+        this.features = Symbolizer.makeOlFeatures(features);
         this.styles = [];
     }
+
+
 
     //TODO now creating the same style for every property
     /**
@@ -23,16 +30,12 @@ export default class Symbolizer {
      * @returns {_ol_style_Style_} builded style for vector layer
      */
     static buildStyle() {
-        let fill = new Fill({
-            color: 'rgba(255,255,255,0.4)'
-        });
-        let stroke = new Stroke({
-            color: '#3399CC',
-            width: 1.25
-        });
-        return new Style({
-            fill: fill,
-            stroke: stroke,
+        return new ol_style_style({
+            image: new ol_style_circle({
+                fill: new ol_style_fill({ color: [255,0,0,1] }),
+                stroke: new ol_style_stroke({ color: [0,0,0,1] }),
+                radius: 5,//this.feature.values_.property_values[this.valueIdx],
+            }),
         });
     }
 
@@ -63,7 +66,7 @@ export default class Symbolizer {
             case 'air_humidity':
                 return Symbolizer.buildStyle();
             default:
-                Symbolizer.buildDefaultStyle();
+                return Symbolizer.buildDefaultStyle();
         }
     }
 

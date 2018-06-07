@@ -1,5 +1,7 @@
-//import Symbolizer from 'Symbolizer.js';
+import ol_format_GeoJSON from "ol/format/geojson";
+
 let Symbolizer = require('./Symbolizer.js').default;
+//let Cluster = require('./Cluster.js').default;
 
 export default ({property, features, value_idx, resolution}) => {
 
@@ -11,24 +13,28 @@ export default ({property, features, value_idx, resolution}) => {
         }
     }
 
-    if (property.properties.length === 0) {
-        throw new Error('There are not properties in property parameter');
+    if (property === null) {
+        throw new Error('Property not provided');
     }
 
-    let symbolizer = new Symbolizer(features);
-    property.properties.forEach(function (value) {
-       let style = Symbolizer.styleBasedOnProperty(value);
-       symbolizer.addStyle(style);
-    });
+    //let cluster = new Cluster(features);
 
-    console.log('Features');
-    console.log(symbolizer.features);
 
-    console.log('Styles');
+    // let geoms = (new ol_format_GeoJSON()).readFeatures(features, {
+    //     dataProjection: 'EPSG:4326',
+    //     featureProjection: 'EPSG:3857',
+    // });
+
+    //geoms.forEach(function(geom) {
+        let symbolizer = new Symbolizer(features, value_idx);
+        let style = Symbolizer.styleBasedOnProperty(property);
+        symbolizer.addStyle(style);
+
+    //});
+
     console.log(symbolizer.styles);
-
     return {
         features: symbolizer.features,
-        style: symbolizer.styles
+        styles: Symbolizer.styleBasedOnProperty(property),
     };
 }
