@@ -123,7 +123,7 @@ class Map extends React.PureComponent {
             source: new ol_source_Vector({
                 features: testGeneralizeObject.features
             }),
-            style: testGeneralizeObject.styles,
+            style: testGeneralizeObject.style,
         });
 
         const map = new ol_Map({
