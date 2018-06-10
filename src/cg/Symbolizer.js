@@ -2,13 +2,18 @@ import Style from 'ol/style/style';
 import Icon from "ol/style/icon";
 
 
-/** Represents Symbolizer for Vector layer and features. Contains set of operations over features and styles */
+/** Represents Symbolizer for features. Contains set of operations including building styles */
 export default class Symbolizer {
 
     /**
      * Instantiating of Symbolizer object
      * @constructor
-     * @param {feature} feature - array of GeoJSON Features
+     * @param {Object.<string, string>} property - values selected by user
+     *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
+     * @param {Object.GeoJSON} feature - represented as one feature from an Array of GeoJSON Features, each of them includes attributes
+     *  (https://github.com/gis4dis/cg/blob/master/data/example.json)
+     * @param {number} valueIdx - an index of value that should be used for generalization
+     * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
     constructor(property, feature, valueIdx, resolution) {
@@ -18,6 +23,10 @@ export default class Symbolizer {
         this.resolution = resolution;
     }
 
+    /**
+     * Building SVG icon based on property_value and property_anomaly_rates
+     * @returns {string} SVG icon
+     */
     createSVG() {
         let propertyValue = this.feature.values_.property_values[this.valueIdx] * 15;
         let propertyAnomalyValue = this.feature.values_.property_anomaly_rates[this.valueIdx] * 15;
@@ -25,15 +34,14 @@ export default class Symbolizer {
         console.log(propertyAnomalyValue);
 
         return '<svg width="60" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
-            '<rect x="0" y="'+ (150 - propertyValue) +'" width="30" height="'+ propertyValue +'" style="fill:rgb(0,0,255);stroke-width:0" />' +
-            '<rect x="30" y="'+ (150 - propertyAnomalyValue) +'" width="30" height="'+ propertyAnomalyValue +'" style="fill:rgb(255,0,0);stroke-width:0" />' +
+            '<rect x="0" y="' + (150 - propertyValue) + '" width="30" height="' + propertyValue + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
+            '<rect x="30" y="' + (150 - propertyAnomalyValue) + '" width="30" height="' + propertyAnomalyValue + '" style="fill:rgb(255,0,0);stroke-width:0" />' +
             '</svg>';
     }
 
-    //TODO now creating the same style for every property
     /**
      * Creating _ol_style_Style_ object
-     * @returns {_ol_style_Style_} builded style for vector layer
+     * @returns {_ol_style_Style_} built style for styleFunction
      */
     buildStyle() {
         return new Style({
@@ -45,22 +53,22 @@ export default class Symbolizer {
         });
     }
 
-    //TODO set some defult property
     /**
-     * Creating default _ol_style_Style_ object. In this time only call buildStyle() method
+     * Creating default _ol_style_Style_ object. Prepared to the future
+     * @returns {_ol_style_Style_} default style
      */
     buildDefaultStyle() {
-        return Symbolizer.buildStyle();
+        return this.buildStyle();
     }
 
     /**
      * Creating style based on property value.
-     *  More info: https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG
-     * @param {object} property - Javascript object based on property parameter from specification
-     * @returns {_ol_style_Style_} builded style for vector layer
+     *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
+     * @returns {_ol_style_Style_} built style for vector layer
      */
+    //TODO change with different styles for different properties
     styleBasedOnProperty() {
-        switch(this.property.name_id) {
+        switch (this.property.name_id) {
             case 'air_temperature':
                 return this.buildStyle();
             case 'ground_air_temperature':
