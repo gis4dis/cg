@@ -32,11 +32,6 @@ let ol_proj;
 let ol_source_OSM;
 let ol_source_Vector;
 
-let ol_style_fill;
-let ol_style_style;
-let ol_style_circle;
-let ol_style_stroke;
-
 let projection;
 const cfg = {
     projection: 'EPSG:3857',
@@ -101,11 +96,6 @@ class Map extends React.PureComponent {
         ol_proj = require('ol/proj').default;
         ol_source_OSM = require('ol/source/osm').default;
         ol_source_Vector = require('ol/source/vector').default;
-
-        ol_style_fill = require('ol/style/fill').default;
-        ol_style_style = require('ol/style/style').default;
-        ol_style_circle = require('ol/style/circle').default;
-        ol_style_stroke = require('ol/style/stroke').default;
 
         projection = ol_proj.get(cfg.projection);
 

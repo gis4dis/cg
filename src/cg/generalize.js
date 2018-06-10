@@ -1,16 +1,14 @@
-import ol_format_GeoJSON from "ol/format/geojson";
-import Fill from "ol/style/fill";
-import Stroke from "ol/style/stroke";
-import Icon from 'ol/style/icon';
-import Style from 'ol/style/style';
-
-let Symbolizer = require('./Symbolizer.js').default;
-//let Cluster = require('./Cluster.js').default;
+import GeoJSON from 'ol/format/geojson';
+import Symbolizer from './Symbolizer';
+//import Cluster from './Cluster';
 
 export default ({property, features, value_idx, resolution}) => {
 
-    console.log(features);
-    //TODO add other assurance checks
+    // Assurance checks
+    if (property === null) {
+        throw new Error('Property not provided');
+    }
+
     if (features === null) {
         return {
             features: [],
@@ -18,16 +16,26 @@ export default ({property, features, value_idx, resolution}) => {
         }
     }
 
-    if (property === null) {
-        throw new Error('Property not provided');
+    features.features.forEach(function (feature) {
+        if (feature.properties.property_values.length !== feature.properties.property_anomaly_rates.length) {
+            throw new Error('Property values and property anomaly rates has different length');
+        }
+
+        if (feature.properties.value_index_shift < 0) {
+            throw new Error('Value index shift must be >= 0');
+        }
+    });
+
+    if (value_idx < 0) {
+        throw new Error('Value_idx values must be >= 0');
     }
 
     return {
-        features: new ol_format_GeoJSON().readFeatures(features, {
-                dataProjection: 'EPSG:4326',
-                featureProjection: 'EPSG:3857',
+        features: new GeoJSON().readFeatures(features, {
+            dataProjection: 'EPSG:4326',
+            featureProjection: 'EPSG:3857',
         }),
-        style: function(feature, resolution) {
+        style: function (feature, resolution) {
             let symbolizer = new Symbolizer(property, feature, value_idx, resolution);
             return symbolizer.styleBasedOnProperty();
         }
