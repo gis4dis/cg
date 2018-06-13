@@ -41,13 +41,22 @@ export default ({property, features, value_idx, resolution}) => {
         throw new Error('Value_idx values must be >= 0');
     }
 
+    // Max and min values for normalization
+    let maxPropertyValue = Symbolizer.getMaxValue(features, 'property_values');
+    let minPropertyValue = Symbolizer.getMinValue(features, 'property_values');
+
+    let maxAnomalyValue = Symbolizer.getMaxValue(features, 'property_anomaly_rates');
+    let minAnomalyValue = Symbolizer.getMinValue(features, 'property_anomaly_rates');
+
+
     return {
         features: new GeoJSON().readFeatures(features, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857',
         }),
         style: function (feature, resolution) {
-            let symbolizer = new Symbolizer(property, feature, value_idx, resolution);
+            let symbolizer = new Symbolizer(property, feature, value_idx, resolution,
+                maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
             return symbolizer.styleBasedOnProperty();
         }
     };

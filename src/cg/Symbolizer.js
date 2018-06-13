@@ -14,13 +14,64 @@ export default class Symbolizer {
      *  (https://github.com/gis4dis/cg/blob/master/data/example.json)
      * @param {number} valueIdx - an index of value that should be used for generalization
      * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
+     * @param {number} maxPropertyValue - max value from property values
+     * @param {number} minPropertyValue - min value from property values
+     * @param {number} maxAnomalyValue - max value from property anomaly rates
+     * @param {number} minAnomalyValue - min value from property anomaly rates
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(property, feature, valueIdx, resolution) {
+    constructor(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
         this.property = property;
         this.feature = feature;
         this.valueIdx = valueIdx;
         this.resolution = resolution;
+        this.maxPropertyValue = maxPropertyValue;
+        this.minPropertyValue = minPropertyValue;
+        this.maxAnomalyValue = maxAnomalyValue;
+        this.minAnomalyValue = minAnomalyValue;
+    }
+
+    /**
+     * Returning max value from geojson array with specific key
+     * @param {Object.GeoJSON} geojson - representing collection of features
+     * @param {String} type - name of the key from feature where is array with values
+     * @returns {number} - Max value from array
+     */
+    static getMaxValue(geojson, type) {
+        let maxValue = null;
+        geojson.features.forEach(function (feature) {
+            if (maxValue === null || maxValue < Math.max(...feature.properties[type])) {
+                maxValue = Math.max(...feature.properties[type]);
+            }
+        });
+
+        return maxValue;
+    }
+
+    /**
+     * Returning min value from geojson array with specific key
+     * @param {Object.GeoJSON} geojson - representing collection of features
+     * @param {String} type - name of the key from feature where is array with values
+     * @returns {number} - Min value from array
+     */
+    static getMinValue(geojson, type) {
+        let minValue = null;
+        geojson.features.forEach(function (feature) {
+            if (minValue === null || minValue > Math.min(...feature.properties[type])) {
+                minValue = Math.min(...feature.properties[type]);
+            }
+        });
+
+        return minValue;
+    }
+
+    /**
+     * Normalize value to 0-1 range
+     * @param {number} value - value for normalization
+     * @returns {number} normalized value
+     */
+    normalize(value, min, max) {
+        return (value - min) / (max - min);
     }
 
     /**
@@ -28,10 +79,10 @@ export default class Symbolizer {
      * @returns {string} SVG icon
      */
     createSVG() {
-        let propertyValue = this.feature.values_.property_values[this.valueIdx] * 15;
-        let propertyAnomalyValue = this.feature.values_.property_anomaly_rates[this.valueIdx] * 15;
-        console.log(propertyValue);
-        console.log(propertyAnomalyValue);
+        let propertyValue = this.normalize(this.feature.values_.property_values[this.valueIdx],
+            this.minPropertyValue, this.maxPropertyValue) * 100;
+        let propertyAnomalyValue = this.normalize(this.feature.values_.property_anomaly_rates[this.valueIdx],
+            this.minAnomalyValue, this.maxAnomalyValue) * 100;
 
         return '<svg width="60" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
             '<rect x="0" y="' + (150 - propertyValue) + '" width="30" height="' + propertyValue + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
@@ -68,6 +119,7 @@ export default class Symbolizer {
      */
     //TODO change with different styles for different properties
     styleBasedOnProperty() {
+        console.log('Called');
         switch (this.property.name_id) {
             case 'air_temperature':
                 return this.buildStyle();
