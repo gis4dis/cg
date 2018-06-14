@@ -18,14 +18,17 @@ npm install
 ```bash
 npm run dev
 # open localhost:3000
-```
+```bash
 
 ### OpenLayers in Node.JS
 ```bash
 node task/ol-node.js
 ```
 
-
+### Run Jasmine Specs
+```bash
+node spec/run
+```
 ## Repository Structure
 
 ```

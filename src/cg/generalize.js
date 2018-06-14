@@ -20,6 +20,10 @@ export default ({property, features, value_idx, resolution}) => {
         throw new Error('Property not provided');
     }
 
+    if (resolution === null) {
+        throw new Error('Resolution not provided');
+    }
+
     if (features === null) {
         return {
             features: [],
@@ -47,7 +51,6 @@ export default ({property, features, value_idx, resolution}) => {
 
     let maxAnomalyValue = Symbolizer.getMaxValue(features, 'property_anomaly_rates');
     let minAnomalyValue = Symbolizer.getMinValue(features, 'property_anomaly_rates');
-
 
     return {
         features: new GeoJSON().readFeatures(features, {

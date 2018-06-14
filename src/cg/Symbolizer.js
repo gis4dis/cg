@@ -25,6 +25,7 @@ export default class Symbolizer {
         this.feature = feature;
         this.valueIdx = valueIdx;
         this.resolution = resolution;
+
         this.maxPropertyValue = maxPropertyValue;
         this.minPropertyValue = minPropertyValue;
         this.maxAnomalyValue = maxAnomalyValue;
@@ -70,7 +71,7 @@ export default class Symbolizer {
      * @param {number} value - value for normalization
      * @returns {number} normalized value
      */
-    normalize(value, min, max) {
+    static normalize(value, min, max) {
         return (value - min) / (max - min);
     }
 
@@ -79,14 +80,15 @@ export default class Symbolizer {
      * @returns {string} SVG icon
      */
     createSVG() {
-        let propertyValue = this.normalize(this.feature.values_.property_values[this.valueIdx],
+        let propertyValue = Symbolizer.normalize(this.feature.values_.property_values[this.valueIdx],
             this.minPropertyValue, this.maxPropertyValue) * 100;
-        let propertyAnomalyValue = this.normalize(this.feature.values_.property_anomaly_rates[this.valueIdx],
+
+        let propertyAnomalyValue = Symbolizer.normalize(this.feature.values_.property_anomaly_rates[this.valueIdx],
             this.minAnomalyValue, this.maxAnomalyValue) * 100;
 
-        return '<svg width="60" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
-            '<rect x="0" y="' + (150 - propertyValue) + '" width="30" height="' + propertyValue + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
-            '<rect x="30" y="' + (150 - propertyAnomalyValue) + '" width="30" height="' + propertyAnomalyValue + '" style="fill:rgb(255,0,0);stroke-width:0" />' +
+        return '<svg width="' + 2*(25 + this.resolution / 10) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
+            '<rect x="0" y="' + (150 - propertyValue) + '" width="' + (25 + this.resolution / 10) + '" height="' + (propertyValue + this.resolution / 10) + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
+            '<rect x="' + (25 + this.resolution / 10) + '" y="' + (150 - propertyAnomalyValue) + '" width="' + (25 + this.resolution / 10) + '" height="' + (propertyAnomalyValue + this.resolution / 10) + '" style="fill:rgb(255,0,0);stroke-width:0" />' +
             '</svg>';
     }
 
@@ -119,7 +121,6 @@ export default class Symbolizer {
      */
     //TODO change with different styles for different properties
     styleBasedOnProperty() {
-        console.log('Called');
         switch (this.property.name_id) {
             case 'air_temperature':
                 return this.buildStyle();

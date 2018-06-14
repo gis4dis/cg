@@ -17,7 +17,7 @@ let testGeneralizeObject = generalize({
     },
     features: geojson_example,
     value_idx: 1,
-    resolution: 10
+    resolution: 76.43702828517625
 });
 
 //console.log(testGeneralizeObject);
@@ -129,6 +129,7 @@ class Map extends React.PureComponent {
             })
         });
 
+        console.log(view.getResolution());
 
         this.setState({
             map
