@@ -31,6 +31,7 @@ export default ({property, features, value_idx, resolution}) => {
         }
     }
 
+    //TODO create tests for property_values and property_anomaly_rates
     features.features.forEach(function (feature) {
         if (feature.properties.property_values.length !== feature.properties.property_anomaly_rates.length) {
             throw new Error('Property values and property anomaly rates has different length');
