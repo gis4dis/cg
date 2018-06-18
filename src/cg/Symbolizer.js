@@ -69,6 +69,8 @@ export default class Symbolizer {
     /**
      * Normalize value to 0-1 range
      * @param {number} value - value for normalization
+     * @param {number} min - minimum value of array
+     * @param {number} max - maximum value of array
      * @returns {number} normalized value
      */
     static normalize(value, min, max) {
@@ -86,9 +88,9 @@ export default class Symbolizer {
         let propertyAnomalyValue = Symbolizer.normalize(this.feature.values_.property_anomaly_rates[this.valueIdx],
             this.minAnomalyValue, this.maxAnomalyValue) * 100;
 
-        return '<svg width="' + 2*(25 + this.resolution / 10) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
-            '<rect x="0" y="' + (150 - propertyValue) + '" width="' + (25 + this.resolution / 10) + '" height="' + (propertyValue + this.resolution / 10) + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
-            '<rect x="' + (25 + this.resolution / 10) + '" y="' + (150 - propertyAnomalyValue) + '" width="' + (25 + this.resolution / 10) + '" height="' + (propertyAnomalyValue + this.resolution / 10) + '" style="fill:rgb(255,0,0);stroke-width:0" />' +
+        return '<svg width="' + 2*(25 + Math.log(this.resolution) * 2) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
+            '<rect x="0" y="' + (150 - propertyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyValue +  Math.log(this.resolution) * 2) + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
+            '<rect x="' + (25 + Math.log(this.resolution) * 2) + '" y="' + (150 - propertyAnomalyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyAnomalyValue + this.resolution / 10) + '" style="fill:rgb(255,0,0);stroke-width:0" />' +
             '</svg>';
     }
 

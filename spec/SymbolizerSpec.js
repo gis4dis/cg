@@ -32,10 +32,7 @@ describe('Symbolizer tests', function() {
     it('createSVG() spec', function() {
         let symbolizer = prepareObject();
 
-        expect(symbolizer.createSVG()).toBe('<svg width="65.28740565703525" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
-            '<rect x="0" y="125.92840414854467" width="32.643702828517625" height="31.71529867997296" style="fill:rgb(0,0,255);stroke-width:0" />' +
-            '<rect x="32.643702828517625" y="125.92840414854467" width="32.643702828517625" height="31.71529867997296" style="fill:rgb(255,0,0);stroke-width:0" />' +
-            '</svg>');
+        expect(symbolizer.createSVG()).toBe('<svg width="67.34586896871853" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="125.92840414854467" width="33.67293448435927" height="32.7445303358146" style="fill:rgb(0,0,255);stroke-width:0" /><rect x="33.67293448435927" y="125.92840414854467" width="33.67293448435927" height="31.71529867997296" style="fill:rgb(255,0,0);stroke-width:0" /></svg>');
     });
 
     // it('buildStyle() spec', function() {
