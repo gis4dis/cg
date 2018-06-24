@@ -1,8 +1,9 @@
 {
-  "name": "01_get_started",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "gis4dis-generalizer",
+  "version": "1.1.0",
+  "description": "GIS4DIS generalizer module",
+  "homepage": "https://github.com/gis4dis/cg",
+  "main": "src/cg/generalize.js",
   "scripts": {
     "test": "babel-node spec/run.js",
     "dev": "node server.js",
