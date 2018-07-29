@@ -55,7 +55,7 @@ export default ({property, features, value_idx, resolution}) => {
 
     return {
         features: new GeoJSON().readFeatures(features, {
-            dataProjection: 'EPSG:4326',
+            dataProjection: 'EPSG:3857',
             featureProjection: 'EPSG:3857',
         }),
         style: function (feature, resolution) {
