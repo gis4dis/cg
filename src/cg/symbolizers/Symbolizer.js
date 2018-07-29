@@ -1,8 +1,8 @@
 import Style from 'ol/style/style';
-import Icon from "ol/style/icon";
+import Icon from 'ol/style/icon';
 
 
-/** Represents Symbolizer for features. Contains set of operations including building styles */
+/** Represents Symbolizer for features. Contains set of operations including creating styles */
 export default class Symbolizer {
 
     /**

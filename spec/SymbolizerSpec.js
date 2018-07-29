@@ -1,4 +1,4 @@
-import Symbolizer from '../src/cg/Symbolizer';
+import Symbolizer from '../src/cg/symbolizers/Symbolizer';
 import GeoJSON from "ol/format/geojson";
 const geojson = require('../data/example.json');
 

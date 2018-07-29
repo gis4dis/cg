@@ -1,5 +1,7 @@
 import GeoJSON from 'ol/format/geojson';
-import Symbolizer from './Symbolizer';
+import Symbolizer from './symbolizers/Symbolizer';
+import PointGeneralizer from './PointGeneralizer';
+import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
 //import Cluster from './Cluster';
 
 /**
@@ -53,15 +55,37 @@ export default ({property, features, value_idx, resolution}) => {
     let maxAnomalyValue = Symbolizer.getMaxValue(features, 'property_anomaly_rates');
     let minAnomalyValue = Symbolizer.getMinValue(features, 'property_anomaly_rates');
 
-    return {
-        features: new GeoJSON().readFeatures(features, {
-            dataProjection: 'EPSG:3857',
+    //TODO check if generalization is needed
+    let needGeneralization = true;
+    if (needGeneralization === true) {
+        let generalizer = new PointGeneralizer(features, resolution, property);
+        let generalizedFeatures = generalizer.generalizeFeatures();
+        console.log(new GeoJSON().readFeatures(generalizedFeatures, {
+            dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857',
-        }),
-        style: function (feature, resolution) {
-            let symbolizer = new Symbolizer(property, feature, value_idx, resolution,
-                maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
-            return symbolizer.styleBasedOnProperty();
-        }
-    };
+        }));
+        return {
+            features: new GeoJSON().readFeatures(generalizedFeatures, {
+                dataProjection: 'EPSG:4326',
+                featureProjection: 'EPSG:3857',
+            }),
+            style: function (feature, resolution) {
+                let polygonSymbolizer = new PolygonSymbolizer(property, feature, value_idx, resolution,
+                    maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
+                return polygonSymbolizer.styleBasedOnProperty();
+            }
+        };
+    } else {
+        return {
+            features: new GeoJSON().readFeatures(features, {
+                dataProjection: 'EPSG:4326',
+                featureProjection: 'EPSG:3857',
+            }),
+            style: function (feature, resolution) {
+                let symbolizer = new Symbolizer(property, feature, value_idx, resolution,
+                    maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
+                return symbolizer.styleBasedOnProperty();
+            }
+        };
+    }
 }
