@@ -57,13 +57,14 @@ export default ({property, features, value_idx, resolution}) => {
 
     //TODO check if generalization is needed
     let needGeneralization = false;
+
+    let generalizer = new PointGeneralizer(features, resolution, property);
+    generalizer.maxDistance();
+
     if (needGeneralization === true) {
         let generalizer = new PointGeneralizer(features, resolution, property);
         let generalizedFeatures = generalizer.generalizeFeatures();
-        console.log(new GeoJSON().readFeatures(generalizedFeatures, {
-            dataProjection: 'EPSG:3857',
-            featureProjection: 'EPSG:3857',
-        }));
+        generalizer.maxDistance();
         return {
             features: new GeoJSON().readFeatures(generalizedFeatures, {
                 dataProjection: 'EPSG:3857',
