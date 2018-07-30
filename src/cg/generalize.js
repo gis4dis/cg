@@ -56,17 +56,17 @@ export default ({property, features, value_idx, resolution}) => {
     let minAnomalyValue = Symbolizer.getMinValue(features, 'property_anomaly_rates');
 
     //TODO check if generalization is needed
-    let needGeneralization = true;
+    let needGeneralization = false;
     if (needGeneralization === true) {
         let generalizer = new PointGeneralizer(features, resolution, property);
         let generalizedFeatures = generalizer.generalizeFeatures();
         console.log(new GeoJSON().readFeatures(generalizedFeatures, {
-            dataProjection: 'EPSG:4326',
+            dataProjection: 'EPSG:3857',
             featureProjection: 'EPSG:3857',
         }));
         return {
             features: new GeoJSON().readFeatures(generalizedFeatures, {
-                dataProjection: 'EPSG:4326',
+                dataProjection: 'EPSG:3857',
                 featureProjection: 'EPSG:3857',
             }),
             style: function (feature, resolution) {
@@ -78,7 +78,7 @@ export default ({property, features, value_idx, resolution}) => {
     } else {
         return {
             features: new GeoJSON().readFeatures(features, {
-                dataProjection: 'EPSG:4326',
+                dataProjection: 'EPSG:3857',
                 featureProjection: 'EPSG:3857',
             }),
             style: function (feature, resolution) {
