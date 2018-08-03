@@ -1,12 +1,11 @@
 import Style from 'ol/style/style';
 import Icon from 'ol/style/icon';
-import Stroke from 'ol/style/stroke';
 import Fill from 'ol/style/fill';
 import Symbolizer from './Symbolizer';
 
 
 /** Represents Symbolizer for features. Contains set of operations including creating styles */
-export default class PolygonSymbolizer extends Symbolizer {
+export default class CachedSymbolizer extends Symbolizer {
 
     /**
      * Instantiating of Symbolizer object
@@ -24,58 +23,24 @@ export default class PolygonSymbolizer extends Symbolizer {
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
     constructor(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
-        super(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue)
+        super(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
     }
 
     /**
-     * Creating _ol_style_Style_ object
-     * @returns {_ol_style_Style_} built style for styleFunction
+     * Building SVG icon based on property_value and property_anomaly_rates
+     * @returns {string} SVG icon
      */
-    buildStyle() {
-        let _myStroke = new Stroke({
-            color : 'rgba(255,0,0,1.0)',
-            width : 1
-        });
+    createSVG() {
+        let propertyValue = Symbolizer.normalize(this.feature.properties.property_values[this.valueIdx],
+            this.minPropertyValue, this.maxPropertyValue) * 100;
 
-        let _myFill = new Fill({
-            color: 'rgba(255,0,0,1.0)'
-        });
+        let propertyAnomalyValue = Symbolizer.normalize(this.feature.properties.property_anomaly_rates[this.valueIdx],
+            this.minAnomalyValue, this.maxAnomalyValue) * 100;
 
-        return new Style({
-            stroke : _myStroke,
-            fill : _myFill
-        });
-    }
-
-    /**
-     * Creating default _ol_style_Style_ object. Prepared to the future
-     * @returns {_ol_style_Style_} default style
-     */
-    buildDefaultStyle() {
-        return this.buildStyle();
-    }
-
-    /**
-     * Creating style based on property value.
-     *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
-     * @returns {_ol_style_Style_} built style for vector layer
-     */
-    //TODO change with different styles for different properties
-    styleBasedOnProperty() {
-        switch (this.property.name_id) {
-            case 'air_temperature':
-                return this.buildStyle();
-            case 'ground_air_temperature':
-                return this.buildStyle();
-            case 'soil_temperature':
-                return this.buildStyle();
-            case 'precipitation':
-                return this.buildStyle();
-            case 'air_humidity':
-                return this.buildStyle();
-            default:
-                return this.buildDefaultStyle();
-        }
+        return '<svg width="' + 2*(25 + Math.log(this.resolution) * 2) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
+            '<rect x="0" y="' + (150 - propertyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyValue +  Math.log(this.resolution) * 2) + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
+            '<rect x="' + (25 + Math.log(this.resolution) * 2) + '" y="' + (150 - propertyAnomalyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyAnomalyValue + this.resolution / 10) + '" style="fill:rgb(255,0,0);stroke-width:0" />' +
+            '</svg>';
     }
 
 }

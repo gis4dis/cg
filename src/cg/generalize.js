@@ -1,7 +1,7 @@
 import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
-import PointGeneralizer from './PointGeneralizer';
-import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
+import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
+import CachedSymbolizer from './symbolizers/CachedSymbolizer';
 //import Cluster from './Cluster';
 
 /**
@@ -15,8 +15,10 @@ import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
  *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
  * @returns {{features: Array.<_ol_feature>, style: _ol_StyleFunction}}
  */
-export default ({property, features, value_idx, resolution}) => {
+let cachedFeatureStyles = {}
 
+export default ({property, features, value_idx, resolution}) => {
+    console.log('Volam generalize');
     // Assurance checks
     if (property === null) {
         throw new Error('Property not provided');
@@ -55,38 +57,46 @@ export default ({property, features, value_idx, resolution}) => {
     let maxAnomalyValue = Symbolizer.getMaxValue(features, 'property_anomaly_rates');
     let minAnomalyValue = Symbolizer.getMinValue(features, 'property_anomaly_rates');
 
-    //TODO check if generalization is needed
-    let needGeneralization = false;
+    //if (!cachedFeatureStyles.hasOwnProperty(providerId)) {
+    if (Object.keys(cachedFeatureStyles).length === 0) {
+        console.log('Building styles');
+        features.features.forEach(function (feature) {
+            let providerId = feature.properties.id_by_provider;
+            let property_values = feature.properties.property_values;
+            let cachedStyles = [];
 
-    let generalizer = new PointGeneralizer(features, resolution, property);
-    generalizer.maxDistance();
-
-    if (needGeneralization === true) {
-        let generalizer = new PointGeneralizer(features, resolution, property);
-        let generalizedFeatures = generalizer.generalizeFeatures();
-        generalizer.maxDistance();
-        return {
-            features: new GeoJSON().readFeatures(generalizedFeatures, {
-                dataProjection: 'EPSG:3857',
-                featureProjection: 'EPSG:3857',
-            }),
-            style: function (feature, resolution) {
-                let polygonSymbolizer = new PolygonSymbolizer(property, feature, value_idx, resolution,
-                    maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
-                return polygonSymbolizer.styleBasedOnProperty();
+            for (let i = 0; i < property_values.length; i++) {
+                let cachedSymbolizer = new CachedSymbolizer(property, feature, i, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
+                cachedStyles.push(cachedSymbolizer.styleBasedOnProperty());
+                cachedFeatureStyles[feature.properties.id_by_provider] = cachedStyles;
             }
-        };
-    } else {
-        return {
-            features: new GeoJSON().readFeatures(features, {
-                dataProjection: 'EPSG:3857',
-                featureProjection: 'EPSG:3857',
-            }),
-            style: function (feature, resolution) {
+            //console.log('has key');
+            //return cachedFeatureStyles[providerId][value_idx]
+        });
+        console.log('Cachovane styly v buildovani');
+        console.log(cachedFeatureStyles);
+    }
+
+    //console.log(cachedFeatureStyles);
+
+    return {
+        features: new GeoJSON().readFeatures(features, {
+            dataProjection: 'EPSG:3857',
+            featureProjection: 'EPSG:3857',
+        }),
+        style: function (feature, resolution) {
+            let providerId = feature.values_.id_by_provider;
+            if (cachedFeatureStyles.hasOwnProperty(providerId)) {
+                console.log('Cached style returned');
+                console.log(cachedFeatureStyles[providerId][value_idx]);
+                return cachedFeatureStyles[providerId][value_idx]
+            } else {
                 let symbolizer = new Symbolizer(property, feature, value_idx, resolution,
                     maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
+                console.log('Tady uz ne');
                 return symbolizer.styleBasedOnProperty();
             }
-        };
-    }
+            //console.log(feature.values_.id_by_provider);
+        }
+    };
 }
