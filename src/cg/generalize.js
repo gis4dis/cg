@@ -67,7 +67,9 @@ export default ({property, features, value_idx, resolution}) => {
 
             for (let i = 0; i < property_values.length; i++) {
                 let cachedSymbolizer = new CachedSymbolizer(property, feature, i, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
-                cachedStyles.push(cachedSymbolizer.styleBasedOnProperty());
+                const feature_style = cachedSymbolizer.styleBasedOnProperty();
+                feature_style.getImage().load();
+                cachedStyles.push(feature_style);
                 cachedFeatureStyles[feature.properties.id_by_provider] = cachedStyles;
             }
             //console.log('has key');
