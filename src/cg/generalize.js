@@ -2,7 +2,6 @@ import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
 import CachedSymbolizer from './symbolizers/CachedSymbolizer';
-//import Cluster from './Cluster';
 
 /**
  * Main generalization function
@@ -18,7 +17,7 @@ import CachedSymbolizer from './symbolizers/CachedSymbolizer';
 let cachedFeatureStyles = {}
 
 export default ({property, features, value_idx, resolution}) => {
-    console.log('Volam generalize');
+
     // Assurance checks
     if (property === null) {
         throw new Error('Property not provided');
@@ -57,27 +56,22 @@ export default ({property, features, value_idx, resolution}) => {
     let maxAnomalyValue = Symbolizer.getMaxValue(features, 'property_anomaly_rates');
     let minAnomalyValue = Symbolizer.getMinValue(features, 'property_anomaly_rates');
 
-    //if (!cachedFeatureStyles.hasOwnProperty(providerId)) {
+    // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
-        console.log('Building styles');
         features.features.forEach(function (feature) {
             let providerId = feature.properties.id_by_provider;
             let property_values = feature.properties.property_values;
-            let cachedStyles = [];
+            let cachedStyles = []
 
             for (let i = 0; i < property_values.length; i++) {
                 let cachedSymbolizer = new CachedSymbolizer(property, feature, i, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
-                cachedStyles.push(cachedSymbolizer.styleBasedOnProperty());
+                const featureStyle = cachedSymbolizer.styleBasedOnProperty();
+                featureStyle.getImage().load();
+                cachedStyles.push(featureStyle);
                 cachedFeatureStyles[feature.properties.id_by_provider] = cachedStyles;
             }
-            //console.log('has key');
-            //return cachedFeatureStyles[providerId][value_idx]
         });
-        console.log('Cachovane styly v buildovani');
-        console.log(cachedFeatureStyles);
     }
-
-    //console.log(cachedFeatureStyles);
 
     return {
         features: new GeoJSON().readFeatures(features, {
@@ -87,16 +81,12 @@ export default ({property, features, value_idx, resolution}) => {
         style: function (feature, resolution) {
             let providerId = feature.values_.id_by_provider;
             if (cachedFeatureStyles.hasOwnProperty(providerId)) {
-                console.log('Cached style returned');
-                console.log(cachedFeatureStyles[providerId][value_idx]);
                 return cachedFeatureStyles[providerId][value_idx]
             } else {
                 let symbolizer = new Symbolizer(property, feature, value_idx, resolution,
                     maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
-                console.log('Tady uz ne');
                 return symbolizer.styleBasedOnProperty();
             }
-            //console.log(feature.values_.id_by_provider);
         }
     };
 }

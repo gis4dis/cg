@@ -24,7 +24,7 @@ export default class PolygonSymbolizer extends Symbolizer {
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
     constructor(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
-        super(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue)
+        super(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
     }
 
     /**
