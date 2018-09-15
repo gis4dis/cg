@@ -19,11 +19,25 @@ export default class Symbolizer {
         return proj4(proj3857, proj4326, point.geometry.coordinates)
     }
 
+    //TODO rename method
     generalizeFeatures() {
         //TODO add maxEdge value to concave
         let concaveHull = concave(this.featureCollection, {units: 'kilometres'});
         console.log(concaveHull);
         return concaveHull;
+    }
+
+    meanDistance() {
+        let numberOfPoints = this.features.length;
+        let cumulativeDistance;
+
+        for (let i in this.features) {
+            for (let j in this.features) {
+                cumulativeDistance = distance(Symbolizer.transformPointTo4326(this.features[i]), Symbolizer.transformPointTo4326(this.features[j]))
+            }
+        }
+
+        return cumulativeDistance/numberOfPoints;
     }
 
     maxDistance() {
