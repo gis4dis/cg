@@ -11,11 +11,23 @@ const geojsonFeatures = (new ol_format_GeoJSON()).readFeatures(geojson, {
 });
 
 let testGeneralizeObject = generalize({
-    property: {
-        "name_id": "air_temperature",
-        "name": "air temperature",
-        "unit": "°C"
+    topic: {
+        "name": "drought",
+        "name_id": "drought"
     },
+    properties: [
+        {
+            "name_id":"air_temperature",
+            "name":"air temperature",
+            "unit":"°C"
+        },
+        {
+            "name_id":"ground_air_temperature",
+            "name":"ground air temperature",
+            "unit":"°C"
+        }
+    ],
+    primary_property: "drought",
     features: geojson_example,
     value_idx: 1,
     resolution: 76.43702828517625

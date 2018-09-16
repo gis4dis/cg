@@ -5,21 +5,23 @@ import CachedSymbolizer from './symbolizers/CachedSymbolizer';
 
 /**
  * Main generalization function
- * @param {Object.<string, string>} property - values selected by user
- *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
+ * https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG-v2
+ * @param {Object.<string, string>} topic - topic that is selected by user, e.g. drought or flood
+ * @param {Object.<string>} primary_property - name_id of one of properties that is selected by the user
+ * @param {Object.<string, string, string>} properties - properties related to the topic whose timeseries are contained within features
  * @param {Object.GeoJSON} features - represented as Array of GeoJSON Features, each of them includes attributes
- *  (https://github.com/gis4dis/cg/blob/master/data/example.json)
+ *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-MC-server-v2#timeseries)
  * @param {number} value_idx - an index of value that should be used for generalization
  * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
  *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
  * @returns {{features: Array.<_ol_feature>, style: _ol_StyleFunction}}
  */
-let cachedFeatureStyles = {}
+let cachedFeatureStyles = {};
 
-export default ({property, features, value_idx, resolution}) => {
+export default ({topic, primary_property, properties, features, value_idx, resolution}) => {
 
     // Assurance checks
-    if (property === null) {
+    if (primary_property === null) {
         throw new Error('Property not provided');
     }
 
@@ -61,7 +63,7 @@ export default ({property, features, value_idx, resolution}) => {
         features.features.forEach(function (feature) {
             let providerId = feature.properties.id_by_provider;
             let property_values = feature.properties.property_values;
-            let cachedStyles = []
+            let cachedStyles = [];
 
             for (let i = 0; i < property_values.length; i++) {
                 let cachedSymbolizer = new CachedSymbolizer(property, feature, i, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
