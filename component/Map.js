@@ -27,7 +27,7 @@ let testGeneralizeObject = generalize({
             "unit":"°C"
         }
     ],
-    primary_property: "drought",
+    primary_property: "air_temperature",
     features: geojson_example,
     value_idx: 1,
     resolution: 76.43702828517625

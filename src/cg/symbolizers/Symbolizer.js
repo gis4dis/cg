@@ -20,8 +20,8 @@ export default class Symbolizer {
      * @param {number} minAnomalyValue - min value from property anomaly rates
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
-        this.property = property;
+    constructor(primary_property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
+        this.primary_property = primary_property;
         this.feature = feature;
         this.valueIdx = valueIdx;
         this.resolution = resolution;
@@ -38,11 +38,11 @@ export default class Symbolizer {
      * @param {String} type - name of the key from feature where is array with values
      * @returns {number} - Max value from array
      */
-    static getMaxValue(geojson, type) {
+    static getMaxValue(geojson, name_id, type) {
         let maxValue = null;
         geojson.features.forEach(function (feature) {
-            if (maxValue === null || maxValue < Math.max(...feature.properties[type])) {
-                maxValue = Math.max(...feature.properties[type]);
+            if (maxValue === null || maxValue < Math.max(...feature.properties[name_id][type])) {
+                maxValue = Math.max(...feature.properties[name_id][type]);
             }
         });
 
@@ -55,11 +55,11 @@ export default class Symbolizer {
      * @param {String} type - name of the key from feature where is array with values
      * @returns {number} - Min value from array
      */
-    static getMinValue(geojson, type) {
+    static getMinValue(geojson, name_id, type) {
         let minValue = null;
         geojson.features.forEach(function (feature) {
-            if (minValue === null || minValue > Math.min(...feature.properties[type])) {
-                minValue = Math.min(...feature.properties[type]);
+            if (minValue === null || minValue > Math.min(...feature.properties[name_id][type])) {
+                minValue = Math.min(...feature.properties[name_id][type]);
             }
         });
 
@@ -82,10 +82,10 @@ export default class Symbolizer {
      * @returns {string} SVG icon
      */
     createSVG() {
-        let propertyValue = Symbolizer.normalize(this.feature.values_.property_values[this.valueIdx],
+        let propertyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['values'][this.valueIdx],
             this.minPropertyValue, this.maxPropertyValue) * 100;
 
-        let propertyAnomalyValue = Symbolizer.normalize(this.feature.values_.property_anomaly_rates[this.valueIdx],
+        let propertyAnomalyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx],
             this.minAnomalyValue, this.maxAnomalyValue) * 100;
 
         return '<svg width="' + 2*(25 + Math.log(this.resolution) * 2) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
@@ -123,7 +123,7 @@ export default class Symbolizer {
      */
     //TODO change with different styles for different properties
     styleBasedOnProperty() {
-        switch (this.property.name_id) {
+        switch (this.primary_property) {
             case 'air_temperature':
                 return this.buildStyle();
             case 'ground_air_temperature':

@@ -37,41 +37,49 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     }
 
     //TODO create tests for property_values and property_anomaly_rates
-    features.features.forEach(function (feature) {
-        if (feature.properties.property_values.length !== feature.properties.property_anomaly_rates.length) {
-            throw new Error('Property values and property anomaly rates has different length');
-        }
-
-        if (feature.properties.value_index_shift < 0) {
-            throw new Error('Value index shift must be >= 0');
-        }
-    });
+    // features.features.forEach(function (feature) {
+    //     if (feature.properties.property_values.length !== feature.properties.property_anomaly_rates.length) {
+    //         throw new Error('Property values and property anomaly rates has different length');
+    //     }
+    //
+    //     if (feature.properties.value_index_shift < 0) {
+    //         throw new Error('Value index shift must be >= 0');
+    //     }
+    // });
 
     if (value_idx < 0) {
         throw new Error('Value_idx values must be >= 0');
     }
 
     // Max and min values for normalization
-    let maxPropertyValue = Symbolizer.getMaxValue(features, 'property_values');
-    let minPropertyValue = Symbolizer.getMinValue(features, 'property_values');
+    let maxPropertyValue = Symbolizer.getMaxValue(features, 'air_temperature', 'values');
+    let minPropertyValue = Symbolizer.getMinValue(features, 'air_temperature', 'values');
 
-    let maxAnomalyValue = Symbolizer.getMaxValue(features, 'property_anomaly_rates');
-    let minAnomalyValue = Symbolizer.getMinValue(features, 'property_anomaly_rates');
+    let maxAnomalyValue = Symbolizer.getMaxValue(features, 'air_temperature', 'anomaly_rates');
+    let minAnomalyValue = Symbolizer.getMinValue(features, 'air_temperature', 'anomaly_rates');
 
     // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
         features.features.forEach(function (feature) {
-            let providerId = feature.properties.id_by_provider;
-            let property_values = feature.properties.property_values;
-            let cachedStyles = [];
 
-            for (let i = 0; i < property_values.length; i++) {
-                let cachedSymbolizer = new CachedSymbolizer(property, feature, i, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
-                const featureStyle = cachedSymbolizer.styleBasedOnProperty();
-                featureStyle.getImage().load();
-                cachedStyles.push(featureStyle);
-                cachedFeatureStyles[feature.properties.id_by_provider] = cachedStyles;
-            }
+            let id = feature.id;
+
+
+            properties.forEach(function (property) {
+                console.log(property.name_id);
+                let nameId = property.name_id;
+
+                let property_values = feature.properties[property.name_id];
+                console.log(feature.properties[property.name_id]);
+
+                for (let i = 0; i < property_values.length; i++) {
+                    let cachedSymbolizer = new CachedSymbolizer(primary_property, feature, i, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
+                    const featureStyle = cachedSymbolizer.styleBasedOnProperty();
+                    let hash = cachedSymbolizer.createHash();
+                    featureStyle.getImage().load();
+                    cachedFeatureStyles[hash] = featureStyle;
+                }
+            });
         });
     }
 
@@ -81,11 +89,12 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             featureProjection: 'EPSG:3857',
         }),
         style: function (feature, resolution) {
-            let providerId = feature.values_.id_by_provider;
-            if (cachedFeatureStyles.hasOwnProperty(providerId)) {
-                return cachedFeatureStyles[providerId][value_idx]
+            console.log(feature);
+            let id = feature.values_.id;
+            if (cachedFeatureStyles.hasOwnProperty(id)) {
+                return cachedFeatureStyles[id][value_idx]
             } else {
-                let symbolizer = new Symbolizer(property, feature, value_idx, resolution,
+                let symbolizer = new Symbolizer(primary_property, feature, value_idx, resolution,
                     maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
                 return symbolizer.styleBasedOnProperty();
             }

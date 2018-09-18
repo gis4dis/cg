@@ -22,8 +22,8 @@ export default class CachedSymbolizer extends Symbolizer {
      * @param {number} minAnomalyValue - min value from property anomaly rates
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
-        super(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
+    constructor(primary_property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
+        super(primary_property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
     }
 
     /**
@@ -31,16 +31,24 @@ export default class CachedSymbolizer extends Symbolizer {
      * @returns {string} SVG icon
      */
     createSVG() {
-        let propertyValue = Symbolizer.normalize(this.feature.properties.property_values[this.valueIdx],
+        let propertyValue = Symbolizer.normalize(this.feature.properties[this.primary_property]['values'][this.valueIdx],
             this.minPropertyValue, this.maxPropertyValue) * 100;
 
-        let propertyAnomalyValue = Symbolizer.normalize(this.feature.properties.property_anomaly_rates[this.valueIdx],
+        let propertyAnomalyValue = Symbolizer.normalize(this.feature.properties[this.primary_property]['anomaly_rates'][this.valueIdx],
             this.minAnomalyValue, this.maxAnomalyValue) * 100;
 
         return '<svg width="' + 2*(25 + Math.log(this.resolution) * 2) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
             '<rect x="0" y="' + (150 - propertyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyValue +  Math.log(this.resolution) * 2) + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
             '<rect x="' + (25 + Math.log(this.resolution) * 2) + '" y="' + (150 - propertyAnomalyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyAnomalyValue + this.resolution / 10) + '" style="fill:rgb(255,0,0);stroke-width:0" />' +
             '</svg>';
+    }
+
+    /**
+     * Creating hash based on values of SVG parameters
+     * @returns {string} hash
+     */
+    createHash() {
+
     }
 
 }

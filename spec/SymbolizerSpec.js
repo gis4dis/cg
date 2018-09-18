@@ -1,6 +1,6 @@
 import Symbolizer from '../src/cg/symbolizers/Symbolizer';
 import GeoJSON from "ol/format/geojson";
-const geojson = require('../data/example.json');
+const geojson = require('../data/example_old.json');
 
 describe('Symbolizer tests', function() {
 
