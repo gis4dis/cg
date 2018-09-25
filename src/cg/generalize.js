@@ -52,11 +52,29 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     }
 
     // Max and min values for normalization
-    let maxPropertyValue = Symbolizer.getMaxValue(features, 'air_temperature', 'values');
-    let minPropertyValue = Symbolizer.getMinValue(features, 'air_temperature', 'values');
+    let minMaxValues = {};
 
-    let maxAnomalyValue = Symbolizer.getMaxValue(features, 'air_temperature', 'anomaly_rates');
-    let minAnomalyValue = Symbolizer.getMinValue(features, 'air_temperature', 'anomaly_rates');
+    properties.forEach(function (property) {
+        if (!minMaxValues.hasOwnProperty(property.name_id)) {
+
+            let maxPropertyValue = Symbolizer.getMaxValue(features, property.name_id, 'values');
+            let minPropertyValue = Symbolizer.getMinValue(features, property.name_id, 'values');
+
+            let maxAnomalyValue = Symbolizer.getMaxValue(features, property.name_id, 'anomaly_rates');
+            let minAnomalyValue = Symbolizer.getMinValue(features, property.name_id, 'anomaly_rates');
+
+            minMaxValues[property.name_id] = [maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue];
+        }
+    });
+
+    console.log('Min and Max Values');
+    console.log(minMaxValues);
+
+    //let maxPropertyValue = Symbolizer.getMaxValue(features, 'air_temperature', 'values');
+    //let minPropertyValue = Symbolizer.getMinValue(features, 'air_temperature', 'values');
+
+    //let maxAnomalyValue = Symbolizer.getMaxValue(features, 'air_temperature', 'anomaly_rates');
+    //let minAnomalyValue = Symbolizer.getMinValue(features, 'air_temperature', 'anomaly_rates');
 
     // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
@@ -94,8 +112,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             if (cachedFeatureStyles.hasOwnProperty(id)) {
                 return cachedFeatureStyles[id][value_idx]
             } else {
-                let symbolizer = new Symbolizer(primary_property, feature, value_idx, resolution,
-                    maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
+                let symbolizer = new Symbolizer(primary_property, feature, value_idx, resolution, minMaxValues);
                 return symbolizer.styleBasedOnProperty();
             }
         }

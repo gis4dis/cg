@@ -8,33 +8,28 @@ export default class Symbolizer {
     /**
      * Instantiating of Symbolizer object
      * @constructor
-     * @param {Object.<string, string>} property - values selected by user
+     * @param {Object.<string, string>} primary_property - values selected by user
      *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
      * @param {Object.GeoJSON} feature - represented as one feature from an Array of GeoJSON Features, each of them includes attributes
      *  (https://github.com/gis4dis/cg/blob/master/data/example.json)
      * @param {number} valueIdx - an index of value that should be used for generalization
      * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
-     * @param {number} maxPropertyValue - max value from property values
-     * @param {number} minPropertyValue - min value from property values
-     * @param {number} maxAnomalyValue - max value from property anomaly rates
-     * @param {number} minAnomalyValue - min value from property anomaly rates
+     * @param {Object.<array>} minMaxValues - minimum and maximum values (min and max property values, min and max anomaly rates)
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(primary_property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
+    constructor(primary_property, feature, valueIdx, resolution, minMaxValues) {
         this.primary_property = primary_property;
         this.feature = feature;
         this.valueIdx = valueIdx;
         this.resolution = resolution;
 
-        this.maxPropertyValue = maxPropertyValue;
-        this.minPropertyValue = minPropertyValue;
-        this.maxAnomalyValue = maxAnomalyValue;
-        this.minAnomalyValue = minAnomalyValue;
+        this.minMaxValues = minMaxValues;
     }
 
     /**
      * Returning max value from geojson array with specific key
      * @param {Object.GeoJSON} geojson - representing collection of features
+     * @param {String} name_id - name_id of property
      * @param {String} type - name of the key from feature where is array with values
      * @returns {number} - Max value from array
      */
@@ -52,6 +47,7 @@ export default class Symbolizer {
     /**
      * Returning min value from geojson array with specific key
      * @param {Object.GeoJSON} geojson - representing collection of features
+     * @param {String} name_id - name_id of property
      * @param {String} type - name of the key from feature where is array with values
      * @returns {number} - Min value from array
      */
@@ -82,11 +78,12 @@ export default class Symbolizer {
      * @returns {string} SVG icon
      */
     createSVG() {
+        //TODO fix minMaxValues[primary_property] for all properties
         let propertyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['values'][this.valueIdx],
-            this.minPropertyValue, this.maxPropertyValue) * 100;
+            this.minMaxValues[this.primary_property][0], this.minMaxValues[this.primary_property][1]) * 100;
 
         let propertyAnomalyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx],
-            this.minAnomalyValue, this.maxAnomalyValue) * 100;
+            this.minMaxValues[this.primary_property][2], this.minMaxValues[this.primary_property][3]) * 100;
 
         return '<svg width="' + 2*(25 + Math.log(this.resolution) * 2) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
             '<rect x="0" y="' + (150 - propertyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyValue +  Math.log(this.resolution) * 2) + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
