@@ -94,25 +94,39 @@ export default class Symbolizer {
         //TODO fix minMaxValues[primary_property] for all properties
         let propertyValue = 0;
         let propertyAnomalyValue = 0;
+        let anomalyColor = '';
 
         if (this.cached === true) {
-            propertyValue = Symbolizer.normalize(this.feature.properties[this.primary_property]['values'][this.valueIdx],
-                this.minMaxValues[this.primary_property][0], this.minMaxValues[this.primary_property][1]) * 100;
+            propertyValue = this.feature.properties[this.primary_property]['values'][this.valueIdx];
 
-            propertyAnomalyValue = Symbolizer.normalize(this.feature.properties[this.primary_property]['anomaly_rates'][this.valueIdx],
-                this.minMaxValues[this.primary_property][2], this.minMaxValues[this.primary_property][3]) * 100;
+            propertyAnomalyValue = this.feature.properties[this.primary_property]['anomaly_rates'][this.valueIdx];
         } else {
-            propertyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['values'][this.valueIdx],
-                this.minMaxValues[this.primary_property][0], this.minMaxValues[this.primary_property][1]) * 100;
+            propertyValue = this.feature.values_[this.primary_property]['values'][this.valueIdx];
 
-            propertyAnomalyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx],
-                this.minMaxValues[this.primary_property][2], this.minMaxValues[this.primary_property][3]) * 100;
+            console.log('anomaly rates');
+            console.log(this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx]);
+            propertyAnomalyValue = this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx];
         }
 
-        return '<svg width="' + 2*(25 + Math.log(this.resolution) * 2) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
+        console.log('MINMAXVALUES');
+        console.log(this.minMaxValues);
+
+        if (propertyAnomalyValue < 2.5) {
+            anomalyColor = 'rgb(0, 153, 51)';
+        } else {
+            anomalyColor = 'rgb(255, 0, 0)';
+        }
+
+
+        return '<svg width="120" height="120" version="1.1" xmlns="http://www.w3.org/2000/svg">'
+            + '<circle cx="60" cy="60" stroke="black" style="fill:'+ anomalyColor +';stroke-width: 1" r="' + (propertyValue +  Math.log(this.resolution) * 2) + '"/>'
+            + '</svg>';
+
+
+        /*return '<svg width="' + 2*(25 + Math.log(this.resolution) * 2) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
+            '<circle cx="0" cy="0" r="' + 10 + '" stroke="black" stroke-width="2" fill="#0066ff" />' +
             '<rect x="0" y="' + (150 - propertyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyValue +  Math.log(this.resolution) * 2) + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
-            '<rect x="' + (25 + Math.log(this.resolution) * 2) + '" y="' + (150 - propertyAnomalyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyAnomalyValue + this.resolution / 10) + '" style="fill:rgb(255,0,0);stroke-width:0" />' +
-            '</svg>';
+            '</svg>';*/
     }
 
     /**
@@ -120,11 +134,13 @@ export default class Symbolizer {
      * @returns {_ol_style_Style_} built style for styleFunction
      */
     buildStyle() {
+        console.log('SVG');
+        console.log(this.createSVG());
         return new Style({
             image: new Icon({
                 opacity: .7,
                 src: 'data:image/svg+xml;utf8,' + this.createSVG(),
-                scale: .3
+                scale: 0.3
             })
         });
     }

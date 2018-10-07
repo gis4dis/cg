@@ -52,6 +52,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     }
 
     // Max and min values for normalization
+    //TODO fix - should be maxMinValues
     let minMaxValues = {};
 
     properties.forEach(function (property) {
