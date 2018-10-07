@@ -93,7 +93,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                 console.log('property_values');
                 console.log(feature.properties[property.name_id]);
 
-                /*for (let i = 0; i < propertyValues.values.length; i++) {
+                for (let i = 0; i < propertyValues.values.length; i++) {
                     let symbolizer = new Symbolizer(primary_property, feature, i, resolution, minMaxValues, true);
                     console.log('Feature na styl');
                     console.log(feature);
@@ -103,7 +103,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                     cachedFeatureStyles[hash] = featureStyle;
                     console.log('FeatureStyles');
                     console.log(cachedFeatureStyles);
-                }*/
+                }
             });
         });
     }
