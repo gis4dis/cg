@@ -22,8 +22,8 @@ export default class CachedSymbolizer extends Symbolizer {
      * @param {number} minAnomalyValue - min value from property anomaly rates
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(primary_property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
-        super(primary_property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue);
+    constructor(primary_property, feature, valueIdx, resolution, minMaxValues) {
+        super(primary_property, feature, valueIdx, resolution, minMaxValues);
     }
 
     /**
@@ -44,11 +44,48 @@ export default class CachedSymbolizer extends Symbolizer {
     }
 
     /**
-     * Creating hash based on values of SVG parameters
-     * @returns {string} hash
+     * Creating _ol_style_Style_ object
+     * @returns {_ol_style_Style_} built style for styleFunction
      */
-    createHash() {
+    buildStyle() {
+        return new Style({
+            image: new Icon({
+                opacity: .7,
+                src: 'data:image/svg+xml;utf8,' + this.createSVG(),
+                scale: .3
+            })
+        });
+    }
 
+    /**
+     * Creating default _ol_style_Style_ object. Prepared to the future
+     * @returns {_ol_style_Style_} default style
+     */
+    buildDefaultStyle() {
+        return this.buildStyle();
+    }
+
+    /**
+     * Creating style based on property value.
+     *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
+     * @returns {_ol_style_Style_} built style for vector layer
+     */
+    //TODO change with different styles for different properties
+    styleBasedOnProperty() {
+        switch (this.primary_property) {
+            case 'air_temperature':
+                return this.buildStyle();
+            case 'ground_air_temperature':
+                return this.buildStyle();
+            case 'soil_temperature':
+                return this.buildStyle();
+            case 'precipitation':
+                return this.buildStyle();
+            case 'air_humidity':
+                return this.buildStyle();
+            default:
+                return this.buildDefaultStyle();
+        }
     }
 
 }

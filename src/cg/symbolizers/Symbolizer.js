@@ -17,13 +17,14 @@ export default class Symbolizer {
      * @param {Object.<array>} minMaxValues - minimum and maximum values (min and max property values, min and max anomaly rates)
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(primary_property, feature, valueIdx, resolution, minMaxValues) {
+    constructor(primary_property, feature, valueIdx, resolution, minMaxValues, cached) {
         this.primary_property = primary_property;
         this.feature = feature;
         this.valueIdx = valueIdx;
         this.resolution = resolution;
 
         this.minMaxValues = minMaxValues;
+        this.cached = cached;
     }
 
     /**
@@ -74,16 +75,39 @@ export default class Symbolizer {
     }
 
     /**
+     * Creating hash based on values of SVG parameters
+     * @returns {string} hash
+     */
+    static createHash(id, nameId, index, value, anomalyRate) {
+        console.log('hash metod');
+        console.log(id);
+        console.log(nameId);
+        console.log(index);
+        return id + nameId + 'index' + index + 'value' + value + 'anomaly' + anomalyRate;
+    }
+
+    /**
      * Building SVG icon based on property_value and property_anomaly_rates
      * @returns {string} SVG icon
      */
     createSVG() {
         //TODO fix minMaxValues[primary_property] for all properties
-        let propertyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['values'][this.valueIdx],
-            this.minMaxValues[this.primary_property][0], this.minMaxValues[this.primary_property][1]) * 100;
+        let propertyValue = 0;
+        let propertyAnomalyValue = 0;
 
-        let propertyAnomalyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx],
-            this.minMaxValues[this.primary_property][2], this.minMaxValues[this.primary_property][3]) * 100;
+        if (this.cached === true) {
+            propertyValue = Symbolizer.normalize(this.feature.properties[this.primary_property]['values'][this.valueIdx],
+                this.minMaxValues[this.primary_property][0], this.minMaxValues[this.primary_property][1]) * 100;
+
+            propertyAnomalyValue = Symbolizer.normalize(this.feature.properties[this.primary_property]['anomaly_rates'][this.valueIdx],
+                this.minMaxValues[this.primary_property][2], this.minMaxValues[this.primary_property][3]) * 100;
+        } else {
+            propertyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['values'][this.valueIdx],
+                this.minMaxValues[this.primary_property][0], this.minMaxValues[this.primary_property][1]) * 100;
+
+            propertyAnomalyValue = Symbolizer.normalize(this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx],
+                this.minMaxValues[this.primary_property][2], this.minMaxValues[this.primary_property][3]) * 100;
+        }
 
         return '<svg width="' + 2*(25 + Math.log(this.resolution) * 2) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
             '<rect x="0" y="' + (150 - propertyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyValue +  Math.log(this.resolution) * 2) + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
