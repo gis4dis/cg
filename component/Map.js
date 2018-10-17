@@ -10,29 +10,6 @@ const geojsonFeatures = (new ol_format_GeoJSON()).readFeatures(geojson, {
     featureProjection: 'EPSG:3857',
 });
 
-let testGeneralizeObject = generalize({
-    topic: {
-        "name": "drought",
-        "name_id": "drought"
-    },
-    properties: [
-        {
-            "name_id":"air_temperature",
-            "name":"air temperature",
-            "unit":"°C"
-        },
-        {
-            "name_id":"ground_air_temperature",
-            "name":"ground air temperature",
-            "unit":"°C"
-        }
-    ],
-    primary_property: "air_temperature",
-    features: geojson_example,
-    value_idx: 1,
-    resolution: 76.43702828517625
-});
-
 //console.log(testGeneralizeObject);
 
 let ol_Map;
@@ -100,6 +77,29 @@ class Map extends React.PureComponent {
     }
 
     componentDidMount() {
+        let testGeneralizeObject = generalize({
+            topic: {
+                "name": "drought",
+                "name_id": "drought"
+            },
+            properties: [
+                {
+                    "name_id":"air_temperature",
+                    "name":"air temperature",
+                    "unit":"°C"
+                },
+                {
+                    "name_id":"ground_air_temperature",
+                    "name":"ground air temperature",
+                    "unit":"°C"
+                }
+            ],
+            primary_property: "air_temperature",
+            features: geojson_example,
+            value_idx: 1,
+            resolution: 76.43702828517625
+        });
+
         ol_Map = require('ol/map').default;
         ol_View = require('ol/view').default;
         ol_control_ScaleLine = require('ol/control/scaleline').default;
