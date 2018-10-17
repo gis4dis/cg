@@ -109,6 +109,8 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         });
     }
 
+    //TODO zkontrolovat jestli se neseká Chrome kdyz vytvarim symbologii dopredu casove rady
+
     return {
         features: new GeoJSON().readFeatures(features, {
             dataProjection: 'EPSG:3857',

@@ -83,7 +83,7 @@ export default class Symbolizer {
         console.log(id);
         console.log(nameId);
         console.log(index);
-        return id + nameId + 'index' + index + 'value' + value + 'anomaly' + anomalyRate;
+        return 'value' + value + 'anomaly' + anomalyRate;
     }
 
     /**
