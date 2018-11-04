@@ -94,11 +94,11 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                     let propertyValues = feature.properties[nameId];
 
                     for (let i = 0; i < propertyValues.values.length; i++) {
-                        let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues);
+                        let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues, true);
                         //console.log('Feature na styl');
                         //console.log(feature);
                         const featureStyle = symbolizer.styleBasedOnProperty(nameId);
-                        let hash = Symbolizer.createHash(id, nameId, i, propertyValues.values[i], propertyValues.anomaly_rates[i]);
+                        let hash = Symbolizer.createHash(nameId, propertyValues.values[i], propertyValues.anomaly_rates[i]);
                         featureStyle.getImage().load();
                         cachedFeatureStyles[hash] = featureStyle;
                     }
@@ -115,17 +115,25 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             featureProjection: 'EPSG:3857',
         }),
         style: function (feature, resolution) {
-            //console.log('OL FEATURE');
-            //console.log(feature);
-            //TODO fix air_temperature, make it for more properties
-            let hash = Symbolizer.createHash(feature.id_, 'air_temperature', value_idx, feature.values_.air_temperature.values[value_idx], feature.values_.air_temperature.anomaly_rates[value_idx]);
+            console.log('OL FEATURE');
+            console.log(feature);
+
+            let hash = '';
+            properties.forEach(function(property) {
+                if (feature.values_.hasOwnProperty(property.name_id)) {
+                    hash = Symbolizer.createHash(property.name_id, feature.values_[property.name_id].values[value_idx], feature.values_[property.name_id].anomaly_rates[value_idx]);
+                }
+            });
+
+            //let hash = Symbolizer.createHash('air_temperature', feature.values_.air_temperature.values[value_idx], feature.values_.air_temperature.anomaly_rates[value_idx]);
             //console.log('hash nakonci');
             //console.log(hash);
+            //console.log(cachedFeatureStyles);
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
                 //console.log('cachovany styl');
                 return cachedFeatureStyles[hash]
             } else {
-                let symbolizer = new Symbolizer(primary_property, properties, feature, value_idx, resolution, minMaxValues);
+                let symbolizer = new Symbolizer(primary_property, properties, feature, value_idx, resolution, minMaxValues, false);
                 return symbolizer.styleBasedOnProperty();
             }
         }

@@ -17,13 +17,14 @@ export default class Symbolizer {
      * @param {Object.<array>} minMaxValues - minimum and maximum values (min and max property values, min and max anomaly rates)
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(primary_property, properties, feature, valueIdx, resolution, minMaxValues) {
+    constructor(primary_property, properties, feature, valueIdx, resolution, minMaxValues, cached) {
         this.primary_property = primary_property;
         this.properties = properties;
         this.feature = feature;
         this.valueIdx = valueIdx;
         this.resolution = resolution;
         this.minMaxValues = minMaxValues;
+        this.cached = cached;
     }
 
     /**
@@ -78,12 +79,12 @@ export default class Symbolizer {
      * Creating hash based on values of SVG parameters
      * @returns {string} hash
      */
-    static createHash(id, nameId, index, value, anomalyRate) {
+    static createHash(nameId, value, anomalyRate) {
         //console.log('hash metod');
         //console.log(id);
         //console.log(nameId);
         //console.log(index);
-        return 'value' + value + 'anomaly' + anomalyRate;
+        return nameId + 'value' + value + 'anomaly' + anomalyRate;
     }
 
     /**
@@ -101,6 +102,8 @@ export default class Symbolizer {
 
             propertyAnomalyValue = this.feature.properties[this.primary_property]['anomaly_rates'][this.valueIdx];
         } else {
+            console.log('Features');
+            console.log(this.feature);
             propertyValue = this.feature.values_[this.primary_property]['values'][this.valueIdx];
 
             //console.log('anomaly rates');
