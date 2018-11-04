@@ -122,6 +122,12 @@ class Map extends React.PureComponent {
         const vectorLayer = getVectorLayer();
         const baselayer = getBaselayer();
 
+        console.log('Test generalize features');
+        console.log(testGeneralizeObject.features);
+
+
+        console.log('Test generalize style');
+        console.log(testGeneralizeObject.style);
         const vectorTestLayer = new ol_layer_Vector({
             source: new ol_source_Vector({
                 features: testGeneralizeObject.features

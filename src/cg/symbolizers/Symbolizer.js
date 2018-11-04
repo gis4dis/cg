@@ -80,11 +80,14 @@ export default class Symbolizer {
      * @returns {string} hash
      */
     static createHash(nameId, value, anomalyRate) {
-        //console.log('hash metod');
-        //console.log(id);
-        //console.log(nameId);
-        //console.log(index);
         return nameId + 'value' + value + 'anomaly' + anomalyRate;
+    }
+
+    static getAnomalyColor(value) {
+        if (value < 2.5) {
+            return 'rgb(0, 153, 51)';
+        }
+        return 'rgb(255, 0, 0)';
     }
 
     /**
@@ -97,28 +100,21 @@ export default class Symbolizer {
         let propertyAnomalyValue = 0;
         let anomalyColor = '';
 
+        //TODO get anomaly and property value for all properties
         if (this.cached === true) {
             propertyValue = this.feature.properties[this.primary_property]['values'][this.valueIdx];
 
             propertyAnomalyValue = this.feature.properties[this.primary_property]['anomaly_rates'][this.valueIdx];
         } else {
-            console.log('Features');
-            console.log(this.feature);
             propertyValue = this.feature.values_[this.primary_property]['values'][this.valueIdx];
 
-            //console.log('anomaly rates');
-            //console.log(this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx]);
             propertyAnomalyValue = this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx];
         }
 
         //console.log('MINMAXVALUES');
         //console.log(this.minMaxValues);
 
-        if (propertyAnomalyValue < 2.5) {
-            anomalyColor = 'rgb(0, 153, 51)';
-        } else {
-            anomalyColor = 'rgb(255, 0, 0)';
-        }
+        anomalyColor = Symbolizer.getAnomalyColor(propertyAnomalyValue);
 
 
         return '<svg width="120" height="120" version="1.1" xmlns="http://www.w3.org/2000/svg">'
@@ -144,15 +140,16 @@ export default class Symbolizer {
                 image: new Icon({
                     opacity: 1,
                     src: 'data:image/svg+xml;utf8,' + this.createSVG(),
-                    scale: 0.3
+                    scale: 0.2
                 })
             });
         } else if (topic === 'ground_air_temperature') {
+            //let anomalyColor = Symbolizer.getAnomalyColor(this.feature.properties[this.primary_property]['anomaly_rates'][this.valueIdx]);
             return new Style({
                 image: new Icon({
                     opacity: 1,
                     src: 'data:image/svg+xml;utf8,' +
-                    '<svg width="24" height="24" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 22h-24l12-20z"/></svg>',
+                    '<svg width="24" height="24" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 22h-24l12-20z" style="fill:'+ anomalyColor +';stroke-width: 1"/></svg>',
                     scale: 0.5
                 })
             });

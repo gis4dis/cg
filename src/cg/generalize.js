@@ -85,9 +85,9 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             let id = feature.id;
 
             properties.forEach(function(property) {
-                console.log(property);
-                console.log(feature);
-                console.log(feature.properties);
+                //console.log(property);
+                //console.log(feature);
+                //console.log(feature.properties);
                 let nameId = property.name_id;
 
                 if (feature.properties.hasOwnProperty(nameId)) {
@@ -115,26 +115,33 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             featureProjection: 'EPSG:3857',
         }),
         style: function (feature, resolution) {
+            console.log('All Features');
+            console.log(features);
             console.log('OL FEATURE');
             console.log(feature);
 
             let hash = '';
-            properties.forEach(function(property) {
-                if (feature.values_.hasOwnProperty(property.name_id)) {
-                    hash = Symbolizer.createHash(property.name_id, feature.values_[property.name_id].values[value_idx], feature.values_[property.name_id].anomaly_rates[value_idx]);
-                }
-            });
+            if (feature.values_.hasOwnProperty(primary_property)) {
+                hash = Symbolizer.createHash(primary_property, feature.values_[primary_property].values[value_idx], feature.values_[primary_property].anomaly_rates[value_idx]);
+            } else {
+                properties.forEach(function(property) {
+                    if (feature.values_.hasOwnProperty(property.name_id) && property.name_id !== primary_property) {
+                        hash = Symbolizer.createHash(property.name_id, feature.values_[property.name_id].values[value_idx], feature.values_[property.name_id].anomaly_rates[value_idx]);
+                    }
+                });
+            }
+
 
             //let hash = Symbolizer.createHash('air_temperature', feature.values_.air_temperature.values[value_idx], feature.values_.air_temperature.anomaly_rates[value_idx]);
             //console.log('hash nakonci');
             //console.log(hash);
             //console.log(cachedFeatureStyles);
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
-                //console.log('cachovany styl');
+                console.log('cachovany styl');
                 return cachedFeatureStyles[hash]
             } else {
                 let symbolizer = new Symbolizer(primary_property, properties, feature, value_idx, resolution, minMaxValues, false);
-                return symbolizer.styleBasedOnProperty();
+                return symbolizer.styleBasedOnProperty(primary_property);
             }
         }
     };

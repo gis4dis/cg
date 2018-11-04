@@ -127,13 +127,13 @@
       }
     },
     {
-      "id": "apps.processing.ala.models.SamplingFeature:113592344",
+      "id": "apps.processing.ala.models.SamplingFeature:11359234",
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          1847520.94,
-          6309563.27
+          1846490.94,
+          6306361.17
         ]
       },
       "properties": {
