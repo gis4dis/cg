@@ -17,14 +17,13 @@ export default class Symbolizer {
      * @param {Object.<array>} minMaxValues - minimum and maximum values (min and max property values, min and max anomaly rates)
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(primary_property, feature, valueIdx, resolution, minMaxValues, cached) {
+    constructor(primary_property, properties, feature, valueIdx, resolution, minMaxValues) {
         this.primary_property = primary_property;
+        this.properties = properties;
         this.feature = feature;
         this.valueIdx = valueIdx;
         this.resolution = resolution;
-
         this.minMaxValues = minMaxValues;
-        this.cached = cached;
     }
 
     /**
@@ -37,6 +36,7 @@ export default class Symbolizer {
     static getMaxValue(geojson, name_id, type) {
         let maxValue = null;
         geojson.features.forEach(function (feature) {
+            console.log(feature);
             if (maxValue === null || maxValue < Math.max(...feature.properties[name_id][type])) {
                 maxValue = Math.max(...feature.properties[name_id][type]);
             }
@@ -79,10 +79,10 @@ export default class Symbolizer {
      * @returns {string} hash
      */
     static createHash(id, nameId, index, value, anomalyRate) {
-        console.log('hash metod');
-        console.log(id);
-        console.log(nameId);
-        console.log(index);
+        //console.log('hash metod');
+        //console.log(id);
+        //console.log(nameId);
+        //console.log(index);
         return 'value' + value + 'anomaly' + anomalyRate;
     }
 
@@ -103,13 +103,13 @@ export default class Symbolizer {
         } else {
             propertyValue = this.feature.values_[this.primary_property]['values'][this.valueIdx];
 
-            console.log('anomaly rates');
-            console.log(this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx]);
+            //console.log('anomaly rates');
+            //console.log(this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx]);
             propertyAnomalyValue = this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx];
         }
 
-        console.log('MINMAXVALUES');
-        console.log(this.minMaxValues);
+        //console.log('MINMAXVALUES');
+        //console.log(this.minMaxValues);
 
         if (propertyAnomalyValue < 2.5) {
             anomalyColor = 'rgb(0, 153, 51)';
@@ -133,16 +133,27 @@ export default class Symbolizer {
      * Creating _ol_style_Style_ object
      * @returns {_ol_style_Style_} built style for styleFunction
      */
-    buildStyle() {
-        console.log('SVG');
-        console.log(this.createSVG());
-        return new Style({
-            image: new Icon({
-                opacity: .7,
-                src: 'data:image/svg+xml;utf8,' + this.createSVG(),
-                scale: 0.3
-            })
-        });
+    buildStyle(topic) {
+        //console.log('SVG');
+        //console.log(this.createSVG());
+        if (topic === 'air_temperature') {
+            return new Style({
+                image: new Icon({
+                    opacity: 1,
+                    src: 'data:image/svg+xml;utf8,' + this.createSVG(),
+                    scale: 0.3
+                })
+            });
+        } else if (topic === 'ground_air_temperature') {
+            return new Style({
+                image: new Icon({
+                    opacity: 1,
+                    src: 'data:image/svg+xml;utf8,' +
+                    '<svg width="24" height="24" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 22h-24l12-20z"/></svg>',
+                    scale: 0.5
+                })
+            });
+        }
     }
 
     /**
@@ -159,21 +170,22 @@ export default class Symbolizer {
      * @returns {_ol_style_Style_} built style for vector layer
      */
     //TODO change with different styles for different properties
-    styleBasedOnProperty() {
-        switch (this.primary_property) {
-            case 'air_temperature':
-                return this.buildStyle();
-            case 'ground_air_temperature':
-                return this.buildStyle();
-            case 'soil_temperature':
-                return this.buildStyle();
-            case 'precipitation':
-                return this.buildStyle();
-            case 'air_humidity':
-                return this.buildStyle();
-            default:
-                return this.buildDefaultStyle();
-        }
+    styleBasedOnProperty(property) {
+
+            switch (property) {
+                case 'air_temperature':
+                    return this.buildStyle(property);
+                case 'ground_air_temperature':
+                    return this.buildStyle(property);
+                case 'soil_temperature':
+                    return this.buildStyle();
+                case 'precipitation':
+                    return this.buildStyle();
+                case 'air_humidity':
+                    return this.buildStyle();
+                default:
+                    return this.buildDefaultStyle();
+            }
     }
 
 }

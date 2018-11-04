@@ -54,10 +54,11 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     // Max and min values for normalization
     //TODO fix - should be maxMinValues
     let minMaxValues = {};
-
+    /*
     properties.forEach(function (property) {
         if (!minMaxValues.hasOwnProperty(property.name_id)) {
 
+            console.log(property.name_id);
             let maxPropertyValue = Symbolizer.getMaxValue(features, property.name_id, 'values');
             let minPropertyValue = Symbolizer.getMinValue(features, property.name_id, 'values');
 
@@ -67,9 +68,9 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             minMaxValues[property.name_id] = [maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue];
         }
     });
-
-    console.log('Min and Max Values');
-    console.log(minMaxValues);
+    */
+    //console.log('Min and Max Values');
+    //console.log(minMaxValues);
 
     //let maxPropertyValue = Symbolizer.getMaxValue(features, 'air_temperature', 'values');
     //let minPropertyValue = Symbolizer.getMinValue(features, 'air_temperature', 'values');
@@ -79,31 +80,28 @@ export default ({topic, primary_property, properties, features, value_idx, resol
 
     // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
-        features.features.forEach(function (feature) {
+        features.features.forEach(function(feature) {
 
             let id = feature.id;
-            console.log('ID cachovani featuru');
-            console.log(feature.id);
 
-            properties.forEach(function (property) {
-                console.log('property');
+            properties.forEach(function(property) {
                 console.log(property);
+                console.log(feature);
+                console.log(feature.properties);
                 let nameId = property.name_id;
 
-                let propertyValues = feature.properties[property.name_id];
-                console.log('property_values');
-                console.log(feature.properties[property.name_id]);
+                if (feature.properties.hasOwnProperty(nameId)) {
+                    let propertyValues = feature.properties[nameId];
 
-                for (let i = 0; i < propertyValues.values.length; i++) {
-                    let symbolizer = new Symbolizer(primary_property, feature, i, resolution, minMaxValues, true);
-                    console.log('Feature na styl');
-                    console.log(feature);
-                    const featureStyle = symbolizer.styleBasedOnProperty();
-                    let hash = Symbolizer.createHash(id, nameId, i, propertyValues.values[i], propertyValues.anomaly_rates[i]);
-                    featureStyle.getImage().load();
-                    cachedFeatureStyles[hash] = featureStyle;
-                    console.log('FeatureStyles');
-                    console.log(cachedFeatureStyles);
+                    for (let i = 0; i < propertyValues.values.length; i++) {
+                        let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues);
+                        //console.log('Feature na styl');
+                        //console.log(feature);
+                        const featureStyle = symbolizer.styleBasedOnProperty(nameId);
+                        let hash = Symbolizer.createHash(id, nameId, i, propertyValues.values[i], propertyValues.anomaly_rates[i]);
+                        featureStyle.getImage().load();
+                        cachedFeatureStyles[hash] = featureStyle;
+                    }
                 }
             });
         });
@@ -117,17 +115,17 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             featureProjection: 'EPSG:3857',
         }),
         style: function (feature, resolution) {
-            console.log('OL FEATURE');
-            console.log(feature);
+            //console.log('OL FEATURE');
+            //console.log(feature);
             //TODO fix air_temperature, make it for more properties
             let hash = Symbolizer.createHash(feature.id_, 'air_temperature', value_idx, feature.values_.air_temperature.values[value_idx], feature.values_.air_temperature.anomaly_rates[value_idx]);
-            console.log('hash nakonci');
-            console.log(hash);
+            //console.log('hash nakonci');
+            //console.log(hash);
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
-                console.log('cachovany styl');
+                //console.log('cachovany styl');
                 return cachedFeatureStyles[hash]
             } else {
-                let symbolizer = new Symbolizer(primary_property, feature, value_idx, resolution, minMaxValues, false);
+                let symbolizer = new Symbolizer(primary_property, properties, feature, value_idx, resolution, minMaxValues);
                 return symbolizer.styleBasedOnProperty();
             }
         }
