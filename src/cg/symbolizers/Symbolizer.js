@@ -79,8 +79,8 @@ export default class Symbolizer {
      * Creating hash based on values of SVG parameters
      * @returns {string} hash
      */
-    static createHash(nameId, value, anomalyRate) {
-        return nameId + 'value' + value + 'anomaly' + anomalyRate;
+    static createHash(featureId, indexId) {
+        return 'featureid' + featureId + 'index' + indexId;
     }
 
     static getAnomalyColor(value) {
@@ -94,7 +94,7 @@ export default class Symbolizer {
      * Building SVG icon based on property_value and property_anomaly_rates
      * @returns {string} SVG icon
      */
-    createSVG() {
+    createSVG(property, x, y) {
         //TODO fix minMaxValues[primary_property] for all properties
         let propertyValue = 0;
         let propertyAnomalyValue = 0;
@@ -102,13 +102,13 @@ export default class Symbolizer {
 
         //TODO get anomaly and property value for all properties
         if (this.cached === true) {
-            propertyValue = this.feature.properties[this.primary_property]['values'][this.valueIdx];
+            propertyValue = this.feature.properties[property]['values'][this.valueIdx];
 
-            propertyAnomalyValue = this.feature.properties[this.primary_property]['anomaly_rates'][this.valueIdx];
+            propertyAnomalyValue = this.feature.properties[property]['anomaly_rates'][this.valueIdx];
         } else {
-            propertyValue = this.feature.values_[this.primary_property]['values'][this.valueIdx];
+            propertyValue = this.feature.values_[property]['values'][this.valueIdx];
 
-            propertyAnomalyValue = this.feature.values_[this.primary_property]['anomaly_rates'][this.valueIdx];
+            propertyAnomalyValue = this.feature.values_[property]['anomaly_rates'][this.valueIdx];
         }
 
         //console.log('MINMAXVALUES');
@@ -117,8 +117,8 @@ export default class Symbolizer {
         anomalyColor = Symbolizer.getAnomalyColor(propertyAnomalyValue);
 
 
-        return '<svg width="120" height="120" version="1.1" xmlns="http://www.w3.org/2000/svg">'
-            + '<circle cx="60" cy="60" stroke="black" style="fill:'+ anomalyColor +';stroke-width: 1" r="' + (propertyValue +  Math.log(this.resolution) * 2) + '"/>'
+        return '<svg width="180" height="180" version="1.1" xmlns="http://www.w3.org/2000/svg">'
+            + '<circle cx="'+ x +'" cy="'+ y +'" stroke="black" style="fill:'+ anomalyColor +';stroke-width: 1" r="' + (propertyValue +  Math.log(this.resolution) * 2) + '"/>'
             + '</svg>';
 
 
@@ -129,63 +129,58 @@ export default class Symbolizer {
     }
 
     /**
-     * Creating _ol_style_Style_ object
-     * @returns {_ol_style_Style_} built style for styleFunction
-     */
-    buildStyle(topic) {
-        //console.log('SVG');
-        //console.log(this.createSVG());
-        if (topic === 'air_temperature') {
-            return new Style({
-                image: new Icon({
-                    opacity: 1,
-                    src: 'data:image/svg+xml;utf8,' + this.createSVG(),
-                    scale: 0.2
-                })
-            });
-        } else if (topic === 'ground_air_temperature') {
-            //let anomalyColor = Symbolizer.getAnomalyColor(this.feature.properties[this.primary_property]['anomaly_rates'][this.valueIdx]);
-            return new Style({
-                image: new Icon({
-                    opacity: 1,
-                    src: 'data:image/svg+xml;utf8,' +
-                    '<svg width="24" height="24" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 22h-24l12-20z" style="fill:'+ anomalyColor +';stroke-width: 1"/></svg>',
-                    scale: 0.5
-                })
-            });
-        }
-    }
-
-    /**
-     * Creating default _ol_style_Style_ object. Prepared to the future
-     * @returns {_ol_style_Style_} default style
-     */
-    buildDefaultStyle() {
-        return this.buildStyle();
-    }
-
-    /**
      * Creating style based on property value.
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      * @returns {_ol_style_Style_} built style for vector layer
      */
     //TODO change with different styles for different properties
-    styleBasedOnProperty(property) {
+    buildSVGSymbol(property) {
 
-            switch (property) {
-                case 'air_temperature':
-                    return this.buildStyle(property);
-                case 'ground_air_temperature':
-                    return this.buildStyle(property);
-                case 'soil_temperature':
-                    return this.buildStyle();
-                case 'precipitation':
-                    return this.buildStyle();
-                case 'air_humidity':
-                    return this.buildStyle();
-                default:
-                    return this.buildDefaultStyle();
+        switch (property) {
+            case 'air_temperature':
+                return this.createSVG(property, 90, 30);
+            case 'ground_air_temperature':
+                return this.createSVG(property, 150, 60);
+            case 'soil_temperature':
+                return this.createSVG(property, 140, 135);
+            case 'precipitation':
+                return this.createSVG(property, 50, 135);
+            case 'air_humidity':
+                return this.createSVG(property, 30, 60);
+        }
+    }
+
+    createSymbol() {
+        let symbols = [];
+        console.log(this.properties);
+        console.log('this feature');
+        console.log(this.feature);
+
+        for (let i in this.properties) {
+            if (this.cached === true) {
+                if (this.feature.properties.hasOwnProperty(this.properties[i].name_id)) {
+                    symbols.push(this.buildSVGSymbol(this.properties[i].name_id));
+                }
+            } else {
+                if (this.feature.values_.hasOwnProperty(this.properties[i].name_id)) {
+                    symbols.push(this.buildSVGSymbol(this.properties[i].name_id));
+                }
             }
+        }
+
+        let svg = '<svg width="180" height="180" version="1.1" xmlns="http://www.w3.org/2000/svg">';
+        for (let j in symbols) {
+            svg += symbols[j];
+        }
+        svg += '</svg>';
+
+        return new Style({
+            image: new Icon({
+                opacity: 1,
+                src: 'data:image/svg+xml;utf8,' + svg,
+                scale: 0.2
+            })
+        });
     }
 
 }

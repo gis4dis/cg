@@ -80,34 +80,31 @@ export default ({topic, primary_property, properties, features, value_idx, resol
 
     // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
+        let length = 0;
         features.features.forEach(function(feature) {
 
-            let id = feature.id;
-
+            //console.log(property);
+            //console.log(feature);
+            //console.log(feature.properties);
             properties.forEach(function(property) {
-                //console.log(property);
-                //console.log(feature);
-                //console.log(feature.properties);
-                let nameId = property.name_id;
-
-                if (feature.properties.hasOwnProperty(nameId)) {
-                    let propertyValues = feature.properties[nameId];
-
-                    for (let i = 0; i < propertyValues.values.length; i++) {
-                        let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues, true);
-                        //console.log('Feature na styl');
-                        //console.log(feature);
-                        const featureStyle = symbolizer.styleBasedOnProperty(nameId);
-                        let hash = Symbolizer.createHash(nameId, propertyValues.values[i], propertyValues.anomaly_rates[i]);
-                        featureStyle.getImage().load();
-                        cachedFeatureStyles[hash] = featureStyle;
-                    }
+                if (feature.properties.hasOwnProperty(property.name_id)) {
+                    length = feature.properties[property.name_id].values.length;
                 }
             });
+
+            for (let i = 0; i < length; i++) {
+                let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues, true);
+                let featureStyle = symbolizer.createSymbol();
+                //console.log('Feature na styl');
+                //console.log(feature);
+                let hash = Symbolizer.createHash(feature.id, i);
+                featureStyle.getImage().load();
+                cachedFeatureStyles[hash] = featureStyle;
+                console.log('cachedstyles');
+                console.log(cachedFeatureStyles);
+            }
         });
     }
-
-    //TODO zkontrolovat jestli se neseká Chrome kdyz vytvarim symbologii dopredu casove rady
 
     return {
         features: new GeoJSON().readFeatures(features, {
@@ -120,17 +117,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             console.log('OL FEATURE');
             console.log(feature);
 
-            let hash = '';
-            if (feature.values_.hasOwnProperty(primary_property)) {
-                hash = Symbolizer.createHash(primary_property, feature.values_[primary_property].values[value_idx], feature.values_[primary_property].anomaly_rates[value_idx]);
-            } else {
-                properties.forEach(function(property) {
-                    if (feature.values_.hasOwnProperty(property.name_id) && property.name_id !== primary_property) {
-                        hash = Symbolizer.createHash(property.name_id, feature.values_[property.name_id].values[value_idx], feature.values_[property.name_id].anomaly_rates[value_idx]);
-                    }
-                });
-            }
-
+            let hash = Symbolizer.createHash(feature.id_, value_idx);
 
             //let hash = Symbolizer.createHash('air_temperature', feature.values_.air_temperature.values[value_idx], feature.values_.air_temperature.anomaly_rates[value_idx]);
             //console.log('hash nakonci');
@@ -138,10 +125,11 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             //console.log(cachedFeatureStyles);
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
                 console.log('cachovany styl');
+                console.log(cachedFeatureStyles[hash]);
                 return cachedFeatureStyles[hash]
             } else {
                 let symbolizer = new Symbolizer(primary_property, properties, feature, value_idx, resolution, minMaxValues, false);
-                return symbolizer.styleBasedOnProperty(primary_property);
+                return symbolizer.createSymbol();
             }
         }
     };
