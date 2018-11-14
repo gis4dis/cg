@@ -152,9 +152,9 @@ export default class Symbolizer {
 
     createSymbol() {
         let symbols = [];
-        console.log(this.properties);
-        console.log('this feature');
-        console.log(this.feature);
+        //console.log(this.properties);
+        //console.log('this feature');
+        //console.log(this.feature);
 
         for (let i in this.properties) {
             if (this.cached === true) {
