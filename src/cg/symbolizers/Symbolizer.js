@@ -10,11 +10,13 @@ export default class Symbolizer {
      * @constructor
      * @param {Object.<string, string>} primary_property - values selected by user
      *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
+     * @param {Object} properties - object of properties
      * @param {Object.GeoJSON} feature - represented as one feature from an Array of GeoJSON Features, each of them includes attributes
      *  (https://github.com/gis4dis/cg/blob/master/data/example.json)
      * @param {number} valueIdx - an index of value that should be used for generalization
      * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
      * @param {Object.<array>} minMaxValues - minimum and maximum values (min and max property values, min and max anomaly rates)
+     * @param {boolean} cached - is it from cache or not?
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
     constructor(primary_property, properties, feature, valueIdx, resolution, minMaxValues, cached) {
@@ -36,6 +38,7 @@ export default class Symbolizer {
      */
     static getMaxValue(geojson, name_id, type) {
         let maxValue = null;
+
         geojson.features.forEach(function (feature) {
             console.log(feature);
             if (maxValue === null || maxValue < Math.max(...feature.properties[name_id][type])) {
@@ -92,15 +95,16 @@ export default class Symbolizer {
 
     /**
      * Building SVG icon based on property_value and property_anomaly_rates
-     * @returns {string} SVG icon
+     * @param {String} property - name of the property (air_temperature...)
+     * @param {number} x - x coordinate of position of symbol
+     * @param {number} y - y coordinate of position of symbol
+     * @returns {String} SVG icon
      */
     createSVG(property, x, y) {
-        //TODO fix minMaxValues[primary_property] for all properties
         let propertyValue = 0;
         let propertyAnomalyValue = 0;
         let anomalyColor = '';
 
-        //TODO get anomaly and property value for all properties
         if (this.cached === true) {
             propertyValue = this.feature.properties[property]['values'][this.valueIdx];
 
@@ -111,11 +115,7 @@ export default class Symbolizer {
             propertyAnomalyValue = this.feature.values_[property]['anomaly_rates'][this.valueIdx];
         }
 
-        //console.log('MINMAXVALUES');
-        //console.log(this.minMaxValues);
-
         anomalyColor = Symbolizer.getAnomalyColor(propertyAnomalyValue);
-
 
         return '<svg width="180" height="180" version="1.1" xmlns="http://www.w3.org/2000/svg">'
             + '<circle cx="'+ x +'" cy="'+ y +'" stroke="black" style="fill:'+ anomalyColor +';stroke-width: 1" r="' + (propertyValue +  Math.log(this.resolution) * 2) + '"/>'
@@ -152,9 +152,6 @@ export default class Symbolizer {
 
     createSymbol() {
         let symbols = [];
-        //console.log(this.properties);
-        //console.log('this feature');
-        //console.log(this.feature);
 
         for (let i in this.properties) {
             if (this.cached === true) {

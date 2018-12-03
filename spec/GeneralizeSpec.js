@@ -1,14 +1,30 @@
 import Symbolizer from '../src/cg/symbolizers/Symbolizer';
 import GeoJSON from "ol/format/geojson";
 
-const geojson = require('../data/example_old.json');
+const geojson = require('../data/example.json');
 import generalize from './../src/cg/generalize';
 
 describe('Generalize function tests', function () {
 
     it('generalize() spec', function () {
         expect(function () {generalize({
-            property: null,
+            topic: {
+                "name": "drought",
+                "name_id": "drought"
+            },
+            properties: [
+                {
+                    "name_id":"air_temperature",
+                    "name":"air temperature",
+                    "unit":"°C"
+                },
+                {
+                    "name_id":"ground_air_temperature",
+                    "name":"ground air temperature",
+                    "unit":"°C"
+                }
+            ],
+            primary_property: null,
             features: geojson,
             value_idx: 1,
             resolution: 76.43702828517625
