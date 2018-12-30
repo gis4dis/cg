@@ -171,13 +171,21 @@ export default class Symbolizer {
         }
         svg += '</svg>';
 
-        return new Style({
+        /*return new Style({
             image: new Icon({
                 opacity: 1,
                 src: 'data:image/svg+xml;utf8,' + svg,
                 scale: 0.2
             })
+        });*/
+        return new Style({
+            image: new Icon({
+                opacity: 1,
+                src: 'https://svgur.com/i/AFJ.svg',
+                scale: .1
+            })
         });
+
     }
 
 }
