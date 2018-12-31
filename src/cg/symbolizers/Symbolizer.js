@@ -16,17 +16,15 @@ export default class Symbolizer {
      * @param {number} valueIdx - an index of value that should be used for generalization
      * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
      * @param {Object.<array>} minMaxValues - minimum and maximum values (min and max property values, min and max anomaly rates)
-     * @param {boolean} cached - is it from cache or not?
      *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(primary_property, properties, feature, valueIdx, resolution, minMaxValues, cached) {
+    constructor(primary_property, properties, feature, valueIdx, resolution, minMaxValues) {
         this.primary_property = primary_property;
         this.properties = properties;
         this.feature = feature;
         this.valueIdx = valueIdx;
         this.resolution = resolution;
         this.minMaxValues = minMaxValues;
-        this.cached = cached;
     }
 
     /**
@@ -198,8 +196,9 @@ export default class Symbolizer {
             }),
             new Style({
                 image: new Icon({
+                    anchor: [1,1],
                     opacity: 1,
-                    src: 'https://svgur.com/i/AFJ.svg',
+                    src: 'https://svgur.com/i/AGD.svg',
                     scale: .2
                 })
             })

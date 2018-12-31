@@ -84,10 +84,10 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             });
 
             for (let i = 0; i < length; i++) {
-                let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues, true);
+                let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues);
                 let featureStyle = symbolizer.createSymbol();
                 console.log(featureStyle);
-                let hash = Symbolizer.createHash(feature.id, i);
+                let hash = Symbolizer.createHash(feature.id_, i);
                 if (featureStyle instanceof Array) {
                     for (let j in featureStyle) {
                         featureStyle[j].getImage().load();
@@ -95,7 +95,6 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                 } else {
                     featureStyle.getImage().load();
                 }
-                //featureStyle.getImage().load();
                 cachedFeatureStyles[hash] = featureStyle;
             }
         });
@@ -107,29 +106,13 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             featureProjection: 'EPSG:3857',
         }),
         style: function (feature, resolution) {
-            return [
-                new Style({
-                    image: new Icon({
-                        opacity: 1,
-                        src: 'https://svgur.com/i/AFJ.svg',
-                        scale: .1
-                    })
-                }),
-                new Style({
-                    image: new Icon({
-                        opacity: 1,
-                        anchor: [1,1],
-                        src: 'https://svgur.com/i/AFJ.svg',
-                        scale: .1
-                    })
-                })
-            ];
             let hash = Symbolizer.createHash(feature.id_, value_idx);
 
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
+                console.log('Vracim cachovany styl');
                 return cachedFeatureStyles[hash]
             } else {
-                let symbolizer = new Symbolizer(primary_property, properties, feature, value_idx, resolution, minMaxValues, false);
+                let symbolizer = new Symbolizer(primary_property, properties, feature, value_idx, resolution, minMaxValues);
                 return symbolizer.createSymbol();
             }
         }
