@@ -3,6 +3,8 @@ import Symbolizer from './symbolizers/Symbolizer';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
 import CachedSymbolizer from './symbolizers/CachedSymbolizer';
 import axios from 'axios';
+import Style from "ol/style/style";
+import Icon from "ol/style/icon";
 
 /**
  * Main generalization function
@@ -60,22 +62,40 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     //TODO fix - should be maxMinValues
     let minMaxValues = {};
 
+    let parsedFeatures = new GeoJSON().readFeatures(features, {
+        dataProjection: 'EPSG:3857',
+        featureProjection: 'EPSG:3857',
+    });
+
+    for (let i in parsedFeatures) {
+        parsedFeatures[i].setProperties({'geometry4326': 'Geometry test', 'mojevalue': 1234});
+    }
+    console.log(parsedFeatures);
+
     // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
         let length = 0;
-        features.features.forEach(function(feature) {
+        parsedFeatures.forEach(function(feature) {
 
             properties.forEach(function(property) {
-                if (feature.properties.hasOwnProperty(property.name_id)) {
-                    length = feature.properties[property.name_id].values.length;
+                if (feature.values_.hasOwnProperty(property.name_id)) {
+                    length = feature.values_[property.name_id].values.length;
                 }
             });
 
             for (let i = 0; i < length; i++) {
                 let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues, true);
                 let featureStyle = symbolizer.createSymbol();
+                console.log(featureStyle);
                 let hash = Symbolizer.createHash(feature.id, i);
-                featureStyle.getImage().load();
+                if (featureStyle instanceof Array) {
+                    for (let j in featureStyle) {
+                        featureStyle[j].getImage().load();
+                    }
+                } else {
+                    featureStyle.getImage().load();
+                }
+                //featureStyle.getImage().load();
                 cachedFeatureStyles[hash] = featureStyle;
             }
         });
@@ -87,6 +107,23 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             featureProjection: 'EPSG:3857',
         }),
         style: function (feature, resolution) {
+            return [
+                new Style({
+                    image: new Icon({
+                        opacity: 1,
+                        src: 'https://svgur.com/i/AFJ.svg',
+                        scale: .1
+                    })
+                }),
+                new Style({
+                    image: new Icon({
+                        opacity: 1,
+                        anchor: [1,1],
+                        src: 'https://svgur.com/i/AFJ.svg',
+                        scale: .1
+                    })
+                })
+            ];
             let hash = Symbolizer.createHash(feature.id_, value_idx);
 
             if (cachedFeatureStyles.hasOwnProperty(hash)) {

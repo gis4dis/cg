@@ -105,11 +105,11 @@ export default class Symbolizer {
         let propertyAnomalyValue = 0;
         let anomalyColor = '';
 
-        if (this.cached === true) {
+        if (this.cached === true) {/*
             propertyValue = this.feature.properties[property]['values'][this.valueIdx];
 
             propertyAnomalyValue = this.feature.properties[property]['anomaly_rates'][this.valueIdx];
-        } else {
+        } else {*/
             propertyValue = this.feature.values_[property]['values'][this.valueIdx];
 
             propertyAnomalyValue = this.feature.values_[property]['anomaly_rates'][this.valueIdx];
@@ -154,7 +154,10 @@ export default class Symbolizer {
         let symbols = [];
 
         for (let i in this.properties) {
-            if (this.cached === true) {
+            if (this.feature.values_.hasOwnProperty(this.properties[i].name_id)) {
+                symbols.push(this.buildSVGSymbol(this.properties[i].name_id));
+            }
+            /*if (this.cached === true) {
                 if (this.feature.properties.hasOwnProperty(this.properties[i].name_id)) {
                     symbols.push(this.buildSVGSymbol(this.properties[i].name_id));
                 }
@@ -162,7 +165,7 @@ export default class Symbolizer {
                 if (this.feature.values_.hasOwnProperty(this.properties[i].name_id)) {
                     symbols.push(this.buildSVGSymbol(this.properties[i].name_id));
                 }
-            }
+            }*/
         }
 
         let svg = '<svg width="180" height="180" version="1.1" xmlns="http://www.w3.org/2000/svg">';
@@ -178,14 +181,28 @@ export default class Symbolizer {
                 scale: 0.2
             })
         });*/
-        return new Style({
+        /*return new Style({
             image: new Icon({
                 opacity: 1,
                 src: 'https://svgur.com/i/AFJ.svg',
                 scale: .1
             })
-        });
-
+        });*/
+        return [
+            new Style({
+                image: new Icon({
+                    opacity: 1,
+                    src: 'https://svgur.com/i/AFJ.svg',
+                    scale: .1
+                })
+            }),
+            new Style({
+                image: new Icon({
+                    opacity: 1,
+                    src: 'https://svgur.com/i/AFJ.svg',
+                    scale: .2
+                })
+            })
+        ];
     }
-
 }
