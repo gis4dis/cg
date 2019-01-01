@@ -187,6 +187,60 @@ export default class Symbolizer {
             })
         });*/
         return [
+            //drop centered
+            new Style({
+                image: new Icon({
+                    anchor: [1,1],
+                    opacity: 1,
+                    src: 'https://svgur.com/i/AFJ.svg',
+                    scale: .1
+                })
+            }),
+            //drop
+            new Style({
+                image: new Icon({
+                    anchor: [0.5,0.5],
+                    opacity: 0.3,
+                    src: 'https://svgur.com/i/AFJ.svg',
+                    scale: .1
+                })
+            }),
+            //drop
+            new Style({
+                image: new Icon({
+                    anchor: [0,0],
+                    opacity: 0.6,
+                    src: 'https://svgur.com/i/AFJ.svg',
+                    scale: .1
+                })
+            }),
+            //drop
+            new Style({
+                image: new Icon({
+                    anchor: [1,0],
+                    opacity: 0.8,
+                    src: 'https://svgur.com/i/AFJ.svg',
+                    scale: .1
+                })
+            }),
+            //thermometer
+            new Style({
+                image: new Icon({
+                    anchor: [0,1],
+                    opacity: 1,
+                    src: 'https://svgur.com/i/AGU.svg',
+                    scale: .2
+                })
+            })/*,
+            //thermometer
+            new Style({
+                image: new Icon({
+                    opacity: 1,
+                    src: 'https://svgur.com/i/AGD.svg',
+                    scale: .2
+                })
+            }),
+            //drop
             new Style({
                 image: new Icon({
                     opacity: 1,
@@ -194,14 +248,14 @@ export default class Symbolizer {
                     scale: .1
                 })
             }),
+            //drop
             new Style({
                 image: new Icon({
-                    anchor: [1,1],
                     opacity: 1,
-                    src: 'https://svgur.com/i/AGD.svg',
-                    scale: .2
+                    src: 'https://svgur.com/i/AFJ.svg',
+                    scale: .1
                 })
-            })
+            }),*/
         ];
     }
 }
