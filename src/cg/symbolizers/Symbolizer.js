@@ -143,8 +143,6 @@ export default class Symbolizer {
                 switch (property) {
                     case 'precipitation':
                         styles.push(this.buildStyle(property, PRECIPITATION));
-                        console.log('STYL:');
-                        console.log(this.buildStyle(property, PRECIPITATION));
                         break;
                     case 'air_temperature':
                         styles.push(this.buildStyle(property, AIR_TEMPERATURE));

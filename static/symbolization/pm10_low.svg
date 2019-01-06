@@ -21,7 +21,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -41,26 +41,33 @@
      id="namedview74"
      showgrid="false"
      inkscape:zoom="2.9555556"
-     inkscape:cx="36.8797"
+     inkscape:cx="-16.2406"
      inkscape:cy="90"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg72" />
-  <flowRoot
-     xml:space="preserve"
-     id="flowRoot849"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:1;font-family:FreeSans;-inkscape-font-specification:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#37c837;fill-opacity:1;stroke:none;"
-     transform="matrix(1.1931198,0,0,1.1931198,-9.5646418,5.3872)"><flowRegion
-       id="flowRegion851"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:1;font-family:FreeSans;-inkscape-font-specification:FreeSans;fill:#37c837;fill-opacity:1;"><rect
-         id="rect853"
-         width="100.48872"
-         height="100.48872"
-         x="-0.33834586"
-         y="-0.4887203"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:1;font-family:FreeSans;-inkscape-font-specification:FreeSans;fill:#37c837;fill-opacity:1;" /></flowRegion><flowPara
-       id="flowPara855"
-       style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;line-height:29px;font-family:FreeSans;-inkscape-font-specification:'FreeSans Semi-Bold';text-align:center;text-anchor:middle;fill:#37c837;fill-opacity:1;">PM</flowPara><flowPara
-       id="flowPara857"
-       style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;line-height:29px;font-family:FreeSans;-inkscape-font-specification:'FreeSans Semi-Bold';text-align:center;text-anchor:middle;fill:#37c837;fill-opacity:1;">10</flowPara></flowRoot></svg>
+  <g
+     aria-label="PM
+10"
+     transform="matrix(1.1931198,0,0,1.1931198,-9.5646418,5.3872)"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:1;font-family:FreeSans;-inkscape-font-specification:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#37c837;fill-opacity:1;stroke:none"
+     id="flowRoot849">
+    <path
+       d="m 28.16875,21.111719 v 10.4 h -6 V 2.3517187 h 12.88 q 4.56,0 6.96,2.32 2.44,2.3200001 2.44,6.7200003 0,4.44 -2.4,7.08 -2.4,2.64 -6.4,2.64 z m 0,-5 h 5.6 q 4.68,0 4.68,-4.36 0,-2.2400002 -1.16,-3.3200002 -1.12,-1.0800001 -3.52,-1.0800001 h -5.6 z"
+       style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;line-height:29px;font-family:FreeSans;-inkscape-font-specification:'FreeSans Semi-Bold';text-align:center;text-anchor:middle;fill:#37c837;fill-opacity:1"
+       id="path819" />
+    <path
+       d="M 55.278125,8.7917187 V 31.511719 h -6 V 2.3517187 h 8.96 l 5.28,23.2000003 5.12,-23.2000003 h 9.04 V 31.511719 h -6 V 8.7917187 l -5.16,22.7200003 h -6 z"
+       style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;line-height:29px;font-family:FreeSans;-inkscape-font-specification:'FreeSans Semi-Bold';text-align:center;text-anchor:middle;fill:#37c837;fill-opacity:1"
+       id="path821" />
+    <path
+       d="m 37.160625,51.951719 h -6.8 v -3.72 q 7.36,0 8.68,-5.08 h 3.72 v 28.36 h -5.6 z"
+       style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;line-height:29px;font-family:FreeSans;-inkscape-font-specification:'FreeSans Semi-Bold';text-align:center;text-anchor:middle;fill:#37c837;fill-opacity:1"
+       id="path823" />
+    <path
+       d="m 65.62625,71.311719 q -1.96,1.12 -4.8,1.12 -2.84,0 -4.8,-1.12 -1.96,-1.16 -3.04,-3.28 -1.04,-2.12 -1.48,-4.64 -0.44,-2.56 -0.44,-5.88 0,-7.24 2.2,-11.08 2.2,-3.88 7.56,-3.88 2.8,0 4.72,1.08 1.96,1.04 3.04,3.12 1.08,2.08 1.52,4.72 0.48,2.64 0.48,6.2 0,3.2 -0.44,5.72 -0.44,2.48 -1.48,4.64 -1.04,2.12 -3.04,3.28 z m -0.64,-13.76 q 0,-5.8 -1.08,-8.12 -1.04,-2.36 -3.08,-2.36 -2.24,0 -3.2,2.28 -0.96,2.24 -0.96,8.12 0,4.08 0.52,6.4 0.52,2.28 1.36,3.04 0.88,0.72 2.28,0.72 1.36,0 2.2,-0.72 0.88,-0.72 1.4,-3 0.56,-2.32 0.56,-6.36 z"
+       style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;line-height:29px;font-family:FreeSans;-inkscape-font-specification:'FreeSans Semi-Bold';text-align:center;text-anchor:middle;fill:#37c837;fill-opacity:1"
+       id="path825" />
+  </g>
+</svg>

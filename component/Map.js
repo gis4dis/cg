@@ -84,14 +84,24 @@ class Map extends React.PureComponent {
             },
             properties: [
                 {
-                    "name_id":"air_temperature",
-                    "name":"air temperature",
-                    "unit":"°C"
+                    "name_id": "air_temperature",
+                    "name": "air temperature",
+                    "unit": "°C"
                 },
                 {
-                    "name_id":"precipitation",
-                    "name":"precipitation",
-                    "unit":"mm"
+                    "name_id": "pm10",
+                    "name": "PM10",
+                    "unit": "µg/m³"
+                },
+                {
+                    "name_id": "precipitation",
+                    "name": "precipitation",
+                    "unit": "mm"
+                },
+                {
+                    "name_id": "stream_flow",
+                    "name": "stream flow",
+                    "unit": "m³/s"
                 }
             ],
             primary_property: "air_temperature",
