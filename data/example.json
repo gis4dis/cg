@@ -748,11 +748,6 @@
             0.658138190979722
           ],
           "value_index_shift": 0
-        },
-        "precipitation": {
-          "values": [],
-          "anomaly_rates": [],
-          "value_index_shift": null
         }
       }
     },

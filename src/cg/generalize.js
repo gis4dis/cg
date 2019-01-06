@@ -1,8 +1,6 @@
 import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
-import CachedSymbolizer from './symbolizers/CachedSymbolizer';
-import axios from 'axios';
 import Style from "ol/style/style";
 import Icon from "ol/style/icon";
 
@@ -70,7 +68,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     for (let i in parsedFeatures) {
         parsedFeatures[i].setProperties({'geometry4326': 'Geometry test', 'mojevalue': 1234});
     }
-    console.log(parsedFeatures);
+    //console.log(parsedFeatures);
 
     // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
@@ -96,6 +94,8 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                     featureStyle.getImage().load();
                 }
                 cachedFeatureStyles[hash] = featureStyle;
+                //console.log('CACHED styles');
+                //console.log(cachedFeatureStyles);
             }
         });
     }
@@ -107,11 +107,15 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         }),
         style: function (feature, resolution) {
             let hash = Symbolizer.createHash(feature.id_, primary_property, value_idx);
+            //console.log('hash');
+            //console.log(hash);
 
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
-                console.log('Vracim cachovany styl');
+                //console.log('Vracim cachovany styl');
+                //console.log(hash);
                 return cachedFeatureStyles[hash]
             } else {
+                //console.log('Necachovany styl');
                 let symbolizer = new Symbolizer(primary_property, properties, feature, value_idx, resolution, minMaxValues);
                 return symbolizer.createSymbol();
             }

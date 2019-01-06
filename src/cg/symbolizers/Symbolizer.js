@@ -20,7 +20,7 @@ export default class Symbolizer {
      * @param {String} primary_property - value selected by user
      *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
      * @param {Object} properties - object of properties
-     * @param {Object.GeoJSON} feature - represented as one feature from an Array of GeoJSON Features, each of them includes attributes
+     * @param {ol.Feature} feature - represented as one feature from an Array of GeoJSON Features, each of them includes attributes
      *  (https://github.com/gis4dis/cg/blob/master/data/example.json)
      * @param {number} valueIdx - an index of value that should be used for generalization
      * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
@@ -139,7 +139,7 @@ export default class Symbolizer {
      * @param {Array.<number>} coordinates - coordinates of position of symbol
      * @returns {_ol_style_Style_} OpenLayers style object
      */
-    static addPrimaryStyle(coordinates) {
+    addPrimaryStyle(coordinates) {
         return new Style({
             image: new Icon({
                 anchor: coordinates,
@@ -163,25 +163,25 @@ export default class Symbolizer {
 
                 switch (property) {
                     case 'precipitation':
-                        if (this.primary_property === property) {styles.push(Symbolizer.addPrimaryStyle(PRECIPITATION))}
+                        if (this.primary_property === property) {styles.push(this.addPrimaryStyle(PRECIPITATION))}
                         styles.push(this.buildStyle(property, PRECIPITATION));
                         break;
                     case 'air_temperature':
-                        if (this.primary_property === property) {styles.push(Symbolizer.addPrimaryStyle(AIR_TEMPERATURE))}
+                        if (this.primary_property === property) {styles.push(this.addPrimaryStyle(AIR_TEMPERATURE))}
                         styles.push(this.buildStyle(property, AIR_TEMPERATURE));
                         break;
                     case 'pm10':
-                        if (this.primary_property === property) {styles.push(Symbolizer.addPrimaryStyle(PM10))}
+                        if (this.primary_property === property) {styles.push(this.addPrimaryStyle(PM10))}
                         styles.push(this.buildStyle(property, PM10));
                         break;
                     case 'stream_flow':
-                        if (this.primary_property === property) {styles.push(Symbolizer.addPrimaryStyle(STREAM_FLOW))}
+                        if (this.primary_property === property) {styles.push(this.addPrimaryStyle(STREAM_FLOW))}
                         styles.push(this.buildStyle(property, STREAM_FLOW));
                         break;
                 }
             }
         }
-        console.log(styles);
+        //console.log(styles);
 
         return styles;
     }
