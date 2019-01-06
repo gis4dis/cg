@@ -1,8 +1,9 @@
 import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
-import Style from "ol/style/style";
-import Icon from "ol/style/icon";
+let turfhelper = require('@turf/helpers');
+let turfbuffer = require('@turf/buffer');
+let turfprojection = require('@turf/projection');
 
 /**
  * Main generalization function
@@ -20,6 +21,17 @@ import Icon from "ol/style/icon";
 let cachedFeatureStyles = {};
 
 export default ({topic, primary_property, properties, features, value_idx, resolution}) => {
+
+    console.log('FEATURE');
+    console.log(turfhelper.point([-75.343, 39.984]));
+    console.log(turfhelper.point([1847520.94, 6309563.27]));
+
+    console.log(turfbuffer.default(turfhelper.point([-75.343, 39.984]), 500, {units: 'kilometers'}));
+    console.log(turfbuffer.default(turfprojection.toWgs84(turfhelper.point([1847520.94, 6309563.27])), 500, {units: 'kilometers'}));
+
+    for (let i in parsedFeatures) {
+        parsedFeatures[i].setProperties({'geometry4326': 'Geometry test', 'mojevalue': 1234});
+    }
 
     // Assurance checks
     if (primary_property === null) {
@@ -65,9 +77,6 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         featureProjection: 'EPSG:3857',
     });
 
-    for (let i in parsedFeatures) {
-        parsedFeatures[i].setProperties({'geometry4326': 'Geometry test', 'mojevalue': 1234});
-    }
     //console.log(parsedFeatures);
 
     // Caching the styles
