@@ -68,14 +68,21 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         throw new Error('Value_idx values must be >= 0');
     }
 
-    // Max and min values for normalization
-    //TODO fix - should be maxMinValues and fix features variable in functions
-    let minMaxValues = {};
-
     let parsedFeatures = new GeoJSON().readFeatures(features, {
         dataProjection: 'EPSG:3857',
         featureProjection: 'EPSG:3857',
     });
+
+    // Min and max values for normalization
+    let minMaxValues = {};
+
+    properties.forEach(function(property) {
+        minMaxValues[property.name_id] = {};
+        minMaxValues[property.name_id]['min'] = Symbolizer.getMinValue(parsedFeatures, property.name_id);
+        minMaxValues[property.name_id]['max'] = Symbolizer.getMaxValue(parsedFeatures, property.name_id);
+    });
+    console.log('MAXMINVALUES');
+    console.log(minMaxValues);
 
     //console.log(parsedFeatures);
 

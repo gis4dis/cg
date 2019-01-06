@@ -38,17 +38,18 @@ export default class Symbolizer {
 
     /**
      * Returning max value from geojson array with specific key
-     * @param {Object.GeoJSON} geojson - representing collection of features
+     * @param {ol.Feature} features - array of OL features
      * @param {String} name_id - name_id of property
-     * @param {String} type - name of the key from feature where is array with values
      * @returns {number} - Max value from array
      */
-    static getMaxValue(geojson, name_id, type) {
+    static getMaxValue(features, name_id) {
         let maxValue = null;
 
-        geojson.features.forEach(function (feature) {
-            if (maxValue === null || maxValue < Math.max(...feature.properties[name_id][type])) {
-                maxValue = Math.max(...feature.properties[name_id][type]);
+        features.forEach(function (feature) {
+            if (feature.values_.hasOwnProperty(name_id)) {
+                if (maxValue === null || maxValue < Math.max(...feature.values_[name_id]['values'])) {
+                    maxValue = Math.max(...feature.values_[name_id]['values']);
+                }
             }
         });
 
@@ -57,16 +58,18 @@ export default class Symbolizer {
 
     /**
      * Returning min value from geojson array with specific key
-     * @param {Object.GeoJSON} geojson - representing collection of features
+     * @param {ol.Feature} features - array of OL features
      * @param {String} name_id - name_id of property
-     * @param {String} type - name of the key from feature where is array with values
      * @returns {number} - Min value from array
      */
-    static getMinValue(geojson, name_id, type) {
+    static getMinValue(features, name_id) {
         let minValue = null;
-        geojson.features.forEach(function (feature) {
-            if (minValue === null || minValue > Math.min(...feature.properties[name_id][type])) {
-                minValue = Math.min(...feature.properties[name_id][type]);
+
+        features.forEach(function (feature) {
+            if (feature.values_.hasOwnProperty(name_id)) {
+                if (minValue === null || minValue > Math.min(...feature.values_[name_id]['values'])) {
+                    minValue = Math.min(...feature.values_[name_id]['values']);
+                }
             }
         });
 
