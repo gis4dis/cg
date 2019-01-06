@@ -69,7 +69,7 @@
           ],
           "value_index_shift": 0
         },
-        "ground_air_temperature": {
+        "precipitation": {
           "values": [
             15.4,
             14.983,
@@ -139,7 +139,7 @@
       "properties": {
         "id_by_provider": "11359234",
         "name": "Brno, botanical garden PřF MU",
-        "ground_air_temperature": {
+        "precipitation": {
           "values": [
             15.4,
             14.983,
@@ -264,7 +264,7 @@
           ],
           "value_index_shift": 0
         },
-        "ground_air_temperature": {
+        "precipitation": {
           "values": [
             16.45,
             15.817,
@@ -389,7 +389,7 @@
           ],
           "value_index_shift": 0
         },
-        "ground_air_temperature": {
+        "precipitation": {
           "values": [
             14.0,
             13.975,
@@ -514,7 +514,7 @@
           ],
           "value_index_shift": 0
         },
-        "ground_air_temperature": {
+        "precipitation": {
           "values": [
             14.6,
             13.917,
@@ -639,7 +639,7 @@
           ],
           "value_index_shift": 0
         },
-        "ground_air_temperature": {
+        "precipitation": {
           "values": [],
           "anomaly_rates": [],
           "value_index_shift": null
@@ -714,7 +714,7 @@
           ],
           "value_index_shift": 0
         },
-        "ground_air_temperature": {
+        "precipitation": {
           "values": [
             13.117,
             12.733,

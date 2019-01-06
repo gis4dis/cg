@@ -2,6 +2,15 @@ import Style from 'ol/style/style';
 import Icon from 'ol/style/icon';
 
 
+/* Constants of position of symbols */
+const PRECIPITATION = [1,1];
+const AIR_TEMPERATURE = [0,0];
+const PM10 = [1,0];
+const STREAM_FLOW = [0,1];
+
+const SYMBOL_PATH = '/static/symbolization';
+
+
 /** Represents Symbolizer for features. Contains set of operations including creating styles */
 export default class Symbolizer {
 
@@ -84,115 +93,81 @@ export default class Symbolizer {
         return 'featureid' + featureId + 'index' + indexId;
     }
 
-    static getAnomalyColor(value) {
+    /**
+     * Returning name of the interval base on anomaly rate value
+     * @returns {String} interval - interval (low, middle or high) of anomaly rate
+     * */
+    static getAnomalyInterval(value) {
         if (value < 2.5) {
-            return 'rgb(0, 153, 51)';
+            return 'middle';
+        } else if (value < 1) {
+            return 'low';
         }
-        return 'rgb(255, 0, 0)';
+        return 'high';
     }
 
     /**
      * Building SVG icon based on property_value and property_anomaly_rates
      * @param {String} property - name of the property (air_temperature...)
-     * @param {number} x - x coordinate of position of symbol
-     * @param {number} y - y coordinate of position of symbol
-     * @returns {String} SVG icon
+     * @param {Array.<number>} coordinates - coordinates of position of symbol
+     * @returns {_ol_style_Style_} OpenLayers style object
      */
-    createSVG(property, x, y) {
+    buildStyle(property, coordinates) {
         let propertyValue = 0;
         let propertyAnomalyValue = 0;
-        let anomalyColor = '';
+        let anomalyInterval = '';
 
-        if (this.cached === true) {/*
-            propertyValue = this.feature.properties[property]['values'][this.valueIdx];
+        propertyValue = this.feature.values_[property]['values'][this.valueIdx];
 
-            propertyAnomalyValue = this.feature.properties[property]['anomaly_rates'][this.valueIdx];
-        } else {*/
-            propertyValue = this.feature.values_[property]['values'][this.valueIdx];
+        propertyAnomalyValue = this.feature.values_[property]['anomaly_rates'][this.valueIdx];
+        anomalyInterval = Symbolizer.getAnomalyInterval(propertyAnomalyValue);
 
-            propertyAnomalyValue = this.feature.values_[property]['anomaly_rates'][this.valueIdx];
-        }
-
-        anomalyColor = Symbolizer.getAnomalyColor(propertyAnomalyValue);
-
-        return '<svg width="180" height="180" version="1.1" xmlns="http://www.w3.org/2000/svg">'
-            + '<circle cx="'+ x +'" cy="'+ y +'" stroke="black" style="fill:'+ anomalyColor +';stroke-width: 1" r="' + (propertyValue +  Math.log(this.resolution) * 2) + '"/>'
-            + '</svg>';
-
-
-        /*return '<svg width="' + 2*(25 + Math.log(this.resolution) * 2) + '" height="150" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
-            '<circle cx="0" cy="0" r="' + 10 + '" stroke="black" stroke-width="2" fill="#0066ff" />' +
-            '<rect x="0" y="' + (150 - propertyValue) + '" width="' + (25 + Math.log(this.resolution) * 2) + '" height="' + (propertyValue +  Math.log(this.resolution) * 2) + '" style="fill:rgb(0,0,255);stroke-width:0" />' +
-            '</svg>';*/
-    }
-
-    /**
-     * Creating style based on property value.
-     *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
-     * @returns {_ol_style_Style_} built style for vector layer
-     */
-    //TODO change with different styles for different properties
-    buildSVGSymbol(property) {
-
-        switch (property) {
-            case 'air_temperature':
-                return this.createSVG(property, 90, 30);
-            case 'ground_air_temperature':
-                return this.createSVG(property, 150, 60);
-            case 'soil_temperature':
-                return this.createSVG(property, 140, 135);
-            case 'precipitation':
-                return this.createSVG(property, 50, 135);
-            case 'air_humidity':
-                return this.createSVG(property, 30, 60);
-        }
+        console.log(`${SYMBOL_PATH}/${property}_${anomalyInterval}.svg`);
+        return new Style({
+            image: new Icon({
+                anchor: coordinates,
+                opacity: 1,
+                src: `${SYMBOL_PATH}/${property}_${anomalyInterval}.svg`,
+                scale: .2
+            })
+        })
     }
 
     createSymbol() {
-        let symbols = [];
+        let styles = [];
 
         for (let i in this.properties) {
             if (this.feature.values_.hasOwnProperty(this.properties[i].name_id)) {
-                symbols.push(this.buildSVGSymbol(this.properties[i].name_id));
+                let property = this.properties[i].name_id;
+
+                switch (property) {
+                    case 'precipitation':
+                        styles.push(this.buildStyle(property, PRECIPITATION));
+                        console.log('STYL:');
+                        console.log(this.buildStyle(property, PRECIPITATION));
+                        break;
+                    case 'air_temperature':
+                        styles.push(this.buildStyle(property, AIR_TEMPERATURE));
+                        break;
+                    case 'pm10':
+                        styles.push(this.buildStyle(property, PM10));
+                        break;
+                    case 'stream_flow':
+                        styles.push(this.buildStyle(property, STREAM_FLOW));
+                        break;
+                }
             }
-            /*if (this.cached === true) {
-                if (this.feature.properties.hasOwnProperty(this.properties[i].name_id)) {
-                    symbols.push(this.buildSVGSymbol(this.properties[i].name_id));
-                }
-            } else {
-                if (this.feature.values_.hasOwnProperty(this.properties[i].name_id)) {
-                    symbols.push(this.buildSVGSymbol(this.properties[i].name_id));
-                }
-            }*/
         }
+        console.log(styles);
 
-        let svg = '<svg width="180" height="180" version="1.1" xmlns="http://www.w3.org/2000/svg">';
-        for (let j in symbols) {
-            svg += symbols[j];
-        }
-        svg += '</svg>';
-
-        /*return new Style({
-            image: new Icon({
-                opacity: 1,
-                src: 'data:image/svg+xml;utf8,' + svg,
-                scale: 0.2
-            })
-        });*/
-        /*return new Style({
-            image: new Icon({
-                opacity: 1,
-                src: 'https://svgur.com/i/AFJ.svg',
-                scale: .1
-            })
-        });*/
-        return [
+        return styles;
+        /*return [
             //drop centered
             new Style({
                 image: new Icon({
                     anchor: [1,1],
                     opacity: 1,
-                    src: '/static/symbolization/drop_low.svg',
+                    src: '/static/symbolization/precipitation_low.svg',
                     scale: .2
                 })
             }),
@@ -201,7 +176,7 @@ export default class Symbolizer {
                 image: new Icon({
                     anchor: [0.5,0.5],
                     opacity: 0.3,
-                    src: '/static/symbolization/drop_middle.svg',
+                    src: '/static/symbolization/precipitation_middle.svg',
                     scale: .2
                 })
             }),
@@ -210,7 +185,7 @@ export default class Symbolizer {
                 image: new Icon({
                     anchor: [0,0],
                     opacity: 0.6,
-                    src: '/static/symbolization/drop_high.svg',
+                    src: '/static/symbolization/precipitation_high.svg',
                     scale: .2
                 })
             }),
@@ -219,7 +194,7 @@ export default class Symbolizer {
                 image: new Icon({
                     anchor: [1,0],
                     opacity: 0.8,
-                    src: '/static/symbolization/drop.svg',
+                    src: '/static/symbolization/precipitation.svg',
                     scale: .2
                 })
             }),
@@ -228,34 +203,10 @@ export default class Symbolizer {
                 image: new Icon({
                     anchor: [0,1],
                     opacity: 1,
-                    src: '/static/symbolization/thermometer.svg',
+                    src: '/static/symbolization/air_temperature.svg',
                     scale: .2
                 })
-            })/*,
-            //thermometer
-            new Style({
-                image: new Icon({
-                    opacity: 1,
-                    src: 'https://svgur.com/i/AGD.svg',
-                    scale: .2
-                })
-            }),
-            //drop
-            new Style({
-                image: new Icon({
-                    opacity: 1,
-                    src: 'https://svgur.com/i/AFJ.svg',
-                    scale: .1
-                })
-            }),
-            //drop
-            new Style({
-                image: new Icon({
-                    opacity: 1,
-                    src: 'https://svgur.com/i/AFJ.svg',
-                    scale: .1
-                })
-            }),*/
-        ];
+            })
+        ];*/
     }
 }

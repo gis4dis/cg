@@ -89,9 +89,9 @@ class Map extends React.PureComponent {
                     "unit":"°C"
                 },
                 {
-                    "name_id":"ground_air_temperature",
-                    "name":"ground air temperature",
-                    "unit":"°C"
+                    "name_id":"precipitation",
+                    "name":"precipitation",
+                    "unit":"mm"
                 }
             ],
             primary_property: "air_temperature",
