@@ -22,17 +22,6 @@ let cachedFeatureStyles = {};
 
 export default ({topic, primary_property, properties, features, value_idx, resolution}) => {
 
-    console.log('FEATURE');
-    console.log(turfhelper.point([-75.343, 39.984]));
-    console.log(turfhelper.point([1847520.94, 6309563.27]));
-
-    console.log(turfbuffer.default(turfhelper.point([-75.343, 39.984]), 500, {units: 'kilometers'}));
-    console.log(turfbuffer.default(turfprojection.toWgs84(turfhelper.point([1847520.94, 6309563.27])), 500, {units: 'kilometers'}));
-
-    for (let i in parsedFeatures) {
-        parsedFeatures[i].setProperties({'geometry4326': 'Geometry test', 'mojevalue': 1234});
-    }
-
     // Assurance checks
     if (primary_property === null) {
         throw new Error('Property not provided');
@@ -72,6 +61,22 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         dataProjection: 'EPSG:3857',
         featureProjection: 'EPSG:3857',
     });
+
+    console.log('FEATURE');
+    console.log(turfhelper.point([-75.343, 39.984]));
+    console.log(turfhelper.point([1847520.94, 6309563.27]));
+
+    console.log(turfbuffer.default(turfhelper.point([-75.343, 39.984]), 500, {units: 'kilometers'}));
+    console.log(turfbuffer.default(turfprojection.toWgs84(turfhelper.point([1847520.94, 6309563.27])), 500, {units: 'kilometers'}));
+
+    // Adding geometry in WGS84 to OL feature because of computing using turf.js
+    for (let i in parsedFeatures) {
+            parsedFeatures[i].setProperties({'WGS84': turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates())});
+            parsedFeatures[i].setProperties({'turf_geometry': turfhelper.point(turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates()))});
+    }
+
+    console.log('Parsed features');
+    console.log(parsedFeatures);
 
     // Min and max values for normalization
     let minMaxValues = {};

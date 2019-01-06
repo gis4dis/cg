@@ -118,6 +118,7 @@ export default class Symbolizer {
      * Building SVG icon based on property_value and property_anomaly_rates
      * @param {String} property - name of the property (air_temperature...)
      * @param {Array.<number>} coordinates - coordinates of position of symbol
+     * @param {Number} normalizedPropertyValue - normalized property (to a range MIN_RANGE and MAX_RANGE) value from values array from feature
      * @returns {_ol_style_Style_} OpenLayers style object
      */
     buildStyle(property, coordinates, normalizedPropertyValue) {
@@ -140,6 +141,7 @@ export default class Symbolizer {
     /**
      * Return primary OL style. Primary property is selected by user in MC client
      * @param {Array.<number>} coordinates - coordinates of position of symbol
+     * @param {Number} normalizedPropertyValue - normalized property (to a range MIN_RANGE and MAX_RANGE) value from values array from feature
      * @returns {_ol_style_Style_} OpenLayers style object
      */
     addPrimaryStyle(coordinates, normalizedPropertyValue) {
