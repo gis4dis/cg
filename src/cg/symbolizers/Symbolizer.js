@@ -10,6 +10,9 @@ const STREAM_FLOW = [0,1];
 
 const SYMBOL_PATH = '/static/symbolization';
 
+const MIN_RANGE = 0.2;
+const MAX_RANGE = 0.6;
+
 
 /** Represents Symbolizer for features. Contains set of operations including creating styles */
 export default class Symbolizer {
@@ -84,7 +87,7 @@ export default class Symbolizer {
      * @returns {number} normalized value
      */
     static normalize(value, min, max) {
-        return (value - min) / (max - min);
+        return (value - min) / (max - min) * (MAX_RANGE - MIN_RANGE) + MIN_RANGE;
     }
 
     /**
@@ -117,12 +120,9 @@ export default class Symbolizer {
      * @param {Array.<number>} coordinates - coordinates of position of symbol
      * @returns {_ol_style_Style_} OpenLayers style object
      */
-    buildStyle(property, coordinates) {
-        let propertyValue = 0;
+    buildStyle(property, coordinates, normalizedPropertyValue) {
         let propertyAnomalyValue = 0;
         let anomalyInterval = '';
-
-        propertyValue = this.feature.values_[property]['values'][this.valueIdx];
 
         propertyAnomalyValue = this.feature.values_[property]['anomaly_rates'][this.valueIdx];
         anomalyInterval = Symbolizer.getAnomalyInterval(propertyAnomalyValue);
@@ -132,7 +132,7 @@ export default class Symbolizer {
                 anchor: coordinates,
                 opacity: 1,
                 src: `${SYMBOL_PATH}/${property}_${anomalyInterval}.svg`,
-                scale: .2
+                scale: normalizedPropertyValue
             })
         });
     }
@@ -142,15 +142,27 @@ export default class Symbolizer {
      * @param {Array.<number>} coordinates - coordinates of position of symbol
      * @returns {_ol_style_Style_} OpenLayers style object
      */
-    addPrimaryStyle(coordinates) {
+    addPrimaryStyle(coordinates, normalizedPropertyValue) {
         return new Style({
             image: new Icon({
                 anchor: coordinates,
                 opacity: 1,
                 src: `${SYMBOL_PATH}/primary.svg`,
-                scale: .2
+                scale: normalizedPropertyValue
             })
         });
+    }
+
+    /**
+     * Function computes normalizedPropertyValue of specific feature
+     * @param {String} property - name of the property (air_temperature...)
+     * @returns {Number} Normalized property value used for size of symbol
+     */
+    getNormalizedPropertyValue(property) {
+        let normalizedPropertyValue = 0;
+
+        // Value of property (e.g. air_temperature) is normalized from 0 to 1
+        return Symbolizer.normalize(this.feature.values_[property]['values'][this.valueIdx], this.minMaxValues[property]['min'], this.minMaxValues[property]['max']);
     }
 
     /**
@@ -163,23 +175,44 @@ export default class Symbolizer {
         for (let i in this.properties) {
             if (this.feature.values_.hasOwnProperty(this.properties[i].name_id)) {
                 let property = this.properties[i].name_id;
+                let normalizedPropertyValue = 0;
 
                 switch (property) {
                     case 'precipitation':
-                        if (this.primary_property === property) {styles.push(this.addPrimaryStyle(PRECIPITATION))}
-                        styles.push(this.buildStyle(property, PRECIPITATION));
+                        normalizedPropertyValue = this.getNormalizedPropertyValue(property);
+
+                        if (this.primary_property === property) {
+                            styles.push(this.addPrimaryStyle(PRECIPITATION, normalizedPropertyValue))
+                        }
+
+                        styles.push(this.buildStyle(property, PRECIPITATION, normalizedPropertyValue));
                         break;
                     case 'air_temperature':
-                        if (this.primary_property === property) {styles.push(this.addPrimaryStyle(AIR_TEMPERATURE))}
-                        styles.push(this.buildStyle(property, AIR_TEMPERATURE));
+                        normalizedPropertyValue = this.getNormalizedPropertyValue(property);
+
+                        if (this.primary_property === property) {
+                            styles.push(this.addPrimaryStyle(AIR_TEMPERATURE, normalizedPropertyValue))
+                        }
+
+                        styles.push(this.buildStyle(property, AIR_TEMPERATURE, normalizedPropertyValue));
                         break;
                     case 'pm10':
-                        if (this.primary_property === property) {styles.push(this.addPrimaryStyle(PM10))}
-                        styles.push(this.buildStyle(property, PM10));
+                        normalizedPropertyValue = this.getNormalizedPropertyValue(property);
+
+                        if (this.primary_property === property) {
+                            styles.push(this.addPrimaryStyle(PM10, normalizedPropertyValue))
+                        }
+
+                        styles.push(this.buildStyle(property, PM10, normalizedPropertyValue));
                         break;
                     case 'stream_flow':
-                        if (this.primary_property === property) {styles.push(this.addPrimaryStyle(STREAM_FLOW))}
-                        styles.push(this.buildStyle(property, STREAM_FLOW));
+                        normalizedPropertyValue = this.getNormalizedPropertyValue(property);
+
+                        if (this.primary_property === property) {
+                            styles.push(this.addPrimaryStyle(STREAM_FLOW, normalizedPropertyValue))
+                        }
+
+                        styles.push(this.buildStyle(property, STREAM_FLOW, normalizedPropertyValue));
                         break;
                 }
             }
