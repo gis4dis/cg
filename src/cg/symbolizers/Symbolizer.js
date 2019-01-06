@@ -192,8 +192,8 @@ export default class Symbolizer {
                 image: new Icon({
                     anchor: [1,1],
                     opacity: 1,
-                    src: 'https://svgur.com/i/AFJ.svg',
-                    scale: .1
+                    src: '/static/symbolization/drop_low.svg',
+                    scale: .2
                 })
             }),
             //drop
@@ -201,8 +201,8 @@ export default class Symbolizer {
                 image: new Icon({
                     anchor: [0.5,0.5],
                     opacity: 0.3,
-                    src: 'https://svgur.com/i/AFJ.svg',
-                    scale: .1
+                    src: '/static/symbolization/drop_middle.svg',
+                    scale: .2
                 })
             }),
             //drop
@@ -210,8 +210,8 @@ export default class Symbolizer {
                 image: new Icon({
                     anchor: [0,0],
                     opacity: 0.6,
-                    src: 'https://svgur.com/i/AFJ.svg',
-                    scale: .1
+                    src: '/static/symbolization/drop_high.svg',
+                    scale: .2
                 })
             }),
             //drop
@@ -219,8 +219,8 @@ export default class Symbolizer {
                 image: new Icon({
                     anchor: [1,0],
                     opacity: 0.8,
-                    src: 'https://svgur.com/i/AFJ.svg',
-                    scale: .1
+                    src: '/static/symbolization/drop.svg',
+                    scale: .2
                 })
             }),
             //thermometer
@@ -228,7 +228,7 @@ export default class Symbolizer {
                 image: new Icon({
                     anchor: [0,1],
                     opacity: 1,
-                    src: 'https://svgur.com/i/AGU.svg',
+                    src: '/static/symbolization/thermometer.svg',
                     scale: .2
                 })
             })/*,

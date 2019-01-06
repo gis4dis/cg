@@ -86,7 +86,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             for (let i = 0; i < length; i++) {
                 let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues);
                 let featureStyle = symbolizer.createSymbol();
-                console.log(featureStyle);
+                //console.log(featureStyle);
                 let hash = Symbolizer.createHash(feature.id_, i);
                 if (featureStyle instanceof Array) {
                     for (let j in featureStyle) {
