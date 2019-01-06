@@ -17,7 +17,7 @@ export default class Symbolizer {
     /**
      * Instantiating of Symbolizer object
      * @constructor
-     * @param {Object.<string, string>} primary_property - values selected by user
+     * @param {String} primary_property - value selected by user
      *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
      * @param {Object} properties - object of properties
      * @param {Object.GeoJSON} feature - represented as one feature from an Array of GeoJSON Features, each of them includes attributes
@@ -47,7 +47,6 @@ export default class Symbolizer {
         let maxValue = null;
 
         geojson.features.forEach(function (feature) {
-            console.log(feature);
             if (maxValue === null || maxValue < Math.max(...feature.properties[name_id][type])) {
                 maxValue = Math.max(...feature.properties[name_id][type]);
             }
@@ -87,10 +86,13 @@ export default class Symbolizer {
 
     /**
      * Creating hash based on values of SVG parameters
+     * @param {String} featureId - ID of feature
+     * @param {String} primary_property - primary property selected by user in MC client
+     * @param {Number} indexId - index for selecting value and anomaly rates from arrays
      * @returns {string} hash
      */
-    static createHash(featureId, indexId) {
-        return 'featureid' + featureId + 'index' + indexId;
+    static createHash(featureId, primary_property, indexId) {
+        return `featureid${featureId}primaryproperty${primary_property}index${indexId}`;
     }
 
     /**
@@ -122,7 +124,6 @@ export default class Symbolizer {
         propertyAnomalyValue = this.feature.values_[property]['anomaly_rates'][this.valueIdx];
         anomalyInterval = Symbolizer.getAnomalyInterval(propertyAnomalyValue);
 
-        console.log(`${SYMBOL_PATH}/${property}_${anomalyInterval}.svg`);
         return new Style({
             image: new Icon({
                 anchor: coordinates,
@@ -130,9 +131,29 @@ export default class Symbolizer {
                 src: `${SYMBOL_PATH}/${property}_${anomalyInterval}.svg`,
                 scale: .2
             })
-        })
+        });
     }
 
+    /**
+     * Return primary OL style. Primary property is selected by user in MC client
+     * @param {Array.<number>} coordinates - coordinates of position of symbol
+     * @returns {_ol_style_Style_} OpenLayers style object
+     */
+    static addPrimaryStyle(coordinates) {
+        return new Style({
+            image: new Icon({
+                anchor: coordinates,
+                opacity: 1,
+                src: `${SYMBOL_PATH}/primary.svg`,
+                scale: .2
+            })
+        });
+    }
+
+    /**
+     * Creates array of OL styles objects based on property name_id value
+     * @returns {Array} styles - array of OL styles
+     */
     createSymbol() {
         let styles = [];
 
@@ -142,15 +163,19 @@ export default class Symbolizer {
 
                 switch (property) {
                     case 'precipitation':
+                        if (this.primary_property === property) {styles.push(Symbolizer.addPrimaryStyle(PRECIPITATION))}
                         styles.push(this.buildStyle(property, PRECIPITATION));
                         break;
                     case 'air_temperature':
+                        if (this.primary_property === property) {styles.push(Symbolizer.addPrimaryStyle(AIR_TEMPERATURE))}
                         styles.push(this.buildStyle(property, AIR_TEMPERATURE));
                         break;
                     case 'pm10':
+                        if (this.primary_property === property) {styles.push(Symbolizer.addPrimaryStyle(PM10))}
                         styles.push(this.buildStyle(property, PM10));
                         break;
                     case 'stream_flow':
+                        if (this.primary_property === property) {styles.push(Symbolizer.addPrimaryStyle(STREAM_FLOW))}
                         styles.push(this.buildStyle(property, STREAM_FLOW));
                         break;
                 }
@@ -159,52 +184,5 @@ export default class Symbolizer {
         console.log(styles);
 
         return styles;
-        /*return [
-            //drop centered
-            new Style({
-                image: new Icon({
-                    anchor: [1,1],
-                    opacity: 1,
-                    src: '/static/symbolization/precipitation_low.svg',
-                    scale: .2
-                })
-            }),
-            //drop
-            new Style({
-                image: new Icon({
-                    anchor: [0.5,0.5],
-                    opacity: 0.3,
-                    src: '/static/symbolization/precipitation_middle.svg',
-                    scale: .2
-                })
-            }),
-            //drop
-            new Style({
-                image: new Icon({
-                    anchor: [0,0],
-                    opacity: 0.6,
-                    src: '/static/symbolization/precipitation_high.svg',
-                    scale: .2
-                })
-            }),
-            //drop
-            new Style({
-                image: new Icon({
-                    anchor: [1,0],
-                    opacity: 0.8,
-                    src: '/static/symbolization/precipitation.svg',
-                    scale: .2
-                })
-            }),
-            //thermometer
-            new Style({
-                image: new Icon({
-                    anchor: [0,1],
-                    opacity: 1,
-                    src: '/static/symbolization/air_temperature.svg',
-                    scale: .2
-                })
-            })
-        ];*/
     }
 }

@@ -59,7 +59,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     }
 
     // Max and min values for normalization
-    //TODO fix - should be maxMinValues
+    //TODO fix - should be maxMinValues and fix features variable in functions
     let minMaxValues = {};
 
     let parsedFeatures = new GeoJSON().readFeatures(features, {
@@ -87,7 +87,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                 let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues);
                 let featureStyle = symbolizer.createSymbol();
                 //console.log(featureStyle);
-                let hash = Symbolizer.createHash(feature.id_, i);
+                let hash = Symbolizer.createHash(feature.id_, primary_property, i);
                 if (featureStyle instanceof Array) {
                     for (let j in featureStyle) {
                         featureStyle[j].getImage().load();
@@ -106,7 +106,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             featureProjection: 'EPSG:3857',
         }),
         style: function (feature, resolution) {
-            let hash = Symbolizer.createHash(feature.id_, value_idx);
+            let hash = Symbolizer.createHash(feature.id_, primary_property, value_idx);
 
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
                 console.log('Vracim cachovany styl');
