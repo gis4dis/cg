@@ -3,6 +3,8 @@ import Symbolizer from './symbolizers/Symbolizer';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
 let turfhelper = require('@turf/helpers');
 let turfbuffer = require('@turf/buffer');
+import buffer from '@turf/buffer';
+import projection from '@turf/projection';
 let turfprojection = require('@turf/projection');
 
 /**

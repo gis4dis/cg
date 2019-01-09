@@ -24,7 +24,7 @@
     "ol": "jirik/ol3#19c2797513b5b3983ff186d24a60aaf81ac97e3c",
     "proj4": "2.4.4",
     "react": "16.3.1",
-    "react-dom": "16.3.1",
+    "react-dom": "16.3.3",
     "react-markdown": "3.3.0",
     "@turf/helpers": "latest"
   },
