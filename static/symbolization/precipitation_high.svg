@@ -11,7 +11,7 @@
    height="100"
    version="1.1"
    id="svg72"
-   sodipodi:docname="drop_high.svg"
+   sodipodi:docname="precipitation_high.svg"
    inkscape:version="0.92.3 (unknown)">
   <metadata
      id="metadata78">
@@ -21,7 +21,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -36,12 +36,12 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1025"
+     inkscape:window-width="1366"
+     inkscape:window-height="713"
      id="namedview74"
      showgrid="false"
      inkscape:zoom="2.9555556"
-     inkscape:cx="90"
+     inkscape:cx="36.203008"
      inkscape:cy="90"
      inkscape:window-x="0"
      inkscape:window-y="27"
@@ -51,7 +51,7 @@
      inkscape:connector-curvature="0"
      id="path64"
      d="m 87.662102,62.39012 c 0,-19.892432 -34.190262,-58.7452775 -36.987741,-61.85354775 v 0 0 0 c 0,0 -37.609323,41.33917675 -37.609323,61.85354775 0,20.51437 16.784517,37.298532 37.298532,37.298532 1.243166,0 2.797479,0 4.040645,-0.310791 0.310791,0 0.621583,0 0.932374,-0.310792 0.932375,0 1.865104,-0.310791 2.797479,-0.310791 0.310791,0 0.621583,-0.310792 1.243166,-0.310792 0.932374,-0.310791 1.865104,-0.310791 2.797479,-0.621583 0.310791,0 0.621583,-0.310791 0.932374,-0.310791 0.932375,-0.310792 1.865104,-0.621583 2.797479,-0.932375 0.310791,0 0.621583,-0.310791 0.621583,-0.310791 0.932374,-0.310792 1.865104,-0.932375 2.797479,-1.553958 0.310791,0 0.310791,-0.310791 0.621583,-0.310791 0.932374,-0.621583 1.865104,-1.243166 2.797478,-1.865105 0,0 0.310792,0 0.310792,-0.310791 0.932374,-0.621583 1.865104,-1.553958 2.797479,-2.175896 v 0 C 82.999874,82.90449 87.662102,73.268888 87.662102,62.39012 Z"
-     style="fill:#ff2a2a;stroke-width:0.35519028" />
+     style="fill:#ff2a19;stroke-width:0.35519028;fill-opacity:1" />
   <path
      inkscape:connector-curvature="0"
      id="path68"
