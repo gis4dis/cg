@@ -3,10 +3,12 @@ import Icon from 'ol/style/icon';
 
 
 /* Constants of position of symbols */
-const PRECIPITATION = [1,1];
-const AIR_TEMPERATURE = [0,0];
-const PM10 = [1,0];
-const STREAM_FLOW = [0,1];
+const positions = {
+    'PRIMARY': [1,1],
+    'SECONDARY': [0,0],
+    'TERTIARY': [1,0],
+    'OTHER': [0,1]
+};
 
 const SYMBOL_PATH = '/static/symbolization';
 
@@ -116,23 +118,23 @@ export default class Symbolizer {
 
     /**
      * Building SVG icon based on property_value and property_anomaly_rates
-     * @param {String} property - name of the property (air_temperature...)
-     * @param {Array.<number>} coordinates - coordinates of position of symbol
+     * @param {Object} property - property object
      * @param {Number} normalizedPropertyValue - normalized property (to a range MIN_RANGE and MAX_RANGE) value from values array from feature
      * @returns {_ol_style_Style_} OpenLayers style object
      */
-    buildStyle(property, coordinates, normalizedPropertyValue) {
+    buildStyle(property, normalizedPropertyValue) {
         let propertyAnomalyValue = 0;
         let anomalyInterval = '';
+        let coordinates = positions[property.position];
 
-        propertyAnomalyValue = this.feature.values_[property]['anomaly_rates'][this.valueIdx];
+        propertyAnomalyValue = this.feature.values_[property.name_id]['anomaly_rates'][this.valueIdx];
         anomalyInterval = Symbolizer.getAnomalyInterval(propertyAnomalyValue);
 
         return new Style({
             image: new Icon({
                 anchor: coordinates,
                 opacity: 1,
-                src: `${SYMBOL_PATH}/${property}_${anomalyInterval}.svg`,
+                src: `${SYMBOL_PATH}/${property.name_id}_${anomalyInterval}.svg`,
                 scale: normalizedPropertyValue
             })
         });
@@ -168,6 +170,29 @@ export default class Symbolizer {
     }
 
     /**
+     * Sorting properties based on primary property
+     * @param {Object} properties - object of properties
+     * @param {String} primary_property - value selected by user
+     *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
+     * @returns {Object} - sorted properties with position symbol parameter
+     */
+    static sortProperties(properties, primary_property) {
+        let positions = ['PRIMARY', 'SECONDARY', 'TERTIARY', 'OTHER'];
+
+        let positionsCounter = 1;
+        for (let i in properties) {
+            if (properties[i].name_id === primary_property) {
+                properties[i].position = positions[0];
+            } else {
+                properties[i].position = positions[positionsCounter];
+                positionsCounter += 1;
+            }
+        }
+
+        return properties;
+    }
+
+    /**
      * Creates array of OL styles objects based on property name_id value
      * @returns {Array} styles - array of OL styles
      */
@@ -182,39 +207,19 @@ export default class Symbolizer {
                 switch (property) {
                     case 'precipitation':
                         normalizedPropertyValue = this.getNormalizedPropertyValue(property);
-
-                        if (this.primary_property === property) {
-                            styles.push(this.addPrimaryStyle(PRECIPITATION, normalizedPropertyValue))
-                        }
-
-                        styles.push(this.buildStyle(property, PRECIPITATION, normalizedPropertyValue));
+                        styles.push(this.buildStyle(this.properties[i], normalizedPropertyValue));
                         break;
                     case 'air_temperature':
                         normalizedPropertyValue = this.getNormalizedPropertyValue(property);
-
-                        if (this.primary_property === property) {
-                            styles.push(this.addPrimaryStyle(AIR_TEMPERATURE, normalizedPropertyValue))
-                        }
-
-                        styles.push(this.buildStyle(property, AIR_TEMPERATURE, normalizedPropertyValue));
+                        styles.push(this.buildStyle(this.properties[i], normalizedPropertyValue));
                         break;
                     case 'pm10':
                         normalizedPropertyValue = this.getNormalizedPropertyValue(property);
-
-                        if (this.primary_property === property) {
-                            styles.push(this.addPrimaryStyle(PM10, normalizedPropertyValue))
-                        }
-
-                        styles.push(this.buildStyle(property, PM10, normalizedPropertyValue));
+                        styles.push(this.buildStyle(this.properties[i], normalizedPropertyValue));
                         break;
                     case 'stream_flow':
                         normalizedPropertyValue = this.getNormalizedPropertyValue(property);
-
-                        if (this.primary_property === property) {
-                            styles.push(this.addPrimaryStyle(STREAM_FLOW, normalizedPropertyValue))
-                        }
-
-                        styles.push(this.buildStyle(property, STREAM_FLOW, normalizedPropertyValue));
+                        styles.push(this.buildStyle(this.properties[i], normalizedPropertyValue));
                         break;
                 }
             }

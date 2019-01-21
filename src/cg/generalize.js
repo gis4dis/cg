@@ -63,7 +63,13 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         dataProjection: 'EPSG:3857',
         featureProjection: 'EPSG:3857',
     });
+    let sortedProperties = Symbolizer.sortProperties(properties, primary_property);
+    console.log('Sorted properties');
+    console.log(sortedProperties);
 
+    //TODO 1. make group symbols
+    // 2. change primary to the first position
+    // 3. compute a buffer
     console.log('FEATURE');
     console.log(turfhelper.point([-75.343, 39.984]));
     console.log(turfhelper.point([1847520.94, 6309563.27]));
@@ -83,7 +89,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     // Min and max values for normalization
     let minMaxValues = {};
 
-    properties.forEach(function(property) {
+    sortedProperties.forEach(function(property) {
         minMaxValues[property.name_id] = {};
         minMaxValues[property.name_id]['min'] = Symbolizer.getMinValue(parsedFeatures, property.name_id);
         minMaxValues[property.name_id]['max'] = Symbolizer.getMaxValue(parsedFeatures, property.name_id);
@@ -98,14 +104,14 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         let length = 0;
         parsedFeatures.forEach(function(feature) {
 
-            properties.forEach(function(property) {
+            sortedProperties.forEach(function(property) {
                 if (feature.values_.hasOwnProperty(property.name_id)) {
                     length = feature.values_[property.name_id].values.length;
                 }
             });
 
             for (let i = 0; i < length; i++) {
-                let symbolizer = new Symbolizer(primary_property, properties, feature, i, resolution, minMaxValues);
+                let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, i, resolution, minMaxValues);
                 let featureStyle = symbolizer.createSymbol();
                 //console.log(featureStyle);
                 let hash = Symbolizer.createHash(feature.id_, primary_property, i);
@@ -139,7 +145,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                 return cachedFeatureStyles[hash]
             } else {
                 //console.log('Necachovany styl');
-                let symbolizer = new Symbolizer(primary_property, properties, feature, value_idx, resolution, minMaxValues);
+                let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, value_idx, resolution, minMaxValues);
                 return symbolizer.createSymbol();
             }
         }
