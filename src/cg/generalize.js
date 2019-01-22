@@ -1,10 +1,13 @@
 import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
+import Feature from 'ol/feature';
+import Polygon from 'ol/geom/polygon';
+import Style from 'ol/style/style';
+import Stroke from 'ol/style/stroke';
+import Fill from 'ol/style/fill';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
 let turfhelper = require('@turf/helpers');
 let turfbuffer = require('@turf/buffer');
-import buffer from '@turf/buffer';
-import projection from '@turf/projection';
 let turfprojection = require('@turf/projection');
 
 /**
@@ -23,6 +26,18 @@ let turfprojection = require('@turf/projection');
 let cachedFeatureStyles = {};
 
 export default ({topic, primary_property, properties, features, value_idx, resolution}) => {
+
+    function computeBuffer(feature) {
+        let scaleValues = [];
+
+        for (let i in feature.values_.featureStyle) {
+            scaleValues.push(parseFloat(feature.values_.featureStyle[i].image_.scale_));
+        }
+
+        let scaleMaxValue = Math.max(...scaleValues);
+        let radius = ((70 * scaleMaxValue) * Math.sqrt(2)) * resolution;
+        return turfbuffer.default(feature.values_.turfGeometry, radius, {units: 'meters'});
+    }
 
     // Assurance checks
     if (primary_property === null) {
@@ -63,27 +78,20 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         dataProjection: 'EPSG:3857',
         featureProjection: 'EPSG:3857',
     });
+
+    // Sorting properties - primary property is top left box
     let sortedProperties = Symbolizer.sortProperties(properties, primary_property);
-    console.log('Sorted properties');
-    console.log(sortedProperties);
+
 
     //TODO 1. make group symbols
-    // 2. change primary to the first position
     // 3. compute a buffer
-    console.log('FEATURE');
-    console.log(turfhelper.point([-75.343, 39.984]));
-    console.log(turfhelper.point([1847520.94, 6309563.27]));
-
-    console.log(turfbuffer.default(turfhelper.point([-75.343, 39.984]), 500, {units: 'kilometers'}));
-    console.log(turfbuffer.default(turfprojection.toWgs84(turfhelper.point([1847520.94, 6309563.27])), 500, {units: 'kilometers'}));
 
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
     for (let i in parsedFeatures) {
-            parsedFeatures[i].setProperties({'WGS84': turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates())});
-            parsedFeatures[i].setProperties({'turf_geometry': turfhelper.point(turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates()))});
+            parsedFeatures[i].setProperties({'wgs84': turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates())});
+            parsedFeatures[i].setProperties({'turfGeometry': turfhelper.point(turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates()))});
     }
 
-    console.log('Parsed features');
     console.log(parsedFeatures);
 
     // Min and max values for normalization
@@ -94,10 +102,6 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         minMaxValues[property.name_id]['min'] = Symbolizer.getMinValue(parsedFeatures, property.name_id);
         minMaxValues[property.name_id]['max'] = Symbolizer.getMaxValue(parsedFeatures, property.name_id);
     });
-    console.log('MAXMINVALUES');
-    console.log(minMaxValues);
-
-    //console.log(parsedFeatures);
 
     // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
@@ -113,8 +117,15 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             for (let i = 0; i < length; i++) {
                 let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, i, resolution, minMaxValues);
                 let featureStyle = symbolizer.createSymbol();
-                //console.log(featureStyle);
+
+                // adding style to a feature
+                feature.setProperties({'featureStyle': featureStyle});
+                feature.setProperties({'buffer': computeBuffer(feature)});
+                //console.log('Feature');
+                //console.log(feature);
+
                 let hash = Symbolizer.createHash(feature.id_, primary_property, i);
+
                 if (featureStyle instanceof Array) {
                     for (let j in featureStyle) {
                         featureStyle[j].getImage().load();
@@ -123,28 +134,39 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                     featureStyle.getImage().load();
                 }
                 cachedFeatureStyles[hash] = featureStyle;
-                //console.log('CACHED styles');
-                //console.log(cachedFeatureStyles);
             }
         });
     }
 
+
+    //test of feature buffers
+    console.log(parsedFeatures);
+    let bufferFeatures = [];
+    for (let i in parsedFeatures) {
+        let featureTest = new Feature({
+            name: "Test",
+            geometry: new Polygon(parsedFeatures[i].values_.buffer.geometry.coordinates).transform('EPSG:4326', 'EPSG:3857')
+        });
+        let myStroke = new Stroke({
+            color : 'rgba(255,0,0,1.0)',
+            width : 2
+        });
+        featureTest.setStyle(new Style({stroke: myStroke}));
+        bufferFeatures.push(featureTest);
+    }
+
+    console.log('Buffer features');
+    console.log(bufferFeatures);
+    let testFeatures = parsedFeatures.push(bufferFeatures[0]);
+
     return {
-        features: new GeoJSON().readFeatures(features, {
-            dataProjection: 'EPSG:3857',
-            featureProjection: 'EPSG:3857',
-        }),
+        features: parsedFeatures,
         style: function (feature, resolution) {
             let hash = Symbolizer.createHash(feature.id_, primary_property, value_idx);
-            //console.log('hash');
-            //console.log(hash);
 
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
-                //console.log('Vracim cachovany styl');
-                //console.log(hash);
                 return cachedFeatureStyles[hash]
             } else {
-                //console.log('Necachovany styl');
                 let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, value_idx, resolution, minMaxValues);
                 return symbolizer.createSymbol();
             }

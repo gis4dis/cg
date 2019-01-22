@@ -107,7 +107,7 @@ class Map extends React.PureComponent {
             primary_property: "air_temperature",
             features: geojson_example,
             value_idx: 1,
-            resolution: 76.43702828517625
+            resolution: 4.777 //76.43702828517625 for zoom 11
         });
 
         ol_Map = require('ol/map').default;
@@ -125,8 +125,11 @@ class Map extends React.PureComponent {
         const view = new ol_View({
             projection: projection,
             center: ol_proj.transform([16.6078411,49.2002211], 'EPSG:4326', projection),
-            zoom: 11
+            zoom: 15
         });
+
+        console.log('RESOLUTION');
+        console.log(view.getResolution());
 
 
         const vectorLayer = getVectorLayer();

@@ -5,6 +5,7 @@ import proj4 from 'proj4';
 
 const proj3857 = proj4('EPSG:3857');
 const proj4326 = proj4('EPSG:4326');
+
 /** Represents Generalizer for point features. */
 export default class Symbolizer {
 
@@ -18,6 +19,7 @@ export default class Symbolizer {
     static transformPointTo4326(point) {
         return proj4(proj3857, proj4326, point.geometry.coordinates)
     }
+
 
     //TODO rename method
     generalizeFeatures() {
