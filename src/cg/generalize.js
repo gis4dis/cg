@@ -8,6 +8,7 @@ import Fill from 'ol/style/fill';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
 let turfhelper = require('@turf/helpers');
 let turfbuffer = require('@turf/buffer');
+let turfintersect = require('@turf/intersect');
 let turfprojection = require('@turf/projection');
 
 /**
@@ -37,6 +38,15 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         let scaleMaxValue = Math.max(...scaleValues);
         let radius = ((70 * scaleMaxValue) * Math.sqrt(2)) * resolution;
         return turfbuffer.default(feature.values_.turfGeometry, radius, {units: 'meters'});
+    }
+
+    function findIntersection(feature1, feature2) {
+        //console.log(feature1.values_.buffer);
+        //console.log(feature2.values_.buffer);
+
+        if (feature1.id_ === feature2.id_) {return null;}
+        let intersection = turfintersect.default(feature1.values_.buffer, feature2.values_.buffer);
+        return intersection !== null;
     }
 
     // Assurance checks
@@ -121,6 +131,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                 // adding style to a feature
                 feature.setProperties({'featureStyle': featureStyle});
                 feature.setProperties({'buffer': computeBuffer(feature)});
+
                 //console.log('Feature');
                 //console.log(feature);
 
@@ -138,9 +149,23 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         });
     }
 
+    let intersectedFeatures = [];
+    // Finding intersected features
+    for (let k in parsedFeatures) {
+        intersectedFeatures = [];
+        for (let l in parsedFeatures) {
+            if (findIntersection(parsedFeatures[k], parsedFeatures[l])) {
+                intersectedFeatures.push(parsedFeatures[l]);
+            }
+        }
+        parsedFeatures[k].setProperties({'intersectedFeatures': intersectedFeatures});
+    }
+    console.log(intersectedFeatures);
+
 
     //test of feature buffers
     console.log(parsedFeatures);
+
     let bufferFeatures = [];
     for (let i in parsedFeatures) {
         let featureTest = new Feature({
