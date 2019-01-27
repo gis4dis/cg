@@ -160,7 +160,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         }
         parsedFeatures[k].setProperties({'intersectedFeatures': intersectedFeatures});
     }
-    console.log(intersectedFeatures);
+    /*console.log(intersectedFeatures);
 
     let bufferFeatures = [];
     for (let i in parsedFeatures) {
@@ -178,7 +178,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
 
     console.log('Buffer features');
     console.log(bufferFeatures);
-    let testFeatures = parsedFeatures.push(bufferFeatures[0]);
+    let testFeatures = parsedFeatures.push(bufferFeatures[0]);*/
 
     return {
         features: parsedFeatures,

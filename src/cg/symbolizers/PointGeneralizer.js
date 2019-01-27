@@ -27,13 +27,11 @@ export default class PointGeneralizer {
     computeBuffers() {
         let buffers = {};
 
+        //TODO make this simpler OMG
         this.features.forEach(function(feature, index) {
-            console.log(feature);
             this.properties.forEach(function(property) {
                 if (feature.values_.hasOwnProperty(property.name_id)) {
-                    console.log(property);
                     let length = feature.values_[property.name_id].values.length;
-                    console.log(length);
                     for (let i = 0; i < length; i++) {
                         let scaleValues = [];
                         this.properties.forEach(function(property) {
@@ -41,7 +39,6 @@ export default class PointGeneralizer {
                                 let scaleValue = Symbolizer.normalize(feature.values_[property.name_id].values[i],
                                     this.minMaxValues[property.name_id]['min'], this.minMaxValues[property.name_id]['max']);
                                 scaleValues.push(scaleValue);
-                                console.log(scaleValues)
                             }
                         }.bind(this));
 
