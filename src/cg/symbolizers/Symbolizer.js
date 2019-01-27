@@ -82,7 +82,7 @@ export default class Symbolizer {
     }
 
     /**
-     * Normalize value to 0-1 range
+     * Normalize value to MIN_RANGE-MAX_RANGE range
      * @param {number} value - value for normalization
      * @param {number} min - minimum value of array
      * @param {number} max - maximum value of array
@@ -165,7 +165,7 @@ export default class Symbolizer {
     getNormalizedPropertyValue(property) {
         let normalizedPropertyValue = 0;
 
-        // Value of property (e.g. air_temperature) is normalized from 0 to 1
+        // Value of property (e.g. air_temperature) is normalized from MIN_RANGE to MAX_RANGE
         return Symbolizer.normalize(this.feature.values_[property]['values'][this.valueIdx], this.minMaxValues[property]['min'], this.minMaxValues[property]['max']);
     }
 

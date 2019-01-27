@@ -6,6 +6,7 @@ import Style from 'ol/style/style';
 import Stroke from 'ol/style/stroke';
 import Fill from 'ol/style/fill';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
+import PointGeneralizer from "./symbolizers/PointGeneralizer";
 let turfhelper = require('@turf/helpers');
 let turfbuffer = require('@turf/buffer');
 let turfintersect = require('@turf/intersect');
@@ -25,20 +26,9 @@ let turfprojection = require('@turf/projection');
  * @returns {{features: Array.<_ol_feature>, style: _ol_StyleFunction}}
  */
 let cachedFeatureStyles = {};
+let buffers = {};
 
 export default ({topic, primary_property, properties, features, value_idx, resolution}) => {
-
-    function computeBuffer(feature) {
-        let scaleValues = [];
-
-        for (let i in feature.values_.featureStyle) {
-            scaleValues.push(parseFloat(feature.values_.featureStyle[i].image_.scale_));
-        }
-
-        let scaleMaxValue = Math.max(...scaleValues);
-        let radius = ((70 * scaleMaxValue) * Math.sqrt(2)) * resolution;
-        return turfbuffer.default(feature.values_.turfGeometry, radius, {units: 'meters'});
-    }
 
     function findIntersection(feature1, feature2) {
         //console.log(feature1.values_.buffer);
@@ -92,10 +82,6 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     // Sorting properties - primary property is top left box
     let sortedProperties = Symbolizer.sortProperties(properties, primary_property);
 
-
-    //TODO 1. make group symbols
-    // 3. compute a buffer
-
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
     for (let i in parsedFeatures) {
             parsedFeatures[i].setProperties({'wgs84': turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates())});
@@ -113,6 +99,13 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         minMaxValues[property.name_id]['max'] = Symbolizer.getMaxValue(parsedFeatures, property.name_id);
     });
 
+    if (Object.keys(buffers).length === 0) {
+        let generalizer = new PointGeneralizer(parsedFeatures, resolution, sortedProperties, value_idx, minMaxValues, primary_property);
+        buffers = generalizer.computeBuffers();
+    }
+    console.log('BUFFERS');
+    console.log(buffers);
+
     // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
         let length = 0;
@@ -125,17 +118,20 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             });
 
             for (let i = 0; i < length; i++) {
+                let hash = Symbolizer.createHash(feature.id_, primary_property, i);
+                //console.log('HASH');
+                //console.log(hash);
+                // adding buffer from buffers object to feature
+                feature.setProperties({'buffer': buffers[hash]});
+
                 let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, i, resolution, minMaxValues);
                 let featureStyle = symbolizer.createSymbol();
 
                 // adding style to a feature
                 feature.setProperties({'featureStyle': featureStyle});
-                feature.setProperties({'buffer': computeBuffer(feature)});
 
                 //console.log('Feature');
                 //console.log(feature);
-
-                let hash = Symbolizer.createHash(feature.id_, primary_property, i);
 
                 if (featureStyle instanceof Array) {
                     for (let j in featureStyle) {
@@ -149,6 +145,10 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         });
     }
 
+    //test of feature buffers
+    console.log('PARSED FEATURES');
+    console.log(parsedFeatures);
+
     let intersectedFeatures = [];
     // Finding intersected features
     for (let k in parsedFeatures) {
@@ -161,10 +161,6 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         parsedFeatures[k].setProperties({'intersectedFeatures': intersectedFeatures});
     }
     console.log(intersectedFeatures);
-
-
-    //test of feature buffers
-    console.log(parsedFeatures);
 
     let bufferFeatures = [];
     for (let i in parsedFeatures) {
