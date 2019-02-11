@@ -88,7 +88,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             parsedFeatures[i].setProperties({'turfGeometry': turfhelper.point(turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates()))});
     }
 
-    console.log(parsedFeatures);
+    //console.log(parsedFeatures);
 
     // Min and max values for normalization
     let minMaxValues = {};
@@ -103,8 +103,8 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         let generalizer = new PointGeneralizer(parsedFeatures, resolution, sortedProperties, value_idx, minMaxValues, primary_property);
         buffers = generalizer.computeBuffers();
     }
-    console.log('BUFFERS');
-    console.log(buffers);
+    //console.log('BUFFERS');
+    //console.log(buffers);
 
     // Caching the styles
     if (Object.keys(cachedFeatureStyles).length === 0) {
@@ -146,8 +146,8 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     }
 
     //test of feature buffers
-    console.log('PARSED FEATURES');
-    console.log(parsedFeatures);
+    //console.log('PARSED FEATURES');
+    //console.log(parsedFeatures);
 
     let intersectedFeatures = [];
     // Finding intersected features

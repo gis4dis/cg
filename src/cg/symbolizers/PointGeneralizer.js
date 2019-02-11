@@ -70,7 +70,7 @@ export default class PointGeneralizer {
     generalizeFeatures() {
         //TODO add maxEdge value to concave
         let concaveHull = concave(this.featureCollection, {units: 'kilometres'});
-        console.log(concaveHull);
+        //console.log(concaveHull);
         return concaveHull;
     }
 
