@@ -24,6 +24,13 @@ export default class PointGeneralizer {
         return proj4(proj3857, proj4326, point.geometry.coordinates)
     }
 
+    //TODO prepare buffers for computing new position of aggregated feature
+    static computeCentroid(feature1, feature2) {
+        let avgX = (feature1.values_.wgs84[0] + feature2.values_.wgs84[0]) / 2;
+        let avgY = (feature1.values_.wgs84[1] + feature2.values_.wgs84[1]) / 2;
+        return [avgX, avgY]
+    }
+
     computeBuffers() {
         let buffers = {};
 
