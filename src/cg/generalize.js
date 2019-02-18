@@ -6,11 +6,9 @@ import Style from 'ol/style/style';
 import Stroke from 'ol/style/stroke';
 import Fill from 'ol/style/fill';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
-import PointGeneralizer from "./symbolizers/PointGeneralizer";
-let turfhelper = require('@turf/helpers');
-let turfbuffer = require('@turf/buffer');
-let turfintersect = require('@turf/intersect');
-let turfprojection = require('@turf/projection');
+import { findIntersection, addTurfGeometry, getMinMaxValues } from './helpers';
+import PointGeneralizer from './symbolizers/PointGeneralizer';
+import CombinedSymbol from './symbolizers/CombinedSymbol';
 
 /**
  * Main generalization function
@@ -29,15 +27,6 @@ let cachedFeatureStyles = {};
 let buffers = {};
 
 export default ({topic, primary_property, properties, features, value_idx, resolution}) => {
-
-    function findIntersection(feature1, feature2) {
-        //console.log(feature1.values_.buffer);
-        //console.log(feature2.values_.buffer);
-
-        if (feature1.id_ === feature2.id_) {return null;}
-        let intersection = turfintersect.default(feature1.values_.buffer, feature2.values_.buffer);
-        return intersection !== null;
-    }
 
     // Assurance checks
     if (primary_property === null) {
@@ -83,31 +72,32 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     let sortedProperties = Symbolizer.sortProperties(properties, primary_property);
 
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
-    for (let i in parsedFeatures) {
-            parsedFeatures[i].setProperties({'wgs84': turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates())});
-            parsedFeatures[i].setProperties({'turfGeometry': turfhelper.point(turfprojection.toWgs84(parsedFeatures[i].getGeometry().getCoordinates()))});
-    }
-
-    //console.log(parsedFeatures);
+    parsedFeatures = addTurfGeometry(parsedFeatures);
+    console.log(parsedFeatures);
 
     // Min and max values for normalization
-    let minMaxValues = {};
+    let minMaxValues = getMinMaxValues(sortedProperties, parsedFeatures);
 
-    sortedProperties.forEach(function(property) {
-        minMaxValues[property.name_id] = {};
-        minMaxValues[property.name_id]['min'] = Symbolizer.getMinValue(parsedFeatures, property.name_id);
-        minMaxValues[property.name_id]['max'] = Symbolizer.getMaxValue(parsedFeatures, property.name_id);
-    });
+    for (let feature of parsedFeatures) {
+        let combinedSymbol = new CombinedSymbol(feature, properties, primary_property, resolution, value_idx, minMaxValues);
+        feature.setProperties({'combinedSymbol': combinedSymbol});
+        console.log('FEATURE');
+        console.log(feature);
+    }
 
-    if (Object.keys(buffers).length === 0) {
+
+
+
+    /*if (Object.keys(buffers).length === 0) {
+
         let generalizer = new PointGeneralizer(parsedFeatures, resolution, sortedProperties, value_idx, minMaxValues, primary_property);
         buffers = generalizer.computeBuffers();
-    }
+    }*/
     //console.log('BUFFERS');
     //console.log(buffers);
 
     // Caching the styles
-    if (Object.keys(cachedFeatureStyles).length === 0) {
+    /*if (Object.keys(cachedFeatureStyles).length === 0) {
         let length = 0;
         parsedFeatures.forEach(function(feature) {
 
@@ -143,15 +133,16 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                 cachedFeatureStyles[hash] = featureStyle;
             }
         });
-    }
+    }*/
 
     //test of feature buffers
     //console.log('PARSED FEATURES');
     //console.log(parsedFeatures);
 
     let intersectedFeatures = [];
+    //TODO don't forget about it
     // Finding intersected features
-    for (let k in parsedFeatures) {
+    /*for (let k in parsedFeatures) {
         intersectedFeatures = [];
         for (let l in parsedFeatures) {
             if (findIntersection(parsedFeatures[k], parsedFeatures[l])) {
@@ -159,14 +150,15 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             }
         }
         parsedFeatures[k].setProperties({'intersectedFeatures': intersectedFeatures});
-    }
-    /*console.log(intersectedFeatures);
+    }*/
+    //console.log(intersectedFeatures);
+    console.log(parsedFeatures);
 
     let bufferFeatures = [];
-    for (let i in parsedFeatures) {
+    for (let feature of parsedFeatures) {
         let featureTest = new Feature({
-            name: "Test",
-            geometry: new Polygon(parsedFeatures[i].values_.buffer.geometry.coordinates).transform('EPSG:4326', 'EPSG:3857')
+            name: 'buffer' + feature.id_,
+            geometry: new Polygon(feature.values_.combinedSymbol.buffer.geometry.coordinates).transform('EPSG:4326', 'EPSG:3857')
         });
         let myStroke = new Stroke({
             color : 'rgba(255,0,0,1.0)',
@@ -176,9 +168,9 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         bufferFeatures.push(featureTest);
     }
 
-    console.log('Buffer features');
     console.log(bufferFeatures);
-    let testFeatures = parsedFeatures.push(bufferFeatures[0]);*/
+    parsedFeatures.push(bufferFeatures[0]);
+    parsedFeatures.push(bufferFeatures[1]);
 
     return {
         features: parsedFeatures,

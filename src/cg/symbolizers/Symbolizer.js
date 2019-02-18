@@ -42,46 +42,6 @@ export default class Symbolizer {
     }
 
     /**
-     * Returning max value from geojson array with specific key
-     * @param {ol.Feature} features - array of OL features
-     * @param {String} name_id - name_id of property
-     * @returns {number} - Max value from array
-     */
-    static getMaxValue(features, name_id) {
-        let maxValue = null;
-
-        features.forEach(function (feature) {
-            if (feature.values_.hasOwnProperty(name_id)) {
-                if (maxValue === null || maxValue < Math.max(...feature.values_[name_id]['values'])) {
-                    maxValue = Math.max(...feature.values_[name_id]['values']);
-                }
-            }
-        });
-
-        return maxValue;
-    }
-
-    /**
-     * Returning min value from geojson array with specific key
-     * @param {ol.Feature} features - array of OL features
-     * @param {String} name_id - name_id of property
-     * @returns {number} - Min value from array
-     */
-    static getMinValue(features, name_id) {
-        let minValue = null;
-
-        features.forEach(function (feature) {
-            if (feature.values_.hasOwnProperty(name_id)) {
-                if (minValue === null || minValue > Math.min(...feature.values_[name_id]['values'])) {
-                    minValue = Math.min(...feature.values_[name_id]['values']);
-                }
-            }
-        });
-
-        return minValue;
-    }
-
-    /**
      * Normalize value to MIN_RANGE-MAX_RANGE range
      * @param {number} value - value for normalization
      * @param {number} min - minimum value of array
