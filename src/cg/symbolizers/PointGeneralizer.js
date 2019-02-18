@@ -8,7 +8,7 @@ let turfbuffer = require('@turf/buffer');
 const proj3857 = proj4('EPSG:3857');
 const proj4326 = proj4('EPSG:4326');
 
-/** Represents Generalizer for point features. */
+/* Represents Generalizer for point features. */
 export default class PointGeneralizer {
 
     constructor(features, resolution, properties, valueIdx, minMaxValues, primaryProperty) {
@@ -31,7 +31,7 @@ export default class PointGeneralizer {
         return [avgX, avgY]
     }
 
-    computeBuffers() {
+    /*computeBuffers() {
         let buffers = {};
 
         //TODO make this simpler OMG
@@ -71,7 +71,7 @@ export default class PointGeneralizer {
         }.bind(this));
         return buffers;
     }
-
+*/
 
     //TODO rename method
     generalizeFeatures() {
@@ -81,7 +81,7 @@ export default class PointGeneralizer {
         return concaveHull;
     }
 
-    meanDistance() {
+    /*meanDistance() {
         let numberOfPoints = this.features.length;
         let cumulativeDistance;
 
@@ -104,5 +104,5 @@ export default class PointGeneralizer {
             }
         }
         return maxPointDistance;
-    }
+    }*/
 }

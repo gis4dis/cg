@@ -6,7 +6,7 @@ import Style from 'ol/style/style';
 import Stroke from 'ol/style/stroke';
 import Fill from 'ol/style/fill';
 import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
-import { findIntersection, addTurfGeometry, getMinMaxValues } from './helpers';
+import { findIntersection, addTurfGeometry, getMinMaxValues, getNewCentroid, updateTurfGeometry } from './helpers';
 import PointGeneralizer from './symbolizers/PointGeneralizer';
 import CombinedSymbol from './symbolizers/CombinedSymbol';
 
@@ -70,16 +70,17 @@ export default ({topic, primary_property, properties, features, value_idx, resol
 
     // Sorting properties - primary property is top left box
     let sortedProperties = Symbolizer.sortProperties(properties, primary_property);
+    console.log('SORTED');
+    console.log(sortedProperties);
 
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
     parsedFeatures = addTurfGeometry(parsedFeatures);
     console.log(parsedFeatures);
-
     // Min and max values for normalization
     let minMaxValues = getMinMaxValues(sortedProperties, parsedFeatures);
 
     for (let feature of parsedFeatures) {
-        let combinedSymbol = new CombinedSymbol(feature, properties, primary_property, resolution, value_idx, minMaxValues);
+        let combinedSymbol = new CombinedSymbol(feature, sortedProperties, primary_property, resolution, value_idx, minMaxValues);
         feature.setProperties({'combinedSymbol': combinedSymbol});
         console.log('FEATURE');
         console.log(feature);
@@ -142,16 +143,30 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     let intersectedFeatures = [];
     //TODO don't forget about it
     // Finding intersected features
-    /*for (let k in parsedFeatures) {
-        intersectedFeatures = [];
-        for (let l in parsedFeatures) {
-            if (findIntersection(parsedFeatures[k], parsedFeatures[l])) {
-                intersectedFeatures.push(parsedFeatures[l]);
+    console.log('PARSED');
+    console.log(parsedFeatures);
+    for (let feature of parsedFeatures) {
+        feature.setProperties({'intersectedFeatures': []});
+        for (let otherFeature of parsedFeatures) {
+            if (feature.id_ !== otherFeature.id_) {
+                if (findIntersection(feature, otherFeature)) {
+                    feature.values_.intersectedFeatures.push(otherFeature);
+                    feature.values_.combinedSymbol.aggregateSymbols(otherFeature.values_.combinedSymbol);
+
+                    let newCoords = getNewCentroid(feature.getGeometry().getCoordinates(), otherFeature.getGeometry().getCoordinates());
+                    console.log(newCoords);
+                    feature.getGeometry().setCoordinates(newCoords);
+
+                    parsedFeatures.splice(parsedFeatures.indexOf(otherFeature), 1);
+
+                    updateTurfGeometry(feature);
+                    feature.values_.combinedSymbol.setBuffer(value_idx, minMaxValues);
+                }
             }
         }
-        parsedFeatures[k].setProperties({'intersectedFeatures': intersectedFeatures});
-    }*/
-    //console.log(intersectedFeatures);
+    }
+
+    console.log('PARSED AFTER');
     console.log(parsedFeatures);
 
     let bufferFeatures = [];
@@ -168,9 +183,10 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         bufferFeatures.push(featureTest);
     }
 
+    console.log('BUFFER FEATURES');
     console.log(bufferFeatures);
     parsedFeatures.push(bufferFeatures[0]);
-    parsedFeatures.push(bufferFeatures[1]);
+    //parsedFeatures.push(bufferFeatures[1]);
 
     return {
         features: parsedFeatures,

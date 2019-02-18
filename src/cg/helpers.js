@@ -7,11 +7,12 @@ let turfprojection = require('@turf/projection');
 
 
 export function findIntersection(feature1, feature2) {
-    //console.log(feature1.values_.buffer);
-    //console.log(feature2.values_.buffer);
+    console.log('BUFFER');
+    console.log(feature1);
+    console.log(feature2);
 
     if (feature1.id_ === feature2.id_) {return null;}
-    let intersection = turfintersect.default(feature1.values_.buffer, feature2.values_.buffer);
+    let intersection = turfintersect.default(feature1.values_.combinedSymbol.buffer, feature2.values_.combinedSymbol.buffer);
     return intersection !== null;
 }
 
@@ -22,6 +23,15 @@ export function addTurfGeometry(features) {
     }
 
     return features;
+}
+
+export function updateTurfGeometry(feature) {
+    feature.setProperties({'wgs84': turfprojection.toWgs84(feature.getGeometry().getCoordinates())});
+    feature.setProperties({'turfGeometry': turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates()))});
+}
+
+export function getNewCentroid(coord, other) {
+    return [(coord[0] + other[0]) / 2, (coord[1] + other[1]) / 2];
 }
 
 /**

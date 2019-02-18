@@ -4,7 +4,7 @@ import Symbolizer from "./Symbolizer";
 let turfbuffer = require('@turf/buffer');
 
 /* Constants of position of symbols. Default value by OL is [0.5, 0.5] */
-const positions = {
+/*const positions = {
     'PRIMARY': [1,1],
     'SECONDARY': [0,0],
     'TERTIARY': [1,0],
@@ -14,7 +14,9 @@ const positions = {
 const SYMBOL_PATH = '/static/symbolization';
 
 const MIN_RANGE = 0.2;
-const MAX_RANGE = 0.6;
+const MAX_RANGE = 0.6;*/
+
+const AGGREGATE_RULE = 'max';
 
 
 /** Represents Symbolizer for features. Contains set of operations including creating styles */
@@ -35,19 +37,41 @@ export default class CombinedSymbol {
         this.usedProperties = [];
         this.resolution = resolution;
 
-        this.primarySymbol = {style: null, nameId: this.setPrimarySymbol()};
-        this.secondarySymbol = {style: null, nameId: this.setSymbol(properties)};
-        this.tertiarySymbol = {style: null, nameId: this.setSymbol(properties)};
+        this.primarySymbol = {style: null, nameId: this.setPrimarySymbol(), value: null};
+        this.secondarySymbol = {style: null, nameId: this.setSymbol(properties), value: null};
+        this.tertiarySymbol = {style: null, nameId: this.setSymbol(properties), value: null};
         this.otherSymbols = this.setOtherSymbols(properties);
 
-        this.buffer = this.setBuffer(properties, value_idx, minMaxValues);
-        console.log(this.buffer);
+        this.buffer = null;
+        this.setBuffer(value_idx, minMaxValues);
+        //console.log(this.buffer);
+    }
+
+    static compareValues(value, other) {
+        if (value < other) {
+            return other;
+        }
+        return value;
+    }
+
+    //TODO add the same thing for anomalyRates
+    aggregateSymbols(other) {
+        console.log('OTHER');
+        console.log(other);
+        this.primarySymbol.value = CombinedSymbol.compareValues(this.primarySymbol.value, other.primarySymbol.value);
+        this.secondarySymbol.value = CombinedSymbol.compareValues(this.secondarySymbol.value, other.secondarySymbol.value);
+        this.tertiarySymbol.value = CombinedSymbol.compareValues(this.tertiarySymbol.value, other.tertiarySymbol.value);
+
+        for (let i in this.otherSymbols) {
+            this.otherSymbols[i].value = CombinedSymbol.compareValues(other.otherSymbols[i]);
+        }
     }
 
     getOtherValues(valueIdx) {
         let values = [];
 
         for (let symbol of this.otherSymbols) {
+            symbol.value = this.feature.values_[symbol.nameId].values[valueIdx];
             values.push(this.feature.values_[symbol.nameId].values[valueIdx]);
         }
         return values;
@@ -57,13 +81,13 @@ export default class CombinedSymbol {
         return ((70 * scaleMaxValue) * Math.sqrt(2)) * this.resolution;
     }
 
-    setBuffer(properties, value_idx, minMaxValues) {
-        let primary = (this.primarySymbol.nameId !== null) ? this.feature.values_[this.primarySymbol.nameId].values[value_idx] : null;
-        let secondary = (this.secondarySymbol.nameId !== null) ? this.feature.values_[this.secondarySymbol.nameId].values[value_idx] : null;
-        let tertiary = (this.tertiarySymbol.nameId !== null) ? this.feature.values_[this.tertiarySymbol.nameId].values[value_idx] : null;
+    setBuffer(value_idx, minMaxValues) {
+        this.primarySymbol.value = (this.primarySymbol.nameId !== null) ? this.feature.values_[this.primarySymbol.nameId].values[value_idx] : null;
+        this.secondarySymbol.value = (this.secondarySymbol.nameId !== null) ? this.feature.values_[this.secondarySymbol.nameId].values[value_idx] : null;
+        this.tertiarySymbol.value = (this.tertiarySymbol.nameId !== null) ? this.feature.values_[this.tertiarySymbol.nameId].values[value_idx] : null;
         let other = this.getOtherValues(value_idx);
 
-        other.push(primary, secondary, tertiary);
+        other.push(this.primarySymbol.value, this.secondarySymbol.value, this.tertiarySymbol.value);
         let maxValue = Math.max(...other);
 
         //TODO not should be this.primary but it should be name_id of biggest value property
@@ -75,7 +99,7 @@ export default class CombinedSymbol {
 
         let radius = this.computeRadius(scaleMaxValue);
 
-        return turfbuffer.default(this.feature.values_.turfGeometry, radius, {units: 'meters'});
+        this.buffer = turfbuffer.default(this.feature.values_.turfGeometry, radius, {units: 'meters'});
 
     }
 
@@ -89,25 +113,33 @@ export default class CombinedSymbol {
 
     setSymbol(properties) {
         for (let property of properties) {
-            if (property.name_id !== this.primaryProperty && this.feature.values_.hasOwnProperty(property.name_id)) {
-                if (!this.usedProperties.includes(property.name_id)) {
+            if (property.name_id !== this.primaryProperty) {
+                if (this.feature.values_.hasOwnProperty(property.name_id)) {
+                    if (!this.usedProperties.includes(property.name_id)) {
+                        this.usedProperties.push(property.name_id);
+                        return property.name_id;
+                    }
+                } else {
                     this.usedProperties.push(property.name_id);
-                    return property.name_id;
+                    return null;
                 }
             }
         }
-
-        return null;
     }
 
     setOtherSymbols(properties) {
         let symbols = [];
 
         for (let property of properties) {
-            if (property.name_id !== this.primaryProperty && this.feature.values_.hasOwnProperty(property.name_id)) {
-                if (!this.usedProperties.includes(property.name_id)) {
-                    this.usedProperties.push(property.name_id);
-                    symbols.push({style: null, nameId: property.name_id});
+            if (property.name_id !== this.primaryProperty) {
+                console.log('PROPERTY NAME ID');
+                console.log(property.name_id);
+                console.log(this.usedProperties);
+                if (this.feature.values_.hasOwnProperty(property.name_id)) {
+                    if (!this.usedProperties.includes(property.name_id)) {
+                        this.usedProperties.push(property.name_id);
+                        symbols.push({style: null, nameId: property.name_id, value: null});
+                    }
                 }
             }
         }
