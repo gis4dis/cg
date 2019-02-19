@@ -33,46 +33,88 @@ export default class CombinedSymbol {
      */
     constructor(feature, properties, primary_property,resolution, value_idx, minMaxValues) {
         this.primaryProperty = primary_property;
-        this.feature = feature;
         this.usedProperties = [];
+        //console.log(JSON.stringify(this.usedProperties));
         this.resolution = resolution;
 
-        this.primarySymbol = {style: null, nameId: this.setPrimarySymbol(), value: null};
-        this.secondarySymbol = {style: null, nameId: this.setSymbol(properties), value: null};
-        this.tertiarySymbol = {style: null, nameId: this.setSymbol(properties), value: null};
-        this.otherSymbols = this.setOtherSymbols(properties);
+        this.primarySymbol = {style: null, nameId: this.setPrimarySymbol(feature), value: null};
+        this.secondarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null};
+        this.tertiarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null};
+        this.otherSymbols = this.setOtherSymbols(properties, feature);
+        this.setPhenomenonValues(feature, value_idx);
 
         this.buffer = null;
-        this.setBuffer(value_idx, minMaxValues);
+        this.setBuffer(feature, value_idx, minMaxValues);
         //console.log(this.buffer);
     }
 
-    static compareValues(value, other) {
-        if (value < other) {
+    setPhenomenonValues(feature, value_idx) {
+        this.primarySymbol.value = (this.primarySymbol.nameId !== null) ? feature.values_[this.primarySymbol.nameId].values[value_idx] : null;
+        this.secondarySymbol.value = (this.secondarySymbol.nameId !== null) ? feature.values_[this.secondarySymbol.nameId].values[value_idx] : null;
+        this.tertiarySymbol.value = (this.tertiarySymbol.nameId !== null) ? feature.values_[this.tertiarySymbol.nameId].values[value_idx] : null;
+        this.setOtherValues(feature, value_idx);
+    }
+
+    static compareValues(symbol, other) {
+        console.log('COMPARE');
+        console.log(symbol);
+        console.log(other);
+        if (symbol.value < other.value) {
             return other;
         }
-        return value;
+        return symbol;
     }
 
     //TODO add the same thing for anomalyRates
     aggregateSymbols(other) {
         console.log('OTHER');
+        console.log(this);
         console.log(other);
-        this.primarySymbol.value = CombinedSymbol.compareValues(this.primarySymbol.value, other.primarySymbol.value);
-        this.secondarySymbol.value = CombinedSymbol.compareValues(this.secondarySymbol.value, other.secondarySymbol.value);
-        this.tertiarySymbol.value = CombinedSymbol.compareValues(this.tertiarySymbol.value, other.tertiarySymbol.value);
+        console.log(CombinedSymbol.compareValues(this.primarySymbol, other.primarySymbol));
+        console.log(this.primarySymbol.value);
+        this.primarySymbol = CombinedSymbol.compareValues(this.primarySymbol, other.primarySymbol);
+        console.log(JSON.stringify(this.primarySymbol.value));
+        console.log('AFTER PRIMARY');
+        console.log(this);
+
+        this.secondarySymbol = CombinedSymbol.compareValues(this.secondarySymbol, other.secondarySymbol);
+        console.log('TERTIARY');
+        console.log(CombinedSymbol.compareValues(this.tertiarySymbol, other.tertiarySymbol));
+        this.tertiarySymbol = CombinedSymbol.compareValues(this.tertiarySymbol, other.tertiarySymbol);
 
         for (let i in this.otherSymbols) {
-            this.otherSymbols[i].value = CombinedSymbol.compareValues(other.otherSymbols[i]);
+            this.otherSymbols[i] = CombinedSymbol.compareValues(this.otherSymbols[i], other.otherSymbols[i]);
         }
+        //console.log(JSON.stringify(this));
     }
 
-    getOtherValues(valueIdx) {
+    setOtherValues(feature, valueIdx) {
         let values = [];
 
         for (let symbol of this.otherSymbols) {
-            symbol.value = this.feature.values_[symbol.nameId].values[valueIdx];
-            values.push(this.feature.values_[symbol.nameId].values[valueIdx]);
+            //console.log('SET OTHER VALUES');
+            //console.log(symbol);
+            if (symbol.nameId === null) {
+                continue;
+            }
+
+            symbol.value = feature.values_[symbol.nameId].values[valueIdx];
+            values.push(feature.values_[symbol.nameId].values[valueIdx]);
+        }
+        return values;
+    }
+
+    getOtherValues() {
+        let values = [];
+
+        for (let symbol of this.otherSymbols) {
+            //console.log('GET OTHER VALUES');
+            //console.log(symbol);
+            if (symbol.nameId === null) {
+                continue;
+            }
+
+            values.push(symbol.value);
         }
         return values;
     }
@@ -81,11 +123,12 @@ export default class CombinedSymbol {
         return ((70 * scaleMaxValue) * Math.sqrt(2)) * this.resolution;
     }
 
-    setBuffer(value_idx, minMaxValues) {
-        this.primarySymbol.value = (this.primarySymbol.nameId !== null) ? this.feature.values_[this.primarySymbol.nameId].values[value_idx] : null;
-        this.secondarySymbol.value = (this.secondarySymbol.nameId !== null) ? this.feature.values_[this.secondarySymbol.nameId].values[value_idx] : null;
-        this.tertiarySymbol.value = (this.tertiarySymbol.nameId !== null) ? this.feature.values_[this.tertiarySymbol.nameId].values[value_idx] : null;
-        let other = this.getOtherValues(value_idx);
+    setBuffer(feature, value_idx, minMaxValues) {
+        //console.log('BUFFER');
+        //console.log(JSON.stringify(this));
+        let other = this.getOtherValues();
+        //console.log('BUFFER WITH VALUES');
+        //console.log(JSON.stringify(this));
 
         other.push(this.primarySymbol.value, this.secondarySymbol.value, this.tertiarySymbol.value);
         let maxValue = Math.max(...other);
@@ -99,47 +142,57 @@ export default class CombinedSymbol {
 
         let radius = this.computeRadius(scaleMaxValue);
 
-        this.buffer = turfbuffer.default(this.feature.values_.turfGeometry, radius, {units: 'meters'});
+        this.buffer = turfbuffer.default(feature.values_.turfGeometry, radius, {units: 'meters'});
 
     }
 
-    setPrimarySymbol() {
-        if (this.feature.values_.hasOwnProperty(this.primaryProperty)) {
+    setPrimarySymbol(feature) {
+        if (feature.values_.hasOwnProperty(this.primaryProperty)) {
             this.usedProperties.push(this.primaryProperty);
             return this.primaryProperty;
         }
         return null;
     }
 
-    setSymbol(properties) {
+    setSymbol(properties, feature) {
+        //console.log('BEFORE SYMBOL');
+        //console.log(JSON.stringify(this.usedProperties));
         for (let property of properties) {
             if (property.name_id !== this.primaryProperty) {
-                if (this.feature.values_.hasOwnProperty(property.name_id)) {
-                    if (!this.usedProperties.includes(property.name_id)) {
-                        this.usedProperties.push(property.name_id);
-                        return property.name_id;
-                    }
+                //console.log(property.name_id);
+                if (this.usedProperties.includes(property.name_id)) {
+                    continue;
+                }
+                if (feature.values_.hasOwnProperty(property.name_id)) {
+                    this.usedProperties.push(property.name_id);
+                    //console.log('VRACIM IF');
+                    return property.name_id;
                 } else {
                     this.usedProperties.push(property.name_id);
+                    //console.log('VRACIM NULL');
                     return null;
                 }
             }
         }
     }
 
-    setOtherSymbols(properties) {
+    setOtherSymbols(properties, feature) {
         let symbols = [];
 
         for (let property of properties) {
             if (property.name_id !== this.primaryProperty) {
-                console.log('PROPERTY NAME ID');
-                console.log(property.name_id);
-                console.log(this.usedProperties);
-                if (this.feature.values_.hasOwnProperty(property.name_id)) {
-                    if (!this.usedProperties.includes(property.name_id)) {
-                        this.usedProperties.push(property.name_id);
-                        symbols.push({style: null, nameId: property.name_id, value: null});
-                    }
+                //console.log('PROPERTY NAME ID');
+                //console.log(property.name_id);
+                //console.log(JSON.stringify(this.usedProperties));
+                if (this.usedProperties.includes(property.name_id)) {
+                    continue;
+                }
+                if (feature.values_.hasOwnProperty(property.name_id)) {
+                    this.usedProperties.push(property.name_id);
+                    symbols.push({style: null, nameId: property.name_id, value: null});
+                } else {
+                    this.usedProperties.push(property.name_id);
+                    symbols.push({style: null, nameId: null, value: null});
                 }
             }
         }

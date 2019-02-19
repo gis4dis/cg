@@ -7,7 +7,7 @@ let turfprojection = require('@turf/projection');
 
 
 export function findIntersection(feature1, feature2) {
-    console.log('BUFFER');
+    console.log('BUFFER INTERSECTION');
     console.log(feature1);
     console.log(feature2);
 

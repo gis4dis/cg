@@ -70,20 +70,20 @@ export default ({topic, primary_property, properties, features, value_idx, resol
 
     // Sorting properties - primary property is top left box
     let sortedProperties = Symbolizer.sortProperties(properties, primary_property);
-    console.log('SORTED');
-    console.log(sortedProperties);
+    //console.log('SORTED');
+    //console.log(sortedProperties);
 
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
     parsedFeatures = addTurfGeometry(parsedFeatures);
-    console.log(parsedFeatures);
+    //console.log(parsedFeatures);
     // Min and max values for normalization
     let minMaxValues = getMinMaxValues(sortedProperties, parsedFeatures);
 
     for (let feature of parsedFeatures) {
         let combinedSymbol = new CombinedSymbol(feature, sortedProperties, primary_property, resolution, value_idx, minMaxValues);
         feature.setProperties({'combinedSymbol': combinedSymbol});
-        console.log('FEATURE');
-        console.log(feature);
+        //console.log('FEATURE');
+        //console.log(feature);
     }
 
 
@@ -149,10 +149,16 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         feature.setProperties({'intersectedFeatures': []});
         for (let otherFeature of parsedFeatures) {
             if (feature.id_ !== otherFeature.id_) {
+                console.log('BEFORE FIND INTERSECTION');
+                console.log(feature);
+                console.log(otherFeature);
+                //console.log(JSON.stringify(feature));
+                //console.log(JSON.stringify(otherFeature));
                 if (findIntersection(feature, otherFeature)) {
                     feature.values_.intersectedFeatures.push(otherFeature);
                     feature.values_.combinedSymbol.aggregateSymbols(otherFeature.values_.combinedSymbol);
-
+                    console.log('AFTER AGGREGATION');
+                    console.log(feature.values_.combinedSymbol);
                     let newCoords = getNewCentroid(feature.getGeometry().getCoordinates(), otherFeature.getGeometry().getCoordinates());
                     console.log(newCoords);
                     feature.getGeometry().setCoordinates(newCoords);
@@ -160,7 +166,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                     parsedFeatures.splice(parsedFeatures.indexOf(otherFeature), 1);
 
                     updateTurfGeometry(feature);
-                    feature.values_.combinedSymbol.setBuffer(value_idx, minMaxValues);
+                    feature.values_.combinedSymbol.setBuffer(feature, value_idx, minMaxValues);
                 }
             }
         }
@@ -196,6 +202,8 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
                 return cachedFeatureStyles[hash]
             } else {
+                console.log('SYMBOLIZATION');
+                console.log(feature);
                 let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, value_idx, resolution, minMaxValues);
                 return symbolizer.createSymbol();
             }

@@ -3,7 +3,7 @@ import Icon from 'ol/style/icon';
 
 
 /* Constants of position of symbols */
-const positions = {
+const POSITIONS = {
     'PRIMARY': [1,1],
     'SECONDARY': [0,0],
     'TERTIARY': [1,0],
@@ -76,25 +76,45 @@ export default class Symbolizer {
         return 'high';
     }
 
+    getSymbolPosition(nameId) {
+        console.log('SYMBOL POSITION');
+        console.log(nameId);
+        console.log(this.properties);
+        console.log(POSITIONS);
+        for (let property of this.properties) {
+            console.log(property);
+            if (property.name_id === nameId) {
+                console.log('POSITION RETURN');
+                console.log(POSITIONS[property.position]);
+                return POSITIONS[property.position];
+            }
+        }
+
+        throw new Error('Property symbol position not found');
+    }
+
     /**
      * Building SVG icon based on property_value and property_anomaly_rates
      * @param {Object} property - property object
      * @param {Number} normalizedPropertyValue - normalized property (to a range MIN_RANGE and MAX_RANGE) value from values array from feature
      * @returns {_ol_style_Style_} OpenLayers style object
      */
-    buildStyle(property, normalizedPropertyValue) {
+    buildStyle(nameId, normalizedPropertyValue) {
         let propertyAnomalyValue = 0;
         let anomalyInterval = '';
-        let coordinates = positions[property.position];
 
-        propertyAnomalyValue = this.feature.values_[property.name_id]['anomaly_rates'][this.valueIdx];
+        let coordinates = this.getSymbolPosition(nameId);
+
+        //TODO fix anomaly value - add value to combinedSymbol
+        //propertyAnomalyValue = this.feature.values_[nameId]['anomaly_rates'][this.valueIdx];
+        propertyAnomalyValue = 1;
         anomalyInterval = Symbolizer.getAnomalyInterval(propertyAnomalyValue);
 
         return new Style({
             image: new Icon({
                 anchor: coordinates,
                 opacity: 1,
-                src: `${SYMBOL_PATH}/${property.name_id}_${anomalyInterval}.svg`,
+                src: `${SYMBOL_PATH}/${nameId}_${anomalyInterval}.svg`,
                 scale: normalizedPropertyValue
             })
         });
@@ -119,14 +139,17 @@ export default class Symbolizer {
 
     /**
      * Function computes normalizedPropertyValue of specific feature
-     * @param {String} property - name of the property (air_temperature...)
+     * @param {String} nameId - name of the property (air_temperature...)
      * @returns {Number} Normalized property value used for size of symbol
      */
-    getNormalizedPropertyValue(property) {
+    getNormalizedPropertyValue(nameId, value) {
         let normalizedPropertyValue = 0;
 
         // Value of property (e.g. air_temperature) is normalized from MIN_RANGE to MAX_RANGE
-        return Symbolizer.normalize(this.feature.values_[property]['values'][this.valueIdx], this.minMaxValues[property]['min'], this.minMaxValues[property]['max']);
+        console.log('NORMALIZED PROPERTY VALUE');
+        console.log(nameId);
+        console.log(this.minMaxValues);
+        return Symbolizer.normalize(value, this.minMaxValues[nameId]['min'], this.minMaxValues[nameId]['max']);
     }
 
     /**
@@ -159,31 +182,57 @@ export default class Symbolizer {
     createSymbol() {
         let styles = [];
 
-        for (let i in this.properties) {
-            if (this.feature.values_.hasOwnProperty(this.properties[i].name_id)) {
-                let property = this.properties[i].name_id;
+        let primaryCombinedSymbol = this.feature.values_.combinedSymbol.primarySymbol;
+        if (primaryCombinedSymbol.nameId !== null) {
+            let primaryNormalizedPropertyValue = this.getNormalizedPropertyValue(primaryCombinedSymbol.nameId, primaryCombinedSymbol.value);
+            styles.push(this.buildStyle(primaryCombinedSymbol.nameId, primaryNormalizedPropertyValue));
+        }
+
+        let secondaryCombinedSymbol = this.feature.values_.combinedSymbol.secondarySymbol;
+        if (secondaryCombinedSymbol.nameId !== null) {
+            let secondaryNormalizedPropertyValue = this.getNormalizedPropertyValue(secondaryCombinedSymbol.nameId, secondaryCombinedSymbol.value);
+            styles.push(this.buildStyle(secondaryCombinedSymbol.nameId, secondaryNormalizedPropertyValue));
+        }
+
+        let tertiaryCombinedSymbol = this.feature.values_.combinedSymbol.tertiarySymbol;
+        if (tertiaryCombinedSymbol.nameId !== null) {
+            let tertiaryNormalizedPropertyValue = this.getNormalizedPropertyValue(tertiaryCombinedSymbol.nameId, tertiaryCombinedSymbol.value);
+            styles.push(this.buildStyle(tertiaryCombinedSymbol.nameId, tertiaryNormalizedPropertyValue));
+        }
+
+        for (let otherSymbol of this.feature.values_.combinedSymbol.otherSymbols) {
+            if (otherSymbol.nameId !== null) {
+                let otherNormalizedPropertyValue = this.getNormalizedPropertyValue(otherSymbol.nameId, otherSymbol.value);
+                styles.push(this.buildStyle(otherSymbol.nameId, otherNormalizedPropertyValue));
+            }
+        }
+
+        /*
+        for (let property of this.properties) {
+            if (this.feature.values_.hasOwnProperty(property.name_id)) {
+                let nameId = property.name_id;
                 let normalizedPropertyValue = 0;
 
-                switch (property) {
+                switch (nameId) {
                     case 'precipitation':
-                        normalizedPropertyValue = this.getNormalizedPropertyValue(property);
-                        styles.push(this.buildStyle(this.properties[i], normalizedPropertyValue));
+                        normalizedPropertyValue = this.getNormalizedPropertyValue(nameId);
+                        styles.push(this.buildStyle(property, normalizedPropertyValue));
                         break;
                     case 'air_temperature':
-                        normalizedPropertyValue = this.getNormalizedPropertyValue(property);
-                        styles.push(this.buildStyle(this.properties[i], normalizedPropertyValue));
+                        normalizedPropertyValue = this.getNormalizedPropertyValue(nameId);
+                        styles.push(this.buildStyle(property, normalizedPropertyValue));
                         break;
                     case 'pm10':
-                        normalizedPropertyValue = this.getNormalizedPropertyValue(property);
-                        styles.push(this.buildStyle(this.properties[i], normalizedPropertyValue));
+                        normalizedPropertyValue = this.getNormalizedPropertyValue(nameId);
+                        styles.push(this.buildStyle(property, normalizedPropertyValue));
                         break;
                     case 'stream_flow':
-                        normalizedPropertyValue = this.getNormalizedPropertyValue(property);
-                        styles.push(this.buildStyle(this.properties[i], normalizedPropertyValue));
+                        normalizedPropertyValue = this.getNormalizedPropertyValue(nameId);
+                        styles.push(this.buildStyle(property, normalizedPropertyValue));
                         break;
                 }
             }
-        }
+        }*/
         //console.log(styles);
 
         return styles;

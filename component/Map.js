@@ -3,7 +3,7 @@ import ol_format_GeoJSON from 'ol/format/geojson';
 import generalize from './../src/cg/generalize';
 
 const geojson = require('./../data/test.json');
-const geojson_example = require('../data/example_simplified.json');
+const geojson_example = require('../data/example.json');
 console.log(geojson_example);
 const geojsonFeatures = (new ol_format_GeoJSON()).readFeatures(geojson, {
     dataProjection: 'EPSG:3857',
@@ -107,7 +107,7 @@ class Map extends React.PureComponent {
             primary_property: "air_temperature",
             features: geojson_example,
             value_idx: 1,
-            resolution: 19.109 //4.777 for zoom 15 --- 19.109 for zoom 13
+            resolution: 305.748 //4.777 for zoom 15 --- 19.109 for zoom 13 -- 76.437 for zoom 11 -- 305.748 for zoom 9
         });
 
         ol_Map = require('ol/map').default;
@@ -125,7 +125,7 @@ class Map extends React.PureComponent {
         const view = new ol_View({
             projection: projection,
             center: ol_proj.transform([16.6078411,49.2002211], 'EPSG:4326', projection),
-            zoom: 13
+            zoom: 9
         });
 
         console.log('RESOLUTION');
@@ -160,7 +160,7 @@ class Map extends React.PureComponent {
                 doubleClickZoom: false
             })
         });
-
+        console.log('RESOLUTION');
         console.log(view.getResolution());
 
         this.setState({
