@@ -37,9 +37,9 @@ export default class CombinedSymbol {
         //console.log(JSON.stringify(this.usedProperties));
         this.resolution = resolution;
 
-        this.primarySymbol = {style: null, nameId: this.setPrimarySymbol(feature), value: null};
-        this.secondarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null};
-        this.tertiarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null};
+        this.primarySymbol = {style: null, nameId: this.setPrimarySymbol(feature), value: null, anomalyValue: null};
+        this.secondarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null, anomalyValue: null};
+        this.tertiarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null, anomalyValue: null};
         this.otherSymbols = this.setOtherSymbols(properties, feature);
         this.setPhenomenonValues(feature, value_idx);
 
@@ -53,13 +53,18 @@ export default class CombinedSymbol {
         this.secondarySymbol.value = (this.secondarySymbol.nameId !== null) ? feature.values_[this.secondarySymbol.nameId].values[value_idx] : null;
         this.tertiarySymbol.value = (this.tertiarySymbol.nameId !== null) ? feature.values_[this.tertiarySymbol.nameId].values[value_idx] : null;
         this.setOtherValues(feature, value_idx);
+
+        this.primarySymbol.anomalyValue = (this.primarySymbol.nameId !== null) ? feature.values_[this.primarySymbol.nameId].anomaly_rates[value_idx] : null;
+        this.secondarySymbol.anomalyValue = (this.secondarySymbol.nameId !== null) ? feature.values_[this.secondarySymbol.nameId].anomaly_rates[value_idx] : null;
+        this.tertiarySymbol.anomalyValue = (this.tertiarySymbol.nameId !== null) ? feature.values_[this.tertiarySymbol.nameId].anomaly_rates[value_idx] : null;
+        this.setOtherAnomalyValues(feature, value_idx);
     }
 
     static compareValues(symbol, other) {
-        console.log('COMPARE');
-        console.log(symbol);
-        console.log(other);
-        if (symbol.value < other.value) {
+        //console.log('COMPARE');
+        //console.log(symbol);
+        //console.log(other);
+        if (symbol.anomalyValue < other.anomalyValue) {
             return other;
         }
         return symbol;
@@ -67,25 +72,41 @@ export default class CombinedSymbol {
 
     //TODO add the same thing for anomalyRates
     aggregateSymbols(other) {
-        console.log('OTHER');
-        console.log(this);
-        console.log(other);
-        console.log(CombinedSymbol.compareValues(this.primarySymbol, other.primarySymbol));
-        console.log(this.primarySymbol.value);
+        //console.log('OTHER');
+        //console.log(this);
+        //console.log(other);
+        //console.log(CombinedSymbol.compareValues(this.primarySymbol, other.primarySymbol));
+        //console.log(this.primarySymbol.value);
         this.primarySymbol = CombinedSymbol.compareValues(this.primarySymbol, other.primarySymbol);
-        console.log(JSON.stringify(this.primarySymbol.value));
-        console.log('AFTER PRIMARY');
-        console.log(this);
+        //console.log(JSON.stringify(this.primarySymbol.value));
+        //console.log('AFTER PRIMARY');
+        //console.log(this);
 
         this.secondarySymbol = CombinedSymbol.compareValues(this.secondarySymbol, other.secondarySymbol);
-        console.log('TERTIARY');
-        console.log(CombinedSymbol.compareValues(this.tertiarySymbol, other.tertiarySymbol));
+        //console.log('TERTIARY');
+        //console.log(CombinedSymbol.compareValues(this.tertiarySymbol, other.tertiarySymbol));
         this.tertiarySymbol = CombinedSymbol.compareValues(this.tertiarySymbol, other.tertiarySymbol);
 
         for (let i in this.otherSymbols) {
             this.otherSymbols[i] = CombinedSymbol.compareValues(this.otherSymbols[i], other.otherSymbols[i]);
         }
         //console.log(JSON.stringify(this));
+    }
+
+    setOtherAnomalyValues(feature, valueIdx) {
+        let values = [];
+
+        for (let symbol of this.otherSymbols) {
+            //console.log('SET OTHER VALUES');
+            //console.log(symbol);
+            if (symbol.nameId === null) {
+                continue;
+            }
+
+            symbol.anomalyValue = feature.values_[symbol.nameId].anomaly_rates[valueIdx];
+            values.push(feature.values_[symbol.nameId].anomaly_rates[valueIdx]);
+        }
+        return values;
     }
 
     setOtherValues(feature, valueIdx) {
@@ -189,10 +210,10 @@ export default class CombinedSymbol {
                 }
                 if (feature.values_.hasOwnProperty(property.name_id)) {
                     this.usedProperties.push(property.name_id);
-                    symbols.push({style: null, nameId: property.name_id, value: null});
+                    symbols.push({style: null, nameId: property.name_id, value: null, anomalyValue: null});
                 } else {
                     this.usedProperties.push(property.name_id);
-                    symbols.push({style: null, nameId: null, value: null});
+                    symbols.push({style: null, nameId: null, value: null, anomalyValue: null});
                 }
             }
         }

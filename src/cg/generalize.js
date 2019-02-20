@@ -189,9 +189,9 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         bufferFeatures.push(featureTest);
     }
 
-    console.log('BUFFER FEATURES');
-    console.log(bufferFeatures);
-    parsedFeatures.push(bufferFeatures[0]);
+    //console.log('BUFFER FEATURES');
+    //console.log(bufferFeatures);
+    //parsedFeatures.push(bufferFeatures[0]);
     //parsedFeatures.push(bufferFeatures[1]);
 
     return {

@@ -68,24 +68,24 @@ export default class Symbolizer {
      * @returns {String} interval - interval (low, middle or high) of anomaly rate
      * */
     static getAnomalyInterval(value) {
-        if (value < 2.5) {
+        if (value < 0.5) {
             return 'middle';
-        } else if (value < 1) {
+        } else if (value < 2.5) {
             return 'low';
         }
         return 'high';
     }
 
     getSymbolPosition(nameId) {
-        console.log('SYMBOL POSITION');
-        console.log(nameId);
-        console.log(this.properties);
-        console.log(POSITIONS);
+        //console.log('SYMBOL POSITION');
+        //console.log(nameId);
+        //console.log(this.properties);
+        //console.log(POSITIONS);
         for (let property of this.properties) {
-            console.log(property);
+            //console.log(property);
             if (property.name_id === nameId) {
-                console.log('POSITION RETURN');
-                console.log(POSITIONS[property.position]);
+                //console.log('POSITION RETURN');
+                //console.log(POSITIONS[property.position]);
                 return POSITIONS[property.position];
             }
         }
@@ -95,20 +95,17 @@ export default class Symbolizer {
 
     /**
      * Building SVG icon based on property_value and property_anomaly_rates
-     * @param {Object} property - property object
+     * @param {Object} nameId - symbol object
      * @param {Number} normalizedPropertyValue - normalized property (to a range MIN_RANGE and MAX_RANGE) value from values array from feature
      * @returns {_ol_style_Style_} OpenLayers style object
      */
-    buildStyle(nameId, normalizedPropertyValue) {
+    buildStyle(nameId, normalizedPropertyValue, anomalyValue) {
         let propertyAnomalyValue = 0;
         let anomalyInterval = '';
 
         let coordinates = this.getSymbolPosition(nameId);
-
-        //TODO fix anomaly value - add value to combinedSymbol
-        //propertyAnomalyValue = this.feature.values_[nameId]['anomaly_rates'][this.valueIdx];
-        propertyAnomalyValue = 1;
-        anomalyInterval = Symbolizer.getAnomalyInterval(propertyAnomalyValue);
+        
+        anomalyInterval = Symbolizer.getAnomalyInterval(anomalyValue);
 
         return new Style({
             image: new Icon({
@@ -146,9 +143,9 @@ export default class Symbolizer {
         let normalizedPropertyValue = 0;
 
         // Value of property (e.g. air_temperature) is normalized from MIN_RANGE to MAX_RANGE
-        console.log('NORMALIZED PROPERTY VALUE');
-        console.log(nameId);
-        console.log(this.minMaxValues);
+        //console.log('NORMALIZED PROPERTY VALUE');
+        //console.log(nameId);
+        //console.log(this.minMaxValues);
         return Symbolizer.normalize(value, this.minMaxValues[nameId]['min'], this.minMaxValues[nameId]['max']);
     }
 
@@ -185,25 +182,27 @@ export default class Symbolizer {
         let primaryCombinedSymbol = this.feature.values_.combinedSymbol.primarySymbol;
         if (primaryCombinedSymbol.nameId !== null) {
             let primaryNormalizedPropertyValue = this.getNormalizedPropertyValue(primaryCombinedSymbol.nameId, primaryCombinedSymbol.value);
-            styles.push(this.buildStyle(primaryCombinedSymbol.nameId, primaryNormalizedPropertyValue));
+            console.log('PRIMARY COMBINED VALUE');
+            console.log(primaryCombinedSymbol.anomalyValue);
+            styles.push(this.buildStyle(primaryCombinedSymbol.nameId, primaryNormalizedPropertyValue, primaryCombinedSymbol.anomalyValue));
         }
 
         let secondaryCombinedSymbol = this.feature.values_.combinedSymbol.secondarySymbol;
         if (secondaryCombinedSymbol.nameId !== null) {
             let secondaryNormalizedPropertyValue = this.getNormalizedPropertyValue(secondaryCombinedSymbol.nameId, secondaryCombinedSymbol.value);
-            styles.push(this.buildStyle(secondaryCombinedSymbol.nameId, secondaryNormalizedPropertyValue));
+            styles.push(this.buildStyle(secondaryCombinedSymbol.nameId, secondaryNormalizedPropertyValue, secondaryCombinedSymbol.anomalyValue));
         }
 
         let tertiaryCombinedSymbol = this.feature.values_.combinedSymbol.tertiarySymbol;
         if (tertiaryCombinedSymbol.nameId !== null) {
             let tertiaryNormalizedPropertyValue = this.getNormalizedPropertyValue(tertiaryCombinedSymbol.nameId, tertiaryCombinedSymbol.value);
-            styles.push(this.buildStyle(tertiaryCombinedSymbol.nameId, tertiaryNormalizedPropertyValue));
+            styles.push(this.buildStyle(tertiaryCombinedSymbol.nameId, tertiaryNormalizedPropertyValue, tertiaryCombinedSymbol.anomalyValue));
         }
 
         for (let otherSymbol of this.feature.values_.combinedSymbol.otherSymbols) {
             if (otherSymbol.nameId !== null) {
                 let otherNormalizedPropertyValue = this.getNormalizedPropertyValue(otherSymbol.nameId, otherSymbol.value);
-                styles.push(this.buildStyle(otherSymbol.nameId, otherNormalizedPropertyValue));
+                styles.push(this.buildStyle(otherSymbol.nameId, otherNormalizedPropertyValue, otherSymbol.anomalyValue));
             }
         }
 
