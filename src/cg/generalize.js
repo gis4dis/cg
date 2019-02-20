@@ -70,32 +70,18 @@ export default ({topic, primary_property, properties, features, value_idx, resol
 
     // Sorting properties - primary property is top left box
     let sortedProperties = Symbolizer.sortProperties(properties, primary_property);
-    //console.log('SORTED');
-    //console.log(sortedProperties);
 
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
     parsedFeatures = addTurfGeometry(parsedFeatures);
-    //console.log(parsedFeatures);
+
     // Min and max values for normalization
     let minMaxValues = getMinMaxValues(sortedProperties, parsedFeatures);
 
     for (let feature of parsedFeatures) {
         let combinedSymbol = new CombinedSymbol(feature, sortedProperties, primary_property, resolution, value_idx, minMaxValues);
         feature.setProperties({'combinedSymbol': combinedSymbol});
-        //console.log('FEATURE');
-        //console.log(feature);
     }
 
-
-
-
-    /*if (Object.keys(buffers).length === 0) {
-
-        let generalizer = new PointGeneralizer(parsedFeatures, resolution, sortedProperties, value_idx, minMaxValues, primary_property);
-        buffers = generalizer.computeBuffers();
-    }*/
-    //console.log('BUFFERS');
-    //console.log(buffers);
 
     // Caching the styles
     /*if (Object.keys(cachedFeatureStyles).length === 0) {
@@ -136,31 +122,20 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         });
     }*/
 
-    //test of feature buffers
-    //console.log('PARSED FEATURES');
-    //console.log(parsedFeatures);
-
     let intersectedFeatures = [];
-    //TODO don't forget about it
-    // Finding intersected features
-    console.log('PARSED');
-    console.log(parsedFeatures);
+
     for (let feature of parsedFeatures) {
         feature.setProperties({'intersectedFeatures': []});
         for (let otherFeature of parsedFeatures) {
+
             if (feature.id_ !== otherFeature.id_) {
-                console.log('BEFORE FIND INTERSECTION');
-                console.log(feature);
-                console.log(otherFeature);
-                //console.log(JSON.stringify(feature));
-                //console.log(JSON.stringify(otherFeature));
+
                 if (findIntersection(feature, otherFeature)) {
                     feature.values_.intersectedFeatures.push(otherFeature);
                     feature.values_.combinedSymbol.aggregateSymbols(otherFeature.values_.combinedSymbol);
-                    console.log('AFTER AGGREGATION');
-                    console.log(feature.values_.combinedSymbol);
+
                     let newCoords = getNewCentroid(feature.getGeometry().getCoordinates(), otherFeature.getGeometry().getCoordinates());
-                    console.log(newCoords);
+
                     feature.getGeometry().setCoordinates(newCoords);
 
                     parsedFeatures.splice(parsedFeatures.indexOf(otherFeature), 1);
@@ -171,9 +146,6 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             }
         }
     }
-
-    console.log('PARSED AFTER');
-    console.log(parsedFeatures);
 
     let bufferFeatures = [];
     for (let feature of parsedFeatures) {
@@ -189,11 +161,6 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         bufferFeatures.push(featureTest);
     }
 
-    //console.log('BUFFER FEATURES');
-    //console.log(bufferFeatures);
-    //parsedFeatures.push(bufferFeatures[0]);
-    //parsedFeatures.push(bufferFeatures[1]);
-
     return {
         features: parsedFeatures,
         style: function (feature, resolution) {
@@ -202,8 +169,6 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
                 return cachedFeatureStyles[hash]
             } else {
-                console.log('SYMBOLIZATION');
-                console.log(feature);
                 let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, value_idx, resolution, minMaxValues);
                 return symbolizer.createSymbol();
             }

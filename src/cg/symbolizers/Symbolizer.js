@@ -77,15 +77,8 @@ export default class Symbolizer {
     }
 
     getSymbolPosition(nameId) {
-        //console.log('SYMBOL POSITION');
-        //console.log(nameId);
-        //console.log(this.properties);
-        //console.log(POSITIONS);
         for (let property of this.properties) {
-            //console.log(property);
             if (property.name_id === nameId) {
-                //console.log('POSITION RETURN');
-                //console.log(POSITIONS[property.position]);
                 return POSITIONS[property.position];
             }
         }
@@ -143,9 +136,6 @@ export default class Symbolizer {
         let normalizedPropertyValue = 0;
 
         // Value of property (e.g. air_temperature) is normalized from MIN_RANGE to MAX_RANGE
-        //console.log('NORMALIZED PROPERTY VALUE');
-        //console.log(nameId);
-        //console.log(this.minMaxValues);
         return Symbolizer.normalize(value, this.minMaxValues[nameId]['min'], this.minMaxValues[nameId]['max']);
     }
 
@@ -182,8 +172,6 @@ export default class Symbolizer {
         let primaryCombinedSymbol = this.feature.values_.combinedSymbol.primarySymbol;
         if (primaryCombinedSymbol.nameId !== null) {
             let primaryNormalizedPropertyValue = this.getNormalizedPropertyValue(primaryCombinedSymbol.nameId, primaryCombinedSymbol.value);
-            console.log('PRIMARY COMBINED VALUE');
-            console.log(primaryCombinedSymbol.anomalyValue);
             styles.push(this.buildStyle(primaryCombinedSymbol.nameId, primaryNormalizedPropertyValue, primaryCombinedSymbol.anomalyValue));
         }
 
@@ -205,34 +193,6 @@ export default class Symbolizer {
                 styles.push(this.buildStyle(otherSymbol.nameId, otherNormalizedPropertyValue, otherSymbol.anomalyValue));
             }
         }
-
-        /*
-        for (let property of this.properties) {
-            if (this.feature.values_.hasOwnProperty(property.name_id)) {
-                let nameId = property.name_id;
-                let normalizedPropertyValue = 0;
-
-                switch (nameId) {
-                    case 'precipitation':
-                        normalizedPropertyValue = this.getNormalizedPropertyValue(nameId);
-                        styles.push(this.buildStyle(property, normalizedPropertyValue));
-                        break;
-                    case 'air_temperature':
-                        normalizedPropertyValue = this.getNormalizedPropertyValue(nameId);
-                        styles.push(this.buildStyle(property, normalizedPropertyValue));
-                        break;
-                    case 'pm10':
-                        normalizedPropertyValue = this.getNormalizedPropertyValue(nameId);
-                        styles.push(this.buildStyle(property, normalizedPropertyValue));
-                        break;
-                    case 'stream_flow':
-                        normalizedPropertyValue = this.getNormalizedPropertyValue(nameId);
-                        styles.push(this.buildStyle(property, normalizedPropertyValue));
-                        break;
-                }
-            }
-        }*/
-        //console.log(styles);
 
         return styles;
     }

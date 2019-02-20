@@ -7,10 +7,6 @@ let turfprojection = require('@turf/projection');
 
 
 export function findIntersection(feature1, feature2) {
-    console.log('BUFFER INTERSECTION');
-    console.log(feature1);
-    console.log(feature2);
-
     if (feature1.id_ === feature2.id_) {return null;}
     let intersection = turfintersect.default(feature1.values_.combinedSymbol.buffer, feature2.values_.combinedSymbol.buffer);
     return intersection !== null;

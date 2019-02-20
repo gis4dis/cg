@@ -34,7 +34,6 @@ export default class CombinedSymbol {
     constructor(feature, properties, primary_property,resolution, value_idx, minMaxValues) {
         this.primaryProperty = primary_property;
         this.usedProperties = [];
-        //console.log(JSON.stringify(this.usedProperties));
         this.resolution = resolution;
 
         this.primarySymbol = {style: null, nameId: this.setPrimarySymbol(feature), value: null, anomalyValue: null};
@@ -45,7 +44,6 @@ export default class CombinedSymbol {
 
         this.buffer = null;
         this.setBuffer(feature, value_idx, minMaxValues);
-        //console.log(this.buffer);
     }
 
     setPhenomenonValues(feature, value_idx) {
@@ -61,9 +59,6 @@ export default class CombinedSymbol {
     }
 
     static compareValues(symbol, other) {
-        //console.log('COMPARE');
-        //console.log(symbol);
-        //console.log(other);
         if (symbol.anomalyValue < other.anomalyValue) {
             return other;
         }
@@ -72,33 +67,19 @@ export default class CombinedSymbol {
 
     //TODO add the same thing for anomalyRates
     aggregateSymbols(other) {
-        //console.log('OTHER');
-        //console.log(this);
-        //console.log(other);
-        //console.log(CombinedSymbol.compareValues(this.primarySymbol, other.primarySymbol));
-        //console.log(this.primarySymbol.value);
         this.primarySymbol = CombinedSymbol.compareValues(this.primarySymbol, other.primarySymbol);
-        //console.log(JSON.stringify(this.primarySymbol.value));
-        //console.log('AFTER PRIMARY');
-        //console.log(this);
-
         this.secondarySymbol = CombinedSymbol.compareValues(this.secondarySymbol, other.secondarySymbol);
-        //console.log('TERTIARY');
-        //console.log(CombinedSymbol.compareValues(this.tertiarySymbol, other.tertiarySymbol));
         this.tertiarySymbol = CombinedSymbol.compareValues(this.tertiarySymbol, other.tertiarySymbol);
 
         for (let i in this.otherSymbols) {
             this.otherSymbols[i] = CombinedSymbol.compareValues(this.otherSymbols[i], other.otherSymbols[i]);
         }
-        //console.log(JSON.stringify(this));
     }
 
     setOtherAnomalyValues(feature, valueIdx) {
         let values = [];
 
         for (let symbol of this.otherSymbols) {
-            //console.log('SET OTHER VALUES');
-            //console.log(symbol);
             if (symbol.nameId === null) {
                 continue;
             }
@@ -113,8 +94,6 @@ export default class CombinedSymbol {
         let values = [];
 
         for (let symbol of this.otherSymbols) {
-            //console.log('SET OTHER VALUES');
-            //console.log(symbol);
             if (symbol.nameId === null) {
                 continue;
             }
@@ -129,8 +108,6 @@ export default class CombinedSymbol {
         let values = [];
 
         for (let symbol of this.otherSymbols) {
-            //console.log('GET OTHER VALUES');
-            //console.log(symbol);
             if (symbol.nameId === null) {
                 continue;
             }
@@ -145,11 +122,7 @@ export default class CombinedSymbol {
     }
 
     setBuffer(feature, value_idx, minMaxValues) {
-        //console.log('BUFFER');
-        //console.log(JSON.stringify(this));
         let other = this.getOtherValues();
-        //console.log('BUFFER WITH VALUES');
-        //console.log(JSON.stringify(this));
 
         other.push(this.primarySymbol.value, this.secondarySymbol.value, this.tertiarySymbol.value);
         let maxValue = Math.max(...other);
@@ -176,21 +149,16 @@ export default class CombinedSymbol {
     }
 
     setSymbol(properties, feature) {
-        //console.log('BEFORE SYMBOL');
-        //console.log(JSON.stringify(this.usedProperties));
         for (let property of properties) {
             if (property.name_id !== this.primaryProperty) {
-                //console.log(property.name_id);
                 if (this.usedProperties.includes(property.name_id)) {
                     continue;
                 }
                 if (feature.values_.hasOwnProperty(property.name_id)) {
                     this.usedProperties.push(property.name_id);
-                    //console.log('VRACIM IF');
                     return property.name_id;
                 } else {
                     this.usedProperties.push(property.name_id);
-                    //console.log('VRACIM NULL');
                     return null;
                 }
             }
@@ -202,9 +170,6 @@ export default class CombinedSymbol {
 
         for (let property of properties) {
             if (property.name_id !== this.primaryProperty) {
-                //console.log('PROPERTY NAME ID');
-                //console.log(property.name_id);
-                //console.log(JSON.stringify(this.usedProperties));
                 if (this.usedProperties.includes(property.name_id)) {
                     continue;
                 }

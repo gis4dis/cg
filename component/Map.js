@@ -4,13 +4,11 @@ import generalize from './../src/cg/generalize';
 
 const geojson = require('./../data/test.json');
 const geojson_example = require('../data/example.json');
-console.log(geojson_example);
 const geojsonFeatures = (new ol_format_GeoJSON()).readFeatures(geojson, {
     dataProjection: 'EPSG:3857',
     featureProjection: 'EPSG:3857',
 });
 
-//console.log(testGeneralizeObject);
 
 let ol_Map;
 let ol_View;
@@ -128,19 +126,8 @@ class Map extends React.PureComponent {
             zoom: 12
         });
 
-        console.log('RESOLUTION');
-        console.log(view.getResolution());
-
-
         const vectorLayer = getVectorLayer();
         const baselayer = getBaselayer();
-
-        console.log('Test generalize features');
-        console.log(testGeneralizeObject.features);
-
-
-        console.log('Test generalize style');
-        console.log(testGeneralizeObject.style);
         const vectorTestLayer = new ol_layer_Vector({
             source: new ol_source_Vector({
                 features: testGeneralizeObject.features
@@ -160,8 +147,6 @@ class Map extends React.PureComponent {
                 doubleClickZoom: false
             })
         });
-        console.log('RESOLUTION');
-        console.log(view.getResolution());
 
         this.setState({
             map
