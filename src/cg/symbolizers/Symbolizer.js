@@ -49,6 +49,10 @@ export default class Symbolizer {
      * @returns {number} normalized value
      */
     static normalize(value, min, max) {
+        if (max === min) {
+            return (MAX_RANGE - MIN_RANGE) / 2;
+        }
+
         return (value - min) / (max - min) * (MAX_RANGE - MIN_RANGE) + MIN_RANGE;
     }
 
