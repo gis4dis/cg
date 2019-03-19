@@ -141,8 +141,6 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     //console.log(parsedFeatures);
 
     let intersectedFeatures = [];
-    //TODO don't forget about it
-    // Finding intersected features
     console.log('PARSED');
     console.log(parsedFeatures);
     for (let feature of parsedFeatures) {
@@ -155,6 +153,8 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                 //console.log(JSON.stringify(feature));
                 //console.log(JSON.stringify(otherFeature));
                 if (findIntersection(feature, otherFeature)) {
+                    //TODO Create a new feature - combination of two aggregated features
+
                     feature.values_.intersectedFeatures.push(otherFeature);
                     feature.values_.combinedSymbol.aggregateSymbols(otherFeature.values_.combinedSymbol);
                     console.log('AFTER AGGREGATION');

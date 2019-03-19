@@ -37,9 +37,9 @@ export default class CombinedSymbol {
         //console.log(JSON.stringify(this.usedProperties));
         this.resolution = resolution;
 
-        this.primarySymbol = {style: null, nameId: this.setPrimarySymbol(feature), value: null, anomalyValue: null};
-        this.secondarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null, anomalyValue: null};
-        this.tertiarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null, anomalyValue: null};
+        this.primarySymbol = {style: null, nameId: this.setPrimarySymbol(feature), value: null, anomalyValue: null, grouped: false};
+        this.secondarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null, anomalyValue: null, grouped: false};
+        this.tertiarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null, anomalyValue: null, grouped: false};
         this.otherSymbols = this.setOtherSymbols(properties, feature);
         this.setPhenomenonValues(feature, value_idx);
 
@@ -61,12 +61,14 @@ export default class CombinedSymbol {
     }
 
     static compareValues(symbol, other) {
-        //console.log('COMPARE');
-        //console.log(symbol);
-        //console.log(other);
+        console.log('COMPARE');
+        console.log(symbol);
+        console.log(other);
         if (symbol.anomalyValue < other.anomalyValue) {
+            if (symbol.nameId !== null && other.nameId !== null) {other.grouped = true;}
             return other;
         }
+        if (symbol.nameId !== null && other.nameId !== null) {symbol.grouped = true;}
         return symbol;
     }
 
@@ -210,10 +212,10 @@ export default class CombinedSymbol {
                 }
                 if (feature.values_.hasOwnProperty(property.name_id)) {
                     this.usedProperties.push(property.name_id);
-                    symbols.push({style: null, nameId: property.name_id, value: null, anomalyValue: null});
+                    symbols.push({style: null, nameId: property.name_id, value: null, anomalyValue: null, grouped: false});
                 } else {
                     this.usedProperties.push(property.name_id);
-                    symbols.push({style: null, nameId: null, value: null, anomalyValue: null});
+                    symbols.push({style: null, nameId: null, value: null, anomalyValue: null, grouped: false});
                 }
             }
         }
