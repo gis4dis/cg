@@ -2,6 +2,7 @@ import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
 import Feature from 'ol/feature';
 import Polygon from 'ol/geom/polygon';
+import Point from 'ol/geom/point';
 import Style from 'ol/style/style';
 import Stroke from 'ol/style/stroke';
 import Fill from 'ol/style/fill';
@@ -141,32 +142,50 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     //console.log(parsedFeatures);
 
     let intersectedFeatures = [];
+    let aggFeatures = []
     console.log('PARSED');
     console.log(parsedFeatures);
     for (let feature of parsedFeatures) {
-        feature.setProperties({'intersectedFeatures': []});
         for (let otherFeature of parsedFeatures) {
             if (feature.id_ !== otherFeature.id_) {
-                console.log('BEFORE FIND INTERSECTION');
-                console.log(feature);
-                console.log(otherFeature);
+                //console.log('BEFORE FIND INTERSECTION');
+                //console.log(feature);
+                //console.log(otherFeature);
                 //console.log(JSON.stringify(feature));
                 //console.log(JSON.stringify(otherFeature));
                 if (findIntersection(feature, otherFeature)) {
                     //TODO Create a new feature - combination of two aggregated features
+                    console.log('BEFORE AGGREGATION');
+                    console.log(feature);
 
-                    feature.values_.intersectedFeatures.push(otherFeature);
-                    feature.values_.combinedSymbol.aggregateSymbols(otherFeature.values_.combinedSymbol);
-                    console.log('AFTER AGGREGATION');
-                    console.log(feature.values_.combinedSymbol);
                     let newCoords = getNewCentroid(feature.getGeometry().getCoordinates(), otherFeature.getGeometry().getCoordinates());
-                    console.log(newCoords);
-                    feature.getGeometry().setCoordinates(newCoords);
+                    //console.log(newCoords);
+                    //feature.getGeometry().setCoordinates(newCoords);
+
+                    let aggFeature = new Feature({
+                        combinedSymbol: {},
+                        intersectedFeatures: [],
+                        geometry: new Point(newCoords)
+                    });
+                    aggFeature.setId(`agg_${feature.id_}:${otherFeature.id_}`);
+                    aggFeature.values_.intersectedFeatures.push(feature);
+                    aggFeature.values_.intersectedFeatures.push(otherFeature);
+
+                    aggFeature.values_.combinedSymbol = feature.values_.combinedSymbol;
+
+                    //feature.values_.intersectedFeatures.push(otherFeature);
+                    aggFeature.values_.combinedSymbol.aggregateSymbols(otherFeature.values_.combinedSymbol);
+                    //console.log('AFTER AGGREGATION');
+                    //console.log(feature.values_.combinedSymbol);
+                    console.log('AGGREGATED FEATURE');
+                    console.log(aggFeature);
+                    console.log(feature);
 
                     parsedFeatures.splice(parsedFeatures.indexOf(otherFeature), 1);
 
-                    updateTurfGeometry(feature);
-                    feature.values_.combinedSymbol.setBuffer(feature, value_idx, minMaxValues);
+                    updateTurfGeometry(aggFeature);
+                    aggFeature.values_.combinedSymbol.setBuffer(aggFeature, value_idx, minMaxValues);
+                    aggFeatures.push(aggFeature);
                 }
             }
         }
@@ -174,7 +193,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
 
     console.log('PARSED AFTER');
     console.log(parsedFeatures);
-
+    /*
     let bufferFeatures = [];
     for (let feature of parsedFeatures) {
         let featureTest = new Feature({
@@ -188,14 +207,14 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         featureTest.setStyle(new Style({stroke: myStroke}));
         bufferFeatures.push(featureTest);
     }
-
+    */
     //console.log('BUFFER FEATURES');
     //console.log(bufferFeatures);
     //parsedFeatures.push(bufferFeatures[0]);
     //parsedFeatures.push(bufferFeatures[1]);
 
     return {
-        features: parsedFeatures,
+        features: aggFeatures,
         style: function (feature, resolution) {
             let hash = Symbolizer.createHash(feature.id_, primary_property, value_idx);
 
