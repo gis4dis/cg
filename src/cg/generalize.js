@@ -25,6 +25,13 @@ import CombinedSymbol from './symbolizers/CombinedSymbol';
  * @returns {{features: Array.<_ol_feature>, style: _ol_StyleFunction}}
  */
 let cachedFeatureStyles = {};
+/*
+* FeatureId: {
+*   wgs84: geometry in WGS84,
+*   turfGeometry: geometry,
+*   combinedSymbol: combinedSymbolObject
+*   }*/
+export let featureInfo = {};
 let buffers = {};
 
 export default ({topic, primary_property, properties, features, value_idx, resolution}) => {
@@ -75,19 +82,17 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     //console.log(sortedProperties);
 
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
-    parsedFeatures = addTurfGeometry(parsedFeatures);
+    featureInfo = addTurfGeometry(parsedFeatures);
     //console.log(parsedFeatures);
     // Min and max values for normalization
     let minMaxValues = getMinMaxValues(sortedProperties, parsedFeatures);
 
     for (let feature of parsedFeatures) {
-        let combinedSymbol = new CombinedSymbol(feature, sortedProperties, primary_property, resolution, value_idx, minMaxValues);
-        feature.setProperties({'combinedSymbol': combinedSymbol});
+        featureInfo[feature.getId()].combinedSymbol = new CombinedSymbol(feature, sortedProperties, primary_property, resolution, value_idx, minMaxValues);
+        //feature.setProperties({'combinedSymbol': combinedSymbol});
         //console.log('FEATURE');
         //console.log(feature);
     }
-
-
 
 
     /*if (Object.keys(buffers).length === 0) {
@@ -142,9 +147,9 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     //console.log(parsedFeatures);
 
     let intersectedFeatures = [];
-    let aggFeatures = []
-    console.log('PARSED');
-    console.log(parsedFeatures);
+    let aggFeatures = [];
+    //console.log('PARSED');
+    //console.log(parsedFeatures);
     for (let feature of parsedFeatures) {
         for (let otherFeature of parsedFeatures) {
             if (feature.id_ !== otherFeature.id_) {
@@ -155,15 +160,14 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                 //console.log(JSON.stringify(otherFeature));
                 if (findIntersection(feature, otherFeature)) {
                     //TODO Create a new feature - combination of two aggregated features
-                    console.log('BEFORE AGGREGATION');
-                    console.log(feature);
+                    //console.log('BEFORE AGGREGATION');
+                    //console.log(feature);
 
                     let newCoords = getNewCentroid(feature.getGeometry().getCoordinates(), otherFeature.getGeometry().getCoordinates());
                     //console.log(newCoords);
                     //feature.getGeometry().setCoordinates(newCoords);
 
                     let aggFeature = new Feature({
-                        combinedSymbol: {},
                         intersectedFeatures: [],
                         geometry: new Point(newCoords)
                     });
@@ -171,28 +175,37 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                     aggFeature.values_.intersectedFeatures.push(feature);
                     aggFeature.values_.intersectedFeatures.push(otherFeature);
 
-                    aggFeature.values_.combinedSymbol = feature.values_.combinedSymbol;
+                    featureInfo[aggFeature.getId()] = {
+                        'combinedSymbol': null,
+                        'turfGeometry': null,
+                        'wgs84': null
+                    };
+                    featureInfo[aggFeature.getId()].combinedSymbol = featureInfo[feature.getId()].combinedSymbol;
+                    //aggFeature.values_.combinedSymbol = feature.values_.combinedSymbol;
 
                     //feature.values_.intersectedFeatures.push(otherFeature);
-                    aggFeature.values_.combinedSymbol.aggregateSymbols(otherFeature.values_.combinedSymbol);
+                    featureInfo[aggFeature.getId()].combinedSymbol.aggregateSymbols(featureInfo[otherFeature.getId()].combinedSymbol);
                     //console.log('AFTER AGGREGATION');
                     //console.log(feature.values_.combinedSymbol);
-                    console.log('AGGREGATED FEATURE');
-                    console.log(aggFeature);
-                    console.log(feature);
+                    //console.log('AGGREGATED FEATURE');
+                    //console.log(aggFeature);
+                    //console.log(feature);
 
                     parsedFeatures.splice(parsedFeatures.indexOf(otherFeature), 1);
 
                     updateTurfGeometry(aggFeature);
-                    aggFeature.values_.combinedSymbol.setBuffer(aggFeature, value_idx, minMaxValues);
+                    featureInfo[aggFeature.getId()].combinedSymbol.setBuffer(aggFeature, value_idx, minMaxValues);
+                    //aggFeature.values_.combinedSymbol.setBuffer(aggFeature, value_idx, minMaxValues);
                     aggFeatures.push(aggFeature);
                 }
             }
         }
     }
 
-    console.log('PARSED AFTER');
-    console.log(parsedFeatures);
+    //console.log('PARSED AFTER');
+    //console.log(parsedFeatures);
+    //console.log('FEATURE INFO');
+    //console.log(featureInfo);
     /*
     let bufferFeatures = [];
     for (let feature of parsedFeatures) {
@@ -216,13 +229,14 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     return {
         features: aggFeatures,
         style: function (feature, resolution) {
+            //TODO we don't need hash if we don't have caching
             let hash = Symbolizer.createHash(feature.id_, primary_property, value_idx);
 
             if (cachedFeatureStyles.hasOwnProperty(hash)) {
                 return cachedFeatureStyles[hash]
             } else {
-                console.log('SYMBOLIZATION');
-                console.log(feature);
+                //console.log('SYMBOLIZATION');
+                //console.log(feature);
                 let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, value_idx, resolution, minMaxValues);
                 return symbolizer.createSymbol();
             }

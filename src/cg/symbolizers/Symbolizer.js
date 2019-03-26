@@ -1,5 +1,6 @@
 import Style from 'ol/style/style';
 import Icon from 'ol/style/icon';
+import { featureInfo } from '../generalize';
 
 
 /* Constants of position of symbols */
@@ -183,7 +184,8 @@ export default class Symbolizer {
     createSymbol() {
         let styles = [];
 
-        let primaryCombinedSymbol = this.feature.values_.combinedSymbol.primarySymbol;
+        //let primaryCombinedSymbol = this.feature.values_.combinedSymbol.primarySymbol;
+        let primaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.primarySymbol;
         if (primaryCombinedSymbol.nameId !== null) {
             let primaryNormalizedPropertyValue = this.getNormalizedPropertyValue(primaryCombinedSymbol.nameId, primaryCombinedSymbol.value);
             console.log('PRIMARY COMBINED VALUE');
@@ -191,19 +193,22 @@ export default class Symbolizer {
             styles.push(this.buildStyle(primaryCombinedSymbol, primaryNormalizedPropertyValue));
         }
 
-        let secondaryCombinedSymbol = this.feature.values_.combinedSymbol.secondarySymbol;
+        let secondaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.secondarySymbol;
+        //let secondaryCombinedSymbol = this.feature.values_.combinedSymbol.secondarySymbol;
         if (secondaryCombinedSymbol.nameId !== null) {
             let secondaryNormalizedPropertyValue = this.getNormalizedPropertyValue(secondaryCombinedSymbol.nameId, secondaryCombinedSymbol.value);
             styles.push(this.buildStyle(secondaryCombinedSymbol, secondaryNormalizedPropertyValue));
         }
 
-        let tertiaryCombinedSymbol = this.feature.values_.combinedSymbol.tertiarySymbol;
+        let tertiaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.tertiarySymbol;
+        //let tertiaryCombinedSymbol = this.feature.values_.combinedSymbol.tertiarySymbol;
         if (tertiaryCombinedSymbol.nameId !== null) {
             let tertiaryNormalizedPropertyValue = this.getNormalizedPropertyValue(tertiaryCombinedSymbol.nameId, tertiaryCombinedSymbol.value);
             styles.push(this.buildStyle(tertiaryCombinedSymbol, tertiaryNormalizedPropertyValue));
         }
 
-        for (let otherSymbol of this.feature.values_.combinedSymbol.otherSymbols) {
+        //for (let otherSymbol of this.feature.values_.combinedSymbol.otherSymbols) {
+        for (let otherSymbol of featureInfo[this.feature.getId()].combinedSymbol.otherSymbols) {
             if (otherSymbol.nameId !== null) {
                 let otherNormalizedPropertyValue = this.getNormalizedPropertyValue(otherSymbol.nameId, otherSymbol.value);
                 styles.push(this.buildStyle(otherSymbol, otherNormalizedPropertyValue));

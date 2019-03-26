@@ -1,6 +1,7 @@
 import Style from 'ol/style/style';
 import Icon from 'ol/style/icon';
 import Symbolizer from "./Symbolizer";
+import { featureInfo } from "../generalize";
 let turfbuffer = require('@turf/buffer');
 
 /* Constants of position of symbols. Default value by OL is [0.5, 0.5] */
@@ -165,7 +166,8 @@ export default class CombinedSymbol {
 
         let radius = this.computeRadius(scaleMaxValue);
 
-        this.buffer = turfbuffer.default(feature.values_.turfGeometry, radius, {units: 'meters'});
+        this.buffer = turfbuffer.default(featureInfo[feature.getId()].turfGeometry, radius, {units: 'meters'});
+        //this.buffer = turfbuffer.default(feature.values_.turfGeometry, radius, {units: 'meters'});
 
     }
 
