@@ -62,9 +62,9 @@ export default class CombinedSymbol {
     }
 
     static compareValues(symbol, other) {
-        console.log('COMPARE');
-        console.log(symbol);
-        console.log(other);
+        //console.log('COMPARE');
+        //console.log(symbol);
+        //console.log(other);
         if (symbol.anomalyValue < other.anomalyValue) {
             if (symbol.nameId !== null && other.nameId !== null) {other.grouped = true;}
             return other;

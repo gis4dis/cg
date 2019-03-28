@@ -50,6 +50,9 @@ export default class Symbolizer {
      * @returns {number} normalized value
      */
     static normalize(value, min, max) {
+        if (max === min) {
+            return (MAX_RANGE + MIN_RANGE) / 2;
+        }
         return (value - min) / (max - min) * (MAX_RANGE - MIN_RANGE) + MIN_RANGE;
     }
 
@@ -188,8 +191,8 @@ export default class Symbolizer {
         let primaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.primarySymbol;
         if (primaryCombinedSymbol.nameId !== null) {
             let primaryNormalizedPropertyValue = this.getNormalizedPropertyValue(primaryCombinedSymbol.nameId, primaryCombinedSymbol.value);
-            console.log('PRIMARY COMBINED VALUE');
-            console.log(primaryCombinedSymbol.anomalyValue);
+            //console.log('PRIMARY COMBINED VALUE');
+            //console.log(primaryCombinedSymbol.anomalyValue);
             styles.push(this.buildStyle(primaryCombinedSymbol, primaryNormalizedPropertyValue));
         }
 
