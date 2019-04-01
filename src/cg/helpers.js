@@ -7,14 +7,19 @@ let turfintersect = require('@turf/intersect');
 let turfprojection = require('@turf/projection');
 
 
-export function findIntersection(feature1, feature2) {
-    //console.log('BUFFER INTERSECTION');
-    //console.log(feature1);
-    //console.log(feature2);
+export function containsFeature(feature, array) {
+    for (let otherFeature of array) {
+        if (otherFeature.id_ === feature.id_) {
+            return true;
+        }
+    }
 
+    return false;
+}
+
+export function findIntersection(feature1, feature2) {
     if (feature1.id_ === feature2.id_) {return null;}
     let intersection = turfintersect.default(featureInfo[feature1.getId()].combinedSymbol.buffer, featureInfo[feature2.getId()].combinedSymbol.buffer);
-    //let intersection = turfintersect.default(feature1.values_.combinedSymbol.buffer, feature2.values_.combinedSymbol.buffer);
     return intersection !== null;
 }
 
@@ -25,8 +30,6 @@ export function addTurfGeometry(features) {
             'turfGeometry': turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates())),
             'combinedSymbol': null
         };
-        //feature.setProperties({'wgs84': turfprojection.toWgs84(feature.getGeometry().getCoordinates())});
-        //feature.setProperties({'turfGeometry': turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates()))});
     }
 
     return featureInfo;
@@ -35,8 +38,6 @@ export function addTurfGeometry(features) {
 export function updateTurfGeometry(feature) {
     featureInfo[feature.getId()].wgs84 = turfprojection.toWgs84(feature.getGeometry().getCoordinates());
     featureInfo[feature.getId()].turfGeometry = turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates()));
-    //feature.setProperties({'wgs84': turfprojection.toWgs84(feature.getGeometry().getCoordinates())});
-    //feature.setProperties({'turfGeometry': turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates()))});
 }
 
 export function getNewCentroid(coord, other) {
