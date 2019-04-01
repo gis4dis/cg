@@ -159,6 +159,10 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                     updateTurfGeometry(aggFeature);
                     featureInfo[aggFeature.getId()].combinedSymbol.setBuffer(aggFeature, value_idx, minMaxValues);
                     aggFeatures.push(aggFeature);
+
+                    //add feature for next iteration and break the inner cycle
+                    parsedFeatures.push(aggFeature);
+                    break;
                 }
             }
         }
