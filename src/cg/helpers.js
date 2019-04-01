@@ -1,4 +1,5 @@
 import Symbolizer from "./symbolizers/Symbolizer";
+import { featureInfo } from "./generalize";
 
 let turfhelper = require('@turf/helpers');
 let turfbuffer = require('@turf/buffer');
@@ -6,24 +7,37 @@ let turfintersect = require('@turf/intersect');
 let turfprojection = require('@turf/projection');
 
 
+export function containsFeature(feature, array) {
+    for (let otherFeature of array) {
+        if (otherFeature.id_ === feature.id_) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function findIntersection(feature1, feature2) {
     if (feature1.id_ === feature2.id_) {return null;}
-    let intersection = turfintersect.default(feature1.values_.combinedSymbol.buffer, feature2.values_.combinedSymbol.buffer);
+    let intersection = turfintersect.default(featureInfo[feature1.getId()].combinedSymbol.buffer, featureInfo[feature2.getId()].combinedSymbol.buffer);
     return intersection !== null;
 }
 
 export function addTurfGeometry(features) {
     for (let feature of features) {
-        feature.setProperties({'wgs84': turfprojection.toWgs84(feature.getGeometry().getCoordinates())});
-        feature.setProperties({'turfGeometry': turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates()))});
+        featureInfo[feature.getId()] = {
+            'wgs84': turfprojection.toWgs84(feature.getGeometry().getCoordinates()),
+            'turfGeometry': turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates())),
+            'combinedSymbol': null
+        };
     }
 
-    return features;
+    return featureInfo;
 }
 
 export function updateTurfGeometry(feature) {
-    feature.setProperties({'wgs84': turfprojection.toWgs84(feature.getGeometry().getCoordinates())});
-    feature.setProperties({'turfGeometry': turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates()))});
+    featureInfo[feature.getId()].wgs84 = turfprojection.toWgs84(feature.getGeometry().getCoordinates());
+    featureInfo[feature.getId()].turfGeometry = turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates()));
 }
 
 export function getNewCentroid(coord, other) {

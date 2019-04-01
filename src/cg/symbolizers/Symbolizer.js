@@ -1,5 +1,6 @@
 import Style from 'ol/style/style';
 import Icon from 'ol/style/icon';
+import { featureInfo } from '../generalize';
 
 
 /* Constants of position of symbols */
@@ -52,7 +53,6 @@ export default class Symbolizer {
         if (max === min) {
             return (MAX_RANGE + MIN_RANGE) / 2;
         }
-
         return (value - min) / (max - min) * (MAX_RANGE - MIN_RANGE) + MIN_RANGE;
     }
 
@@ -92,23 +92,27 @@ export default class Symbolizer {
 
     /**
      * Building SVG icon based on property_value and property_anomaly_rates
-     * @param {Object} nameId - symbol object
+     * @param {Object} symbol - symbol object
      * @param {Number} normalizedPropertyValue - normalized property (to a range MIN_RANGE and MAX_RANGE) value from values array from feature
      * @returns {_ol_style_Style_} OpenLayers style object
      */
-    buildStyle(nameId, normalizedPropertyValue, anomalyValue) {
+    buildStyle(symbol, normalizedPropertyValue) {
         let propertyAnomalyValue = 0;
         let anomalyInterval = '';
 
-        let coordinates = this.getSymbolPosition(nameId);
+        let coordinates = this.getSymbolPosition(symbol.nameId);
         
-        anomalyInterval = Symbolizer.getAnomalyInterval(anomalyValue);
+        anomalyInterval = Symbolizer.getAnomalyInterval(symbol.anomalyValue);
+
+        if (symbol.grouped === true) {
+            anomalyInterval += '_agg';
+        }
 
         return new Style({
             image: new Icon({
                 anchor: coordinates,
                 opacity: 1,
-                src: `${SYMBOL_PATH}/${nameId}_${anomalyInterval}.svg`,
+                src: `${SYMBOL_PATH}/${symbol.nameId}_${anomalyInterval}.svg`,
                 scale: normalizedPropertyValue
             })
         });
@@ -173,28 +177,28 @@ export default class Symbolizer {
     createSymbol() {
         let styles = [];
 
-        let primaryCombinedSymbol = this.feature.values_.combinedSymbol.primarySymbol;
+        let primaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.primarySymbol;
         if (primaryCombinedSymbol.nameId !== null) {
             let primaryNormalizedPropertyValue = this.getNormalizedPropertyValue(primaryCombinedSymbol.nameId, primaryCombinedSymbol.value);
-            styles.push(this.buildStyle(primaryCombinedSymbol.nameId, primaryNormalizedPropertyValue, primaryCombinedSymbol.anomalyValue));
+            styles.push(this.buildStyle(primaryCombinedSymbol, primaryNormalizedPropertyValue));
         }
 
-        let secondaryCombinedSymbol = this.feature.values_.combinedSymbol.secondarySymbol;
+        let secondaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.secondarySymbol;
         if (secondaryCombinedSymbol.nameId !== null) {
             let secondaryNormalizedPropertyValue = this.getNormalizedPropertyValue(secondaryCombinedSymbol.nameId, secondaryCombinedSymbol.value);
-            styles.push(this.buildStyle(secondaryCombinedSymbol.nameId, secondaryNormalizedPropertyValue, secondaryCombinedSymbol.anomalyValue));
+            styles.push(this.buildStyle(secondaryCombinedSymbol, secondaryNormalizedPropertyValue));
         }
 
-        let tertiaryCombinedSymbol = this.feature.values_.combinedSymbol.tertiarySymbol;
+        let tertiaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.tertiarySymbol;
         if (tertiaryCombinedSymbol.nameId !== null) {
             let tertiaryNormalizedPropertyValue = this.getNormalizedPropertyValue(tertiaryCombinedSymbol.nameId, tertiaryCombinedSymbol.value);
-            styles.push(this.buildStyle(tertiaryCombinedSymbol.nameId, tertiaryNormalizedPropertyValue, tertiaryCombinedSymbol.anomalyValue));
+            styles.push(this.buildStyle(tertiaryCombinedSymbol, tertiaryNormalizedPropertyValue));
         }
 
-        for (let otherSymbol of this.feature.values_.combinedSymbol.otherSymbols) {
+        for (let otherSymbol of featureInfo[this.feature.getId()].combinedSymbol.otherSymbols) {
             if (otherSymbol.nameId !== null) {
                 let otherNormalizedPropertyValue = this.getNormalizedPropertyValue(otherSymbol.nameId, otherSymbol.value);
-                styles.push(this.buildStyle(otherSymbol.nameId, otherNormalizedPropertyValue, otherSymbol.anomalyValue));
+                styles.push(this.buildStyle(otherSymbol, otherNormalizedPropertyValue));
             }
         }
 
