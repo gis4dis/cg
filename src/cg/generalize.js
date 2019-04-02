@@ -1,14 +1,16 @@
 import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
 import Feature from 'ol/feature';
-import Polygon from 'ol/geom/polygon';
 import Point from 'ol/geom/point';
-import Style from 'ol/style/style';
-import Stroke from 'ol/style/stroke';
-import Fill from 'ol/style/fill';
-import PolygonSymbolizer from './symbolizers/PolygonSymbolizer';
-import { containsFeature, findIntersection, addTurfGeometry, getMinMaxValues, getNewCentroid, updateTurfGeometry } from './helpers';
-import PointGeneralizer from './symbolizers/PointGeneralizer';
+import {
+    sortProperties,
+    containsFeature,
+    findIntersection,
+    addTurfGeometry,
+    getMinMaxValues,
+    getNewCentroid,
+    updateTurfGeometry
+} from './helpers';
 import CombinedSymbol from './symbolizers/CombinedSymbol';
 
 /**
@@ -22,7 +24,7 @@ import CombinedSymbol from './symbolizers/CombinedSymbol';
  * @param {number} value_idx - an index of value that should be used for generalization
  * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
  *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
- * @returns {{features: Array.<_ol_feature>, style: _ol_StyleFunction}}
+ * @returns {{features: Array.<Feature>, style: function()}}
  */
 let cachedFeatureStyles = {};
 /*
@@ -33,7 +35,7 @@ let cachedFeatureStyles = {};
 *   }
 *   */
 export let featureInfo = {};
-let buffers = {};
+//let buffers = {};
 
 export default ({topic, primary_property, properties, features, value_idx, resolution}) => {
 
@@ -78,7 +80,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     });
 
     // Sorting properties - primary property is top left box
-    let sortedProperties = Symbolizer.sortProperties(properties, primary_property);
+    let sortedProperties = sortProperties(properties, primary_property);
 
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
     featureInfo = addTurfGeometry(parsedFeatures);
@@ -158,12 +160,23 @@ export default ({topic, primary_property, properties, features, value_idx, resol
 
                     updateTurfGeometry(aggFeature);
                     featureInfo[aggFeature.getId()].combinedSymbol.setBuffer(aggFeature, value_idx, minMaxValues);
+
                     aggFeatures.push(aggFeature);
 
                     //add feature for next iteration and break the inner cycle
                     parsedFeatures.push(aggFeature);
+
                     break;
                 }
+            }
+        }
+    }
+
+    // Removing features of multiple aggregation
+    for (let feature of aggFeatures) {
+        for (let otherFeature of aggFeatures) {
+            if (feature.id_.includes(otherFeature.id_)) {
+                aggFeatures.splice(aggFeatures.indexOf(otherFeature), 1);
             }
         }
     }
@@ -189,11 +202,10 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         featureTest.setStyle(new Style({stroke: myStroke}));
         bufferFeatures.push(featureTest);
     }
+
+    parsedFeatures.push(bufferFeatures[0]);
+    parsedFeatures.push(bufferFeatures[1]);
     */
-    //console.log('BUFFER FEATURES');
-    //console.log(bufferFeatures);
-    //parsedFeatures.push(bufferFeatures[0]);
-    //parsedFeatures.push(bufferFeatures[1]);
 
     return {
         features: aggFeatures,

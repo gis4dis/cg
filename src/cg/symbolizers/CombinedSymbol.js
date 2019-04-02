@@ -1,7 +1,6 @@
-import Style from 'ol/style/style';
-import Icon from 'ol/style/icon';
 import Symbolizer from "./Symbolizer";
-import { featureInfo } from "../generalize";
+import {featureInfo} from "../generalize";
+
 let turfbuffer = require('@turf/buffer');
 
 const AGGREGATE_RULE = 'max';
@@ -19,14 +18,29 @@ export default class CombinedSymbol {
      * @param {Object} tertiarySymbol - tertiary right-top symbol - tertiary property (random position)
      * @param {Object.<array>} otherSymbols - other right-bottom symbols - array of other symbols
      */
-    constructor(feature, properties, primary_property,resolution, value_idx, minMaxValues) {
+    constructor(feature, properties, primary_property, resolution, value_idx, minMaxValues) {
         this.primaryProperty = primary_property;
         this.usedProperties = [];
         this.resolution = resolution;
 
-        this.primarySymbol = {style: null, nameId: this.setPrimarySymbol(feature), value: null, anomalyValue: null, grouped: false};
-        this.secondarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null, anomalyValue: null, grouped: false};
-        this.tertiarySymbol = {style: null, nameId: this.setSymbol(properties, feature), value: null, anomalyValue: null, grouped: false};
+        this.primarySymbol = {
+            nameId: this.setPrimarySymbol(feature),
+            value: null,
+            anomalyValue: null,
+            grouped: false
+        };
+        this.secondarySymbol = {
+            nameId: this.setSymbol(properties, feature),
+            value: null,
+            anomalyValue: null,
+            grouped: false
+        };
+        this.tertiarySymbol = {
+            nameId: this.setSymbol(properties, feature),
+            value: null,
+            anomalyValue: null,
+            grouped: false
+        };
         this.otherSymbols = this.setOtherSymbols(properties, feature);
         this.setPhenomenonValues(feature, value_idx);
 
@@ -48,17 +62,19 @@ export default class CombinedSymbol {
 
     static compareValues(symbol, other) {
         if (symbol.anomalyValue < other.anomalyValue) {
-            if (symbol.nameId !== null && other.nameId !== null) {other.grouped = true;}
+            if (symbol.nameId !== null && other.nameId !== null) {
+                other.grouped = true;
+            }
             return other;
         }
-        if (symbol.nameId !== null && other.nameId !== null) {symbol.grouped = true;}
+        if (symbol.nameId !== null && other.nameId !== null) {
+            symbol.grouped = true;
+        }
         return symbol;
     }
 
-    //TODO add the same thing for anomalyRates
     aggregateSymbols(other) {
         this.primarySymbol = CombinedSymbol.compareValues(this.primarySymbol, other.primarySymbol);
-
         this.secondarySymbol = CombinedSymbol.compareValues(this.secondarySymbol, other.secondarySymbol);
         this.tertiarySymbol = CombinedSymbol.compareValues(this.tertiarySymbol, other.tertiarySymbol);
 
@@ -166,7 +182,13 @@ export default class CombinedSymbol {
                 }
                 if (feature.values_.hasOwnProperty(property.name_id)) {
                     this.usedProperties.push(property.name_id);
-                    symbols.push({style: null, nameId: property.name_id, value: null, anomalyValue: null, grouped: false});
+                    symbols.push({
+                        style: null,
+                        nameId: property.name_id,
+                        value: null,
+                        anomalyValue: null,
+                        grouped: false
+                    });
                 } else {
                     this.usedProperties.push(property.name_id);
                     symbols.push({style: null, nameId: null, value: null, anomalyValue: null, grouped: false});

@@ -1,5 +1,4 @@
-import Symbolizer from "./symbolizers/Symbolizer";
-import { featureInfo } from "./generalize";
+import {featureInfo} from "./generalize";
 
 let turfhelper = require('@turf/helpers');
 let turfbuffer = require('@turf/buffer');
@@ -18,7 +17,9 @@ export function containsFeature(feature, array) {
 }
 
 export function findIntersection(feature1, feature2) {
-    if (feature1.id_ === feature2.id_) {return null;}
+    if (feature1.id_ === feature2.id_) {
+        return null;
+    }
     let intersection = turfintersect.default(featureInfo[feature1.getId()].combinedSymbol.buffer, featureInfo[feature2.getId()].combinedSymbol.buffer);
     return intersection !== null;
 }
@@ -33,6 +34,29 @@ export function addTurfGeometry(features) {
     }
 
     return featureInfo;
+}
+
+/**
+ * Sorts properties based on primary property
+ * @param {Object} properties - object of properties
+ * @param {String} primary_property - value selected by user
+ *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
+ * @returns {Object} - sorted properties with position symbol parameter
+ */
+export function sortProperties(properties, primary_property) {
+    let positions = ['PRIMARY', 'SECONDARY', 'TERTIARY', 'OTHER'];
+
+    let positionsCounter = 1;
+    for (let i in properties) {
+        if (properties[i].name_id === primary_property) {
+            properties[i].position = positions[0];
+        } else {
+            properties[i].position = positions[positionsCounter];
+            positionsCounter += 1;
+        }
+    }
+
+    return properties;
 }
 
 export function updateTurfGeometry(feature) {
