@@ -159,7 +159,7 @@ export default ({topic, primary_property, properties, features, value_idx, resol
                     parsedFeatures.splice(parsedFeatures.indexOf(feature), 1);
 
                     updateTurfGeometry(aggFeature);
-                    featureInfo[aggFeature.getId()].combinedSymbol.setBuffer(aggFeature, value_idx, minMaxValues);
+                    featureInfo[aggFeature.getId()].combinedSymbol.setBuffer(aggFeature, minMaxValues);
 
                     aggFeatures.push(aggFeature);
 
@@ -212,14 +212,14 @@ export default ({topic, primary_property, properties, features, value_idx, resol
         style: function (feature, resolution) {
             //TODO we don't need hash if we don't have caching
             //TODO try add caching on lower level of symbolization
-            let hash = Symbolizer.createHash(feature.id_, primary_property, value_idx);
+            //let hash = Symbolizer.createHash(feature.id_, primary_property, value_idx);
 
-            if (cachedFeatureStyles.hasOwnProperty(hash)) {
-                return cachedFeatureStyles[hash]
-            } else {
-                let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, value_idx, resolution, minMaxValues);
+            //if (cachedFeatureStyles.hasOwnProperty(hash)) {
+            //    return cachedFeatureStyles[hash]
+            //} else {
+                let symbolizer = new Symbolizer(properties, feature, resolution, minMaxValues);
                 return symbolizer.createSymbol();
-            }
+            //}
         }
     };
 }

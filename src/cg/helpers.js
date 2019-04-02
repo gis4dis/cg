@@ -5,7 +5,12 @@ let turfbuffer = require('@turf/buffer');
 let turfintersect = require('@turf/intersect');
 let turfprojection = require('@turf/projection');
 
-
+/**
+ * Checks if feature is inside the array
+ * @param {Feature} feature - OpenLayer feature
+ * @param {Feature[]} array - array of OpenLayer features
+ * @returns {boolean} true if feature is inside the array
+ */
 export function containsFeature(feature, array) {
     for (let otherFeature of array) {
         if (otherFeature.id_ === feature.id_) {
@@ -16,6 +21,13 @@ export function containsFeature(feature, array) {
     return false;
 }
 
+/**
+ * Finds intersection between two features.
+ * turfintersect returns null if features are not intersecting
+ * @param {Feature} feature1 - first feature
+ * @param {Feature} feature2 - second feature
+ * @returns {*} return null if the feature are identical (have same ID) or true if features are intersecting
+ */
 export function findIntersection(feature1, feature2) {
     if (feature1.id_ === feature2.id_) {
         return null;
@@ -24,6 +36,11 @@ export function findIntersection(feature1, feature2) {
     return intersection !== null;
 }
 
+/**
+ * Adds turfgeometry object inside the featureInfo structure for every feature in array
+ * @param {Feature[]} features - array of features
+ * @returns {featureInfo} returns featureInfo object
+ */
 export function addTurfGeometry(features) {
     for (let feature of features) {
         featureInfo[feature.getId()] = {
@@ -59,11 +76,21 @@ export function sortProperties(properties, primary_property) {
     return properties;
 }
 
+/**
+ * Updates turf geometry for feature
+ * @param {Feature} feature - OpenLayer feature
+ */
 export function updateTurfGeometry(feature) {
     featureInfo[feature.getId()].wgs84 = turfprojection.toWgs84(feature.getGeometry().getCoordinates());
     featureInfo[feature.getId()].turfGeometry = turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates()));
 }
 
+/**
+ * Returns position of the new centroid
+ * @param {number[]} coord - coordinations of first feature
+ * @param {number[]} other - coordinations of second feature
+ * @returns {number[]} position of the new centroid
+ */
 export function getNewCentroid(coord, other) {
     return [(coord[0] + other[0]) / 2, (coord[1] + other[1]) / 2];
 }
@@ -90,7 +117,7 @@ function getMaxValue(features, name_id) {
 
 /**
  * Returning min value from geojson array with specific key
- * @param {ol.Feature} features - array of OL features
+ * @param {Feature} features - array of OL features
  * @param {String} name_id - name_id of property
  * @returns {number} - Min value from array
  */
@@ -108,6 +135,12 @@ function getMinValue(features, name_id) {
     return minValue;
 }
 
+/**
+ * Return object of minimum and maximum values for all properties
+ * @param {Object[]} properties - list of property objects
+ * @param {Feature[]} features - list of OpenLayer features
+ * @returns {Object[]} - object of minimum and maximum values
+ */
 export function getMinMaxValues(properties, features) {
     let minMaxValues = {};
 

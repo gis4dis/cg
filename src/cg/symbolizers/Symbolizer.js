@@ -23,22 +23,16 @@ export default class Symbolizer {
     /**
      * Instantiating of Symbolizer object
      * @constructor
-     * @param {String} primary_property - value selected by user
      *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
      * @param {Object} properties - object of properties
      * @param {Feature} feature - represented as one feature from an Array of GeoJSON Features, each of them includes attributes
+     * @param {number} resolution - resolution of OpenLayer map
+     * @param {Object[]} minMaxValues - object of minimum and maximum values
      *  (https://github.com/gis4dis/cg/blob/master/data/example.json)
-     * @param {number} valueIdx - an index of value that should be used for generalization
-     * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
-     * @param {Object.<array>} minMaxValues - minimum and maximum values (min and max property values, min and max anomaly rates)
-     *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
      */
-    constructor(primary_property, properties, feature, valueIdx, resolution, minMaxValues) {
-        this.primary_property = primary_property;
+    constructor(properties, feature, resolution, minMaxValues) {
         this.properties = properties;
         this.feature = feature;
-        this.valueIdx = valueIdx;
-        this.resolution = resolution;
         this.minMaxValues = minMaxValues;
     }
 
@@ -60,12 +54,12 @@ export default class Symbolizer {
      * Creating hash based on values of SVG parameters
      * @param {String} featureId - ID of feature
      * @param {String} primary_property - primary property selected by user in MC client
-     * @param {Number} indexId - index for selecting value and anomaly rates from arrays
+     * @param {number} indexId - index for selecting value and anomaly rates from arrays
      * @returns {string} hash
      */
-    static createHash(featureId, primary_property, indexId) {
+    /*static createHash(featureId, primary_property, indexId) {
         return `featureid${featureId}primaryproperty${primary_property}index${indexId}`;
-    }
+    }*/
 
     /**
      * Returning name of the interval base on anomaly rate value
@@ -82,8 +76,8 @@ export default class Symbolizer {
 
     /**
      * Returns position of symbol based on property nameId
-     * @param {String } nameId - name of the property (air_temperature...)
-     * @returns {array} x and y coordinates in array
+     * @param {String} nameId - name of the property (air_temperature...)
+     * @returns {number[]} x and y coordinates in array
      */
     getSymbolPosition(nameId) {
         for (let property of this.properties) {
@@ -131,7 +125,7 @@ export default class Symbolizer {
 
     /**
      * Creates array of OL styles objects based on CombinedSymbols
-     * @returns {Style.<array>} styles - array of OL styles
+     * @returns {Style[]} styles - array of OL styles
      */
     createSymbol() {
         let styles = [];
