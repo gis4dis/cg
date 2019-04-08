@@ -12,7 +12,7 @@
    version="1.1"
    id="svg72"
    sodipodi:docname="air_temperature_low_agg.svg"
-   inkscape:version="0.92.3 (unknown)">
+   inkscape:version="0.92.4 (unknown)">
   <metadata
      id="metadata78">
     <rdf:RDF>
@@ -21,7 +21,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -36,12 +36,12 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1366"
-     inkscape:window-height="713"
+     inkscape:window-width="1920"
+     inkscape:window-height="1025"
      id="namedview74"
      showgrid="false"
      inkscape:zoom="2.8536697"
-     inkscape:cx="29.158788"
+     inkscape:cx="-26.558943"
      inkscape:cy="68.547239"
      inkscape:window-x="0"
      inkscape:window-y="27"
