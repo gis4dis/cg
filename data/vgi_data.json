@@ -1,0 +1,206 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": 15544,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          16.594984566327184,
+          49.20282937081269
+        ]
+      },
+      "properties": {
+        "user_fullname": null,
+        "observation_date": "2019-05-01T12:50:02.585000Z",
+        "send_date": "2019-05-01T12:50:35.503724Z",
+        "note": null,
+        "photos": [],
+        "values": [
+          {
+            "id": 8059,
+            "phenomenon": {
+              "id": 1,
+              "name": "Dry vegetation (trees)",
+              "i18n_tag": "g4d-dry-veg"
+            },
+            "parameter": {
+              "id": 4,
+              "name": "Type of location",
+              "i18n_tag": "g4d-typ-loc"
+            },
+            "value": {
+              "name": "city or other type of development",
+              "i18n_tag": "g4d-cit-o-typ-dev"
+            }
+          },
+          {
+            "id": 8060,
+            "phenomenon": {
+              "id": 1,
+              "name": "Dry vegetation (trees)",
+              "i18n_tag": "g4d-dry-veg"
+            },
+            "parameter": {
+              "id": 3,
+              "name": "Type of tree",
+              "i18n_tag": "g4d-typ-tr"
+            },
+            "value": {
+              "name": "coniferous",
+              "i18n_tag": "g4d-con"
+            }
+          },
+          {
+            "id": 8061,
+            "phenomenon": {
+              "id": 1,
+              "name": "Dry vegetation (trees)",
+              "i18n_tag": "g4d-dry-veg"
+            },
+            "parameter": {
+              "id": 2,
+              "name": "Trunk diameter (cm)",
+              "i18n_tag": "g4d-pa-trunk-diameter (cm)"
+            },
+            "value": "50"
+          },
+          {
+            "id": 8062,
+            "phenomenon": {
+              "id": 1,
+              "name": "Dry vegetation (trees)",
+              "i18n_tag": "g4d-dry-veg"
+            },
+            "parameter": {
+              "id": 1,
+              "name": "Tree height (cm)",
+              "i18n_tag": "g4d-pa-tree-height (cm)"
+            },
+            "value": "1000"
+          }
+        ]
+      }
+    },
+    {
+      "id": 15545,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          16.595927830348955,
+          49.2014654436967
+        ]
+      },
+      "properties": {
+        "user_fullname": null,
+        "observation_date": "2019-05-01T12:50:44.100000Z",
+        "send_date": "2019-05-01T12:50:57.839631Z",
+        "note": null,
+        "photos": [],
+        "values": [
+          {
+            "id": 8063,
+            "phenomenon": {
+              "id": 1,
+              "name": "Dry vegetation (trees)",
+              "i18n_tag": "g4d-dry-veg"
+            },
+            "parameter": {
+              "id": 4,
+              "name": "Type of location",
+              "i18n_tag": "g4d-typ-loc"
+            },
+            "value": {
+              "name": "city or other type of development",
+              "i18n_tag": "g4d-cit-o-typ-dev"
+            }
+          },
+          {
+            "id": 8064,
+            "phenomenon": {
+              "id": 1,
+              "name": "Dry vegetation (trees)",
+              "i18n_tag": "g4d-dry-veg"
+            },
+            "parameter": {
+              "id": 3,
+              "name": "Type of tree",
+              "i18n_tag": "g4d-typ-tr"
+            },
+            "value": {
+              "name": "deciduous",
+              "i18n_tag": "g4d-dec"
+            }
+          },
+          {
+            "id": 8065,
+            "phenomenon": {
+              "id": 1,
+              "name": "Dry vegetation (trees)",
+              "i18n_tag": "g4d-dry-veg"
+            },
+            "parameter": {
+              "id": 2,
+              "name": "Trunk diameter (cm)",
+              "i18n_tag": "g4d-pa-trunk-diameter (cm)"
+            },
+            "value": "20"
+          },
+          {
+            "id": 8066,
+            "phenomenon": {
+              "id": 1,
+              "name": "Dry vegetation (trees)",
+              "i18n_tag": "g4d-dry-veg"
+            },
+            "parameter": {
+              "id": 1,
+              "name": "Tree height (cm)",
+              "i18n_tag": "g4d-pa-tree-height (cm)"
+            },
+            "value": "4000"
+          }
+        ]
+      }
+    },
+    {
+      "id": 15546,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          16.591859085601758,
+          49.21134216391096
+        ]
+      },
+      "properties": {
+        "user_fullname": null,
+        "observation_date": "2019-05-01T14:35:37.151000Z",
+        "send_date": "2019-05-01T14:35:46.055735Z",
+        "note": null,
+        "photos": [],
+        "values": [
+          {
+            "id": 8067,
+            "phenomenon": {
+              "id": 2,
+              "name": "Absence of mushrooms",
+              "i18n_tag": "g4d-abs-mush"
+            },
+            "parameter": {
+              "id": 7,
+              "name": "Regularity of observation",
+              "i18n_tag": "g4d-reg-obs"
+            },
+            "value": {
+              "name": "once a week",
+              "i18n_tag": "g4d-on-wee"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

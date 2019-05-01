@@ -8,6 +8,7 @@ const geojsonFeatures = (new ol_format_GeoJSON()).readFeatures(geojson, {
     dataProjection: 'EPSG:3857',
     featureProjection: 'EPSG:3857',
 });
+const vgi_data = require('./../data/vgi_data');
 
 
 let ol_Map;
@@ -104,6 +105,7 @@ class Map extends React.PureComponent {
             ],
             primary_property: "air_temperature",
             features: geojson_example,
+            vgi_data: vgi_data,
             value_idx: 1,
             resolution: 4.777 //4.777 for zoom 15 --- 19.109 for zoom 13 -- 38.218 for zoom 12 -- 76.437 for zoom 11 -- 305.748 for zoom 9
         });

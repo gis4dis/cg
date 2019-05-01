@@ -1,5 +1,6 @@
 import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
+import VGISymbolizer from './symbolizers/VGISymbolizer';
 import Feature from 'ol/feature';
 import Point from 'ol/geom/point';
 import {
@@ -26,7 +27,7 @@ import CombinedSymbol from './symbolizers/CombinedSymbol';
  *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
  * @returns {{features: Array.<Feature>, style: function()}}
  */
-let cachedFeatureStyles = {};
+//let cachedFeatureStyles = {};
 /*
 * FeatureId: {
 *   wgs84: geometry in WGS84,
@@ -37,7 +38,7 @@ let cachedFeatureStyles = {};
 export let featureInfo = {};
 //let buffers = {};
 
-export default ({topic, primary_property, properties, features, value_idx, resolution}) => {
+export default ({topic, primary_property, properties, features, vgi_data, value_idx, resolution}) => {
 
     // Assurance checks
     if (primary_property === null) {
@@ -72,6 +73,14 @@ export default ({topic, primary_property, properties, features, value_idx, resol
 
     if (value_idx < 0) {
         throw new Error('Value_idx values must be >= 0');
+    }
+
+    let vgiFeatures = new GeoJSON().readFeatures(vgi_data, {
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
+    });
+    for (let feature of vgiFeatures) {
+        feature.setId(`vgi_${feature.getId()}`);
     }
 
     let parsedFeatures = new GeoJSON().readFeatures(features, {
@@ -207,8 +216,11 @@ export default ({topic, primary_property, properties, features, value_idx, resol
     parsedFeatures.push(bufferFeatures[1]);
     */
 
+    // adding VGI features into aggregated features
+    let VGIAndFeatures = aggFeatures.concat(vgiFeatures);
+
     return {
-        features: aggFeatures,
+        features: VGIAndFeatures,
         style: function (feature, resolution) {
             //TODO we don't need hash if we don't have caching
             //TODO try add caching on lower level of symbolization
@@ -217,8 +229,12 @@ export default ({topic, primary_property, properties, features, value_idx, resol
             //if (cachedFeatureStyles.hasOwnProperty(hash)) {
             //    return cachedFeatureStyles[hash]
             //} else {
+            if (feature.getId().startsWith('vgi')) {
+                return new VGISymbolizer(feature, resolution).createSymbol();
+            } else {
                 let symbolizer = new Symbolizer(properties, feature, resolution, minMaxValues);
                 return symbolizer.createSymbol();
+            }
             //}
         }
     };
