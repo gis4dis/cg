@@ -1,3 +1,6 @@
+import Style from 'ol/style/style';
+import Stroke from 'ol/style/stroke';
+import Fill from 'ol/style/fill';
 import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
 import VGISymbolizer from './symbolizers/VGISymbolizer';
@@ -10,9 +13,13 @@ import {
     addTurfGeometry,
     getMinMaxValues,
     getNewCentroid,
-    updateTurfGeometry
+    updateTurfGeometry,
+    aggregateVgiToPolygon,
+    addCrossreferences,
+    addVgiFeatures,
 } from './helpers';
 import CombinedSymbol from './symbolizers/CombinedSymbol';
+import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
 
 /**
  * Main generalization function
@@ -79,6 +86,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
     });
+
     for (let feature of vgiFeatures) {
         feature.setId(`vgi_${feature.getId()}`);
     }
@@ -87,6 +95,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         dataProjection: 'EPSG:3857',
         featureProjection: 'EPSG:3857',
     });
+    //console.log(parsedFeatures);
 
     // Sorting properties - primary property is top left box
     let sortedProperties = sortProperties(properties, primary_property);
@@ -215,9 +224,19 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     parsedFeatures.push(bufferFeatures[0]);
     parsedFeatures.push(bufferFeatures[1]);
     */
+    addTurfGeometry(vgiFeatures);
+    //addVgiFeatures(vgiFeatures);
+
+    //find crossreferences
+    //featureInfo =
+    addCrossreferences(vgiFeatures, aggFeatures);
+    console.log(featureInfo);
+
+    //find if there is some features for aggregating into the polygon
+    let polygonVgiFeatures = aggregateVgiToPolygon(vgiFeatures);
 
     // adding VGI features into aggregated features
-    let VGIAndFeatures = aggFeatures.concat(vgiFeatures);
+    let VGIAndFeatures = aggFeatures.concat(vgiFeatures).concat(polygonVgiFeatures);
 
     return {
         features: VGIAndFeatures,
@@ -229,7 +248,10 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
             //if (cachedFeatureStyles.hasOwnProperty(hash)) {
             //    return cachedFeatureStyles[hash]
             //} else {
-            if (feature.getId().startsWith('vgi')) {
+            if (feature.getId().startsWith('vgi_poly')) {
+                return new PolygonSymbolizer(feature).createSymbol();
+            }
+            else if (feature.getId().startsWith('vgi')) {
                 return new VGISymbolizer(feature, resolution).createSymbol();
             } else {
                 let symbolizer = new Symbolizer(properties, feature, resolution, minMaxValues);

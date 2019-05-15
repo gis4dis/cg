@@ -1,0 +1,77 @@
+{
+  "name": "Cross reference configuration",
+  "description": "Defines behaviour of creating the crossreferences between specific properties of poster system and VGI",
+  "author": "Petr Silhak",
+  "date_modification": "2019-05-15",
+  "units": "kilometers",
+  "crossreferences": [
+    {
+      "property": "air_temperature",
+      "vgi_properties": [
+        {
+          "name": "Dry vegetation (trees)",
+          "radius": 0.5,
+          "high_anomaly": "positive",
+          "low_anomaly": "negative"
+        },
+        {
+          "name": "Absence of mushrooms",
+          "radius": 0.5,
+          "high_anomaly": "positive",
+          "low_anomaly": "negative"
+        }
+      ]
+    },
+    {
+      "property": "precipitation",
+      "vgi_properties": [
+        {
+          "name": "Dry vegetation (trees)",
+          "radius": 0.5,
+          "high_anomaly": "negative",
+          "low_anomaly": "positive"
+        },
+        {
+          "name": "Absence of mushrooms",
+          "radius": 0.5,
+          "high_anomaly": "negative",
+          "low_anomaly": "positive"
+        }
+      ]
+    },
+    {
+      "property": "pm10",
+      "vgi_properties": [
+        {
+          "name": "Dry vegetation (trees)",
+          "radius": 0.5,
+          "high_anomaly": "positive",
+          "low_anomaly": "negative"
+        },
+        {
+          "name": "Absence of mushrooms",
+          "radius": 0.5,
+          "high_anomaly": "positive",
+          "low_anomaly": "negative"
+        }
+      ]
+    },
+    {
+      "property": "stream_flow",
+      "vgi_properties": [
+        {
+          "name": "Dry vegetation (trees)",
+          "radius": 0.5,
+          "high_anomaly": "negative",
+          "low_anomaly": "positive"
+        },
+        {
+          "name": "Absence of mushrooms",
+          "radius": 0.5,
+          "high_anomaly": "negative",
+          "low_anomaly": "positive"
+        }
+      ]
+    }
+  ]
+}

@@ -11,71 +11,38 @@ export default class PolygonSymbolizer {
     /**
      * Instantiating of Symbolizer object
      * @constructor
-     * @param {Object.<string, string>} property - values selected by user
-     *  (https://github.com/gis4dis/mc-client/blob/e7e4654dbd4f4b3fb468d4b4a21cadcb1fbbc0cf/static/data/properties.json)
-     * @param {Object.GeoJSON} feature - represented as one feature from an Array of GeoJSON Features, each of them includes attributes
-     *  (https://github.com/gis4dis/cg/blob/master/data/example.json)
-     * @param {number} valueIdx - an index of value that should be used for generalization
-     * @param {number} resolution - number, represents projection units per pixel (the projection is EPSG:3857)
-     * @param {number} maxPropertyValue - max value from property values
-     * @param {number} minPropertyValue - min value from property values
-     * @param {number} maxAnomalyValue - max value from property anomaly rates
-     * @param {number} minAnomalyValue - min value from property anomaly rates
-     *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
+     * @param {Feature} feature - represented as one feature from an Array of GeoJSON Features, each of them includes attributes
+     *  (https://github.com/gis4dis/cg/blob/master/data/vgi_data.json)
      */
-    constructor(property, feature, valueIdx, resolution, maxPropertyValue, minPropertyValue, maxAnomalyValue, minAnomalyValue) {
-
+    constructor(feature) {
+        this.feature = feature;
     }
 
     /**
-     * Creating _ol_style_Style_ object
-     * @returns {_ol_style_Style_} built style for styleFunction
+     * Builds OpenLayers style based on combinedSymbol and normalized property value
+     * @returns {Style} OpenLayers style object
      */
     buildStyle() {
-        let _myStroke = new Stroke({
-            color : 'rgba(255,0,0,1.0)',
-            width : 1
-        });
-
-        let _myFill = new Fill({
-            color: 'rgba(255,0,0,1.0)'
-        });
-
         return new Style({
-            stroke : _myStroke,
-            fill : _myFill
+            stroke: new Stroke({
+                color: 'rgb(102, 51, 0)',
+                width: 3
+            }),
+            fill: new Fill({
+                color: 'rgba(204, 102, 0, 0.2)'
+            })
         });
     }
 
     /**
-     * Creating default _ol_style_Style_ object. Prepared to the future
-     * @returns {_ol_style_Style_} default style
+     * Creates array of OL styles objects based on CombinedSymbols
+     * @returns {Style[]} styles - array of OL styles
      */
-    buildDefaultStyle() {
-        return this.buildStyle();
-    }
+    createSymbol() {
+        let styles = [];
 
-    /**
-     * Creating style based on property value.
-     *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
-     * @returns {_ol_style_Style_} built style for vector layer
-     */
-    //TODO change with different styles for different properties
-    styleBasedOnProperty() {
-        switch (this.property.name_id) {
-            case 'air_temperature':
-                return this.buildStyle();
-            case 'ground_air_temperature':
-                return this.buildStyle();
-            case 'soil_temperature':
-                return this.buildStyle();
-            case 'precipitation':
-                return this.buildStyle();
-            case 'air_humidity':
-                return this.buildStyle();
-            default:
-                return this.buildDefaultStyle();
-        }
-    }
+        styles.push(this.buildStyle());
 
+        return styles;
+    }
 }

@@ -1,9 +1,57 @@
 import {featureInfo} from "./generalize";
+import Feature from "ol/feature";
+import Point from "ol/geom/point";
+import Polygon from "ol/geom/polygon";
+
+const CROSS_CONFIG = require('../../configuration/crossreferences.json');
+const DISTANCE_POLYGON = 0.5;
 
 let turfhelper = require('@turf/helpers');
 let turfbuffer = require('@turf/buffer');
 let turfintersect = require('@turf/intersect');
 let turfprojection = require('@turf/projection');
+let turfdistance = require('@turf/distance');
+let turfconcave = require('@turf/concave');
+let turfsmooth = require('@turf/polygon-smooth');
+
+
+export function aggregateVgiToPolygon(features) {
+    let aggregatedFeatures = [];
+    for (let f1 of features) {
+        for (let f2 of features) {
+            if (f1.getId() !== f2.getId()) {
+                if (turfdistance.default(featureInfo[f1.getId()].turfGeometry, featureInfo[f2.getId()].turfGeometry, {units: 'kilometers'}) < DISTANCE_POLYGON) {
+                    if (!containsFeature(f1, aggregatedFeatures)) {
+                        aggregatedFeatures.push(f1);
+                    }
+                }
+            }
+        }
+    }
+    //TODO count with more polygons from VGI and added only for the same phenomenons, check if there is any feature inside aggregatedFeatures
+    let polygonFeature = turfsmooth.default(turfconcave.default(turfhelper.featureCollection(
+        Array.from(aggregatedFeatures, f => featureInfo[f.getId()].turfGeometry))), {iterations: 3}).features[0];
+
+    //console.log(polygonFeature);
+    let feature = new Feature({
+        intersectedFeatures: aggregatedFeatures,
+        geometry: new Polygon(polygonFeature.geometry.coordinates)
+    });
+    feature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+    //TODO update polygon id
+    feature.setId(`vgi_poly_1`);
+
+    featureInfo[feature.getId()] = {
+        'combinedSymbol': null,
+        'turfGeometry': null,
+        'wgs84': null
+    };
+    //console.log(feature);
+    //console.log(featureInfo);
+    //updateTurfGeometry(feature);
+
+    return feature;
+}
 
 /**
  * Checks if feature is inside the array
@@ -51,6 +99,86 @@ export function addTurfGeometry(features) {
     }
 
     return featureInfo;
+}
+
+export function addVgiFeatures(features) {
+    for (let feature of features) {
+        featureInfo[feature.getId()]['vgiFeature'] = feature;
+    }
+}
+
+function getCrossreferenceInfo(phenomenon, feature) {
+    let pSymbol = feature.combinedSymbol.primarySymbol;
+    let sSymbol = feature.combinedSymbol.secondarySymbol;
+    let tSymbol = feature.combinedSymbol.tertiarySymbol;
+
+    //TODO finish other symbols condition
+    let otherSymbols = feature.combinedSymbol.otherSymbols;
+
+    for (let cr of CROSS_CONFIG.crossreferences) {
+        if (cr.property === pSymbol.nameId) {
+            for (let vgi_cr of cr.vgi_properties) {
+                if (phenomenon === vgi_cr.name) {
+                    return {
+                        "radius": vgi_cr.radius,
+                        "anomalyValue": pSymbol.anomalyValue,
+                        "highAnomaly": vgi_cr.high_anomaly,
+                        "lowAnomaly": vgi_cr.low_anomaly,
+                    };
+                }
+            }
+        } else if (cr.property === sSymbol.nameId) {
+            for (let vgi_cr of cr.vgi_properties) {
+                if (phenomenon === vgi_cr.name) {
+                    return {
+                        "radius": vgi_cr.radius,
+                        "anomalyValue": sSymbol.anomalyValue,
+                        "highAnomaly": vgi_cr.high_anomaly,
+                        "lowAnomaly": vgi_cr.low_anomaly,
+                    };
+                }
+            }
+        } else if (cr.property === tSymbol.nameId) {
+            for (let vgi_cr of cr.vgi_properties) {
+                if (phenomenon === vgi_cr.name) {
+                    return {
+                        "radius": vgi_cr.radius,
+                        "anomalyValue": tSymbol.anomalyValue,
+                        "highAnomaly": vgi_cr.high_anomaly,
+                        "lowAnomaly": vgi_cr.low_anomaly,
+                    };
+                }
+            }
+        }
+    }
+
+    throw new Error(`Can't find radius or anomalyValue for phenomenon: ${phenomenon}`);
+}
+
+export function addCrossreferences(vgiFeatures, aggFeatures) {
+    let units = CROSS_CONFIG.units;
+
+    for (let f1 of vgiFeatures) {
+        if (f1.getId().startsWith('vgi')) {
+            for (let f2 of aggFeatures) {
+                //console.log(f1);
+                //console.log(f2);
+
+                let info = getCrossreferenceInfo(f1.values_.values[0].phenomenon.name, featureInfo[f2.getId()]);
+                let distance = turfdistance.default(featureInfo[f1.getId()].turfGeometry, featureInfo[f2.getId()].turfGeometry, {units: units});
+                //console.log(info);
+
+                if (distance <= info.radius) {
+                    // resolve anomalyValue
+                    if (info.anomalyValue >= 0.5) {
+                        featureInfo[f1.getId()]['crossReference'] = info.highAnomaly;
+                    } else {
+                        featureInfo[f1.getId()]['crossReference'] = info.lowAnomaly;
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**

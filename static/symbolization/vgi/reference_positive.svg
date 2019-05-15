@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   width="100"
+   height="100"
+   viewBox="0 0 100 100"
+   enable-background="new 0 0 64 64"
+   xml:space="preserve"
+   sodipodi:docname="reference_positive.svg"
+   inkscape:version="0.92.4 (unknown)"><metadata
+   id="metadata17"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
+   id="defs15" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1920"
+   inkscape:window-height="1025"
+   id="namedview13"
+   showgrid="false"
+   inkscape:zoom="3.6875"
+   inkscape:cx="-13.559322"
+   inkscape:cy="32"
+   inkscape:window-x="0"
+   inkscape:window-y="27"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1" />
+
+
+
+
+<path
+   stroke-miterlimit="10"
+   d="M 57.858943,50.20906"
+   id="path4"
+   inkscape:connector-curvature="0"
+   style="fill:none;stroke:#000000;stroke-width:3.12762952;stroke-miterlimit:10" /><g
+   id="g843"
+   transform="matrix(1.5638147,0,0,1.5638147,-0.0420704,-0.0420704)"><rect
+     y="15.59322"
+     x="27.932203"
+     height="32.81356"
+     width="8.1355934"
+     id="rect824"
+     style="opacity:1;fill:#2c9717;fill-opacity:1;stroke:none;stroke-width:7.55905533;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:18;stroke-dasharray:7.55905533, 15.11811066;stroke-dashoffset:2.26771665;stroke-opacity:1;paint-order:stroke fill markers" /><rect
+     transform="rotate(-90)"
+     y="15.59322"
+     x="-36.067795"
+     height="32.81356"
+     width="8.1355934"
+     id="rect824-3"
+     style="opacity:1;fill:#2c9717;fill-opacity:1;stroke:none;stroke-width:7.55905533;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:18;stroke-dasharray:7.55905533, 15.11811066;stroke-dashoffset:2.26771665;stroke-opacity:1;paint-order:stroke fill markers" /></g>
+</svg>

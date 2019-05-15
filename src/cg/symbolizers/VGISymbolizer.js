@@ -50,13 +50,24 @@ export default class VGISymbolizer {
         if (!iconName) {
             throw new Error('Missing iconName. Please check if ICONS constant has right phenomenonName and iconName');
         }
-        return new Style({
+        let icon = new Style({
             image: new Icon({
                 opacity: 1,
                 src: `${SYMBOL_PATH}/${iconName}.svg`,
                 scale: SYMBOL_SIZE
             })
         });
+
+        //TODO replace hardcoded negative reference and center it
+        let crossReferenceIcon = new Style({
+            image: new Icon({
+                opacity: 1,
+                src: `${SYMBOL_PATH}/reference_negative.svg`,
+                scale: 0.25
+            })
+        });
+
+        return [icon, crossReferenceIcon];
     }
 
     /**
@@ -64,10 +75,6 @@ export default class VGISymbolizer {
      * @returns {Style[]} styles - array of OL styles
      */
     createSymbol() {
-        let styles = [];
-
-        styles.push(this.buildStyle());
-
-        return styles;
+        return this.buildStyle();
     }
 }
