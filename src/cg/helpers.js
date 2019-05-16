@@ -107,46 +107,36 @@ export function addVgiFeatures(features) {
     }
 }
 
+function createCrossreferenceInfo(symbol, vgiProperties, phenomenon) {
+    for (let vgi_cr of vgiProperties) {
+        if (phenomenon === vgi_cr.name) {
+            return {
+                "radius": vgi_cr.radius,
+                "anomalyValue": symbol.anomalyValue,
+                "highAnomaly": vgi_cr.high_anomaly,
+                "lowAnomaly": vgi_cr.low_anomaly,
+            };
+        }
+    }
+}
+
 function getCrossreferenceInfo(phenomenon, feature) {
     let pSymbol = feature.combinedSymbol.primarySymbol;
     let sSymbol = feature.combinedSymbol.secondarySymbol;
     let tSymbol = feature.combinedSymbol.tertiarySymbol;
-
-    //TODO finish other symbols condition
-    let otherSymbols = feature.combinedSymbol.otherSymbols;
+    let oSymbols = feature.combinedSymbol.otherSymbols;
 
     for (let cr of CROSS_CONFIG.crossreferences) {
         if (cr.property === pSymbol.nameId) {
-            for (let vgi_cr of cr.vgi_properties) {
-                if (phenomenon === vgi_cr.name) {
-                    return {
-                        "radius": vgi_cr.radius,
-                        "anomalyValue": pSymbol.anomalyValue,
-                        "highAnomaly": vgi_cr.high_anomaly,
-                        "lowAnomaly": vgi_cr.low_anomaly,
-                    };
-                }
-            }
+            return createCrossreferenceInfo(pSymbol, cr.vgi_properties, phenomenon);
         } else if (cr.property === sSymbol.nameId) {
-            for (let vgi_cr of cr.vgi_properties) {
-                if (phenomenon === vgi_cr.name) {
-                    return {
-                        "radius": vgi_cr.radius,
-                        "anomalyValue": sSymbol.anomalyValue,
-                        "highAnomaly": vgi_cr.high_anomaly,
-                        "lowAnomaly": vgi_cr.low_anomaly,
-                    };
-                }
-            }
+            return createCrossreferenceInfo(sSymbol, cr.vgi_properties, phenomenon);
         } else if (cr.property === tSymbol.nameId) {
-            for (let vgi_cr of cr.vgi_properties) {
-                if (phenomenon === vgi_cr.name) {
-                    return {
-                        "radius": vgi_cr.radius,
-                        "anomalyValue": tSymbol.anomalyValue,
-                        "highAnomaly": vgi_cr.high_anomaly,
-                        "lowAnomaly": vgi_cr.low_anomaly,
-                    };
+            return createCrossreferenceInfo(tSymbol, cr.vgi_properties, phenomenon);
+        } else {
+            for (let s of oSymbols) {
+                if (cr.property === s.nameId) {
+                    return createCrossreferenceInfo(sSymbol, cr.vgi_properties, phenomenon);
                 }
             }
         }
@@ -164,6 +154,7 @@ export function addCrossreferences(vgiFeatures, aggFeatures) {
                 //console.log(f1);
                 //console.log(f2);
 
+                //TODO prioritize closer measurement
                 let info = getCrossreferenceInfo(f1.values_.values[0].phenomenon.name, featureInfo[f2.getId()]);
                 let distance = turfdistance.default(featureInfo[f1.getId()].turfGeometry, featureInfo[f2.getId()].turfGeometry, {units: units});
                 //console.log(info);

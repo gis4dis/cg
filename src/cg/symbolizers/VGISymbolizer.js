@@ -58,11 +58,12 @@ export default class VGISymbolizer {
             })
         });
 
-        //TODO replace hardcoded negative reference and center it
+        let direction = featureInfo[this.feature.getId()].crossReference;
         let crossReferenceIcon = new Style({
             image: new Icon({
+                anchor: [0, 0.9],
                 opacity: 1,
-                src: `${SYMBOL_PATH}/reference_negative.svg`,
+                src: `${SYMBOL_PATH}/reference_${direction}.svg`,
                 scale: 0.25
             })
         });
