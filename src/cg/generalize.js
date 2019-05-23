@@ -21,6 +21,8 @@ import {
 import CombinedSymbol from './symbolizers/CombinedSymbol';
 import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
 
+//import RBush from "rbush";
+
 /**
  * Main generalization function
  * https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG-v2
@@ -46,6 +48,17 @@ export let featureInfo = {};
 //let buffers = {};
 
 export default ({topic, primary_property, properties, features, vgi_data, value_idx, resolution}) => {
+
+    //Rbush test
+    /*const tree = new RBush();
+    const item = {
+        minX: 20,
+        minY: 40,
+        maxX: 30,
+        maxY: 50,
+        foo: 'bar'
+    };
+    tree.insert(item);*/
 
     // Assurance checks
     if (primary_property === null) {
@@ -238,6 +251,12 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     // adding VGI features into aggregated features
     let VGIAndFeatures = aggFeatures.concat(vgiFeatures).concat(polygonVgiFeatures);
 
+    function is_server() {
+        return ! (typeof window != 'undefined' && window.document);
+    }
+    console.log(is_server());
+
+
     return {
         features: VGIAndFeatures,
         style: function (feature, resolution) {
@@ -250,8 +269,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
             //} else {
             if (feature.getId().startsWith('vgi_poly')) {
                 return new PolygonSymbolizer(feature).createSymbol();
-            }
-            else if (feature.getId().startsWith('vgi')) {
+            } else if (feature.getId().startsWith('vgi')) {
                 return new VGISymbolizer(feature, resolution).createSymbol();
             } else {
                 let symbolizer = new Symbolizer(properties, feature, resolution, minMaxValues);

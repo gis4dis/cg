@@ -53,19 +53,40 @@ export default class CombinedSymbol {
     }
 
     /**
+     * Returns value on specific index moved by shift index
+     * @param {String} nameId - name of the property
+     * @param {Feature} feature - OpenLayer feature
+     * @param {Number} valueIdx - index
+     * @param {String} type - type of the value (value or anomaly_rate)
+     * @returns {Number} - value on specific index or null if there are not value
+     */
+    static selectValue(nameId, feature, valueIdx, type) {
+        if (nameId !== null) {
+            let shift =  feature.values_[nameId].value_index_shift;
+            let value = feature.values_[nameId][type][valueIdx + shift];
+
+            if (value === undefined) {
+                return null
+            }
+            return value;
+        }
+        return null;
+    }
+
+    /**
      * Sets the values of specific symbols from feature values array
      * @param {Feature} feature - OpenLayer feature
      * @param {number} valueIdx - index of array where is value stored
      */
     setPhenomenonValues(feature, valueIdx) {
-        this.primarySymbol.value = (this.primarySymbol.nameId !== null) ? feature.values_[this.primarySymbol.nameId].values[valueIdx] : null;
-        this.secondarySymbol.value = (this.secondarySymbol.nameId !== null) ? feature.values_[this.secondarySymbol.nameId].values[valueIdx] : null;
-        this.tertiarySymbol.value = (this.tertiarySymbol.nameId !== null) ? feature.values_[this.tertiarySymbol.nameId].values[valueIdx] : null;
+        this.primarySymbol.value = CombinedSymbol.selectValue(this.primarySymbol.nameId, feature, valueIdx, 'values');
+        this.secondarySymbol.value = CombinedSymbol.selectValue(this.secondarySymbol.nameId, feature, valueIdx, 'values');
+        this.tertiarySymbol.value = CombinedSymbol.selectValue(this.tertiarySymbol.nameId, feature, valueIdx, 'values');
         this.setOtherValues(feature, valueIdx);
 
-        this.primarySymbol.anomalyValue = (this.primarySymbol.nameId !== null) ? feature.values_[this.primarySymbol.nameId].anomaly_rates[valueIdx] : null;
-        this.secondarySymbol.anomalyValue = (this.secondarySymbol.nameId !== null) ? feature.values_[this.secondarySymbol.nameId].anomaly_rates[valueIdx] : null;
-        this.tertiarySymbol.anomalyValue = (this.tertiarySymbol.nameId !== null) ? feature.values_[this.tertiarySymbol.nameId].anomaly_rates[valueIdx] : null;
+        this.primarySymbol.anomalyValue = CombinedSymbol.selectValue(this.primarySymbol.nameId, feature, valueIdx, 'anomaly_rates');
+        this.secondarySymbol.anomalyValue = CombinedSymbol.selectValue(this.secondarySymbol.nameId, feature, valueIdx, 'anomaly_rates');
+        this.tertiarySymbol.anomalyValue = CombinedSymbol.selectValue(this.tertiarySymbol.nameId, feature, valueIdx, 'anomaly_rates');
         this.setOtherAnomalyValues(feature, valueIdx);
     }
 
@@ -116,8 +137,8 @@ export default class CombinedSymbol {
                 continue;
             }
 
-            symbol.anomalyValue = feature.values_[symbol.nameId].anomaly_rates[valueIdx];
-            values.push(feature.values_[symbol.nameId].anomaly_rates[valueIdx]);
+            symbol.anomalyValue = CombinedSymbol.selectValue(symbol.nameId, feature, valueIdx, 'anomaly_rates');
+            values.push(symbol.anomalyValue);
         }
         return values;
     }
@@ -136,8 +157,8 @@ export default class CombinedSymbol {
                 continue;
             }
 
-            symbol.value = feature.values_[symbol.nameId].values[valueIdx];
-            values.push(feature.values_[symbol.nameId].values[valueIdx]);
+            symbol.value = CombinedSymbol.selectValue(symbol.nameId, feature, valueIdx, 'values');
+            values.push(symbol.value);
         }
         return values;
     }
