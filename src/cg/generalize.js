@@ -95,13 +95,16 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         throw new Error('Value_idx values must be >= 0');
     }
 
-    let vgiFeatures = new GeoJSON().readFeatures(vgi_data, {
-        dataProjection: 'EPSG:4326',
-        featureProjection: 'EPSG:3857',
-    });
+    let vgiFeatures = [];
+    if (vgi_data !== undefined) {
+        vgiFeatures = new GeoJSON().readFeatures(vgi_data, {
+            dataProjection: 'EPSG:4326',
+            featureProjection: 'EPSG:3857',
+        });
 
-    for (let feature of vgiFeatures) {
-        feature.setId(`vgi_${feature.getId()}`);
+        for (let feature of vgiFeatures) {
+            feature.setId(`vgi_${feature.getId()}`);
+        }
     }
 
     let parsedFeatures = new GeoJSON().readFeatures(features, {
@@ -237,16 +240,15 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     parsedFeatures.push(bufferFeatures[0]);
     parsedFeatures.push(bufferFeatures[1]);
     */
-    addTurfGeometry(vgiFeatures);
-    //addVgiFeatures(vgiFeatures);
-
-    //find crossreferences
-    //featureInfo =
-    addCrossreferences(vgiFeatures, aggFeatures);
-    console.log(featureInfo);
-
-    //find if there is some features for aggregating into the polygon
-    let polygonVgiFeatures = aggregateVgiToPolygon(vgiFeatures);
+    let polygonVgiFeatures = [];
+    if (vgiFeatures.length > 0) {
+        addTurfGeometry(vgiFeatures);
+        //addVgiFeatures(vgiFeatures);
+        addCrossreferences(vgiFeatures, aggFeatures);
+        //find if there is some features for aggregating into the polygon
+        polygonVgiFeatures = aggregateVgiToPolygon(vgiFeatures);
+        //console.log(featureInfo);
+    }
 
     // adding VGI features into aggregated features
     let VGIAndFeatures = aggFeatures.concat(vgiFeatures).concat(polygonVgiFeatures);
@@ -254,7 +256,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     function is_server() {
         return ! (typeof window != 'undefined' && window.document);
     }
-    console.log(is_server());
+    //console.log(is_server());
 
 
     return {

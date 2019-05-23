@@ -1,7 +1,6 @@
 {
   "name": "Cross reference configuration",
   "description": "Defines behaviour of creating the crossreferences between specific properties of poster system and VGI",
-  "author": "Petr Silhak",
   "date_modification": "2019-05-15",
   "units": "kilometers",
   "crossreferences": [
