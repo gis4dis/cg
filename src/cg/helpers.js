@@ -1,7 +1,8 @@
-import {featureInfo} from "./generalize";
+import {featureInfo, tree, splicedFeatures} from "./generalize";
 import Feature from "ol/feature";
 import Point from "ol/geom/point";
 import Polygon from "ol/geom/polygon";
+import knn from "rbush-knn";
 
 const CROSS_CONFIG = require('../../configuration/crossreferences.json');
 const DISTANCE_POLYGON = 0.5;
@@ -69,36 +70,148 @@ export function containsFeature(feature, array) {
     return false;
 }
 
+export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues) {
+    // Get info about feature from featureInfo
+    let featureI = featureInfo[queryFeature.id];
+    let nearestFeature = featureInfo[indexedFeature.id];
+
+    if (findIntersection(featureI, nearestFeature)) {
+
+        // Compute coordinates of new aggregated Feature
+        let newCoords = getNewCentroid(featureI.coordinates, nearestFeature.coordinates);
+
+        // Creating new OL feature
+        let aggFeature = new Feature({
+            intersectedFeatures: [],
+            geometry: new Point(newCoords)
+        });
+
+        // Set new ID of feature
+        aggFeature.setId(`agg_${featureI.id}:${nearestFeature.id}`);
+
+        // Add features into new aggregated Features
+        aggFeature.values_.intersectedFeatures.push(featureI.olFeature);
+        aggFeature.values_.intersectedFeatures.push(nearestFeature.olFeature);
+
+        // Add feature into featureInfo
+        featureInfo[aggFeature.getId()] = {
+            'id': aggFeature.id_,
+            'olFeature': aggFeature,
+            'coordinates': newCoords,
+            'wgs84': turfprojection.toWgs84(newCoords),
+            'turfGeometry': turfhelper.point(turfprojection.toWgs84(newCoords)),
+            'combinedSymbol': null
+        };
+
+        // Set new combinedSymbol
+        featureInfo[aggFeature.getId()].combinedSymbol = featureI.combinedSymbol;
+        featureInfo[aggFeature.getId()].combinedSymbol.aggregateSymbols(nearestFeature.combinedSymbol);
+
+        // Update buffer for combinedSymbol of new Feature
+        featureInfo[aggFeature.getId()].combinedSymbol.setBuffer(aggFeature, minMaxValues);
+
+        // Remove features from RBush Index
+        tree.remove(queryFeature, (a, b) => {
+            return a.id === b.id;
+        });
+        tree.remove(indexedFeature, (a, b) => {
+            return a.id === b.id;
+        });
+
+        // Add new aggregated feature into RBush index
+        tree.insert({
+            id: aggFeature.getId(),
+            x: newCoords[0],
+            y: newCoords[1]
+        });
+
+        // Remove features from original featureCollection - these features was aggregated
+        splicedFeatures.splice(splicedFeatures.findIndex(f => f.id_ === indexedFeature.id), 1);
+        splicedFeatures.splice(splicedFeatures.findIndex(f => f.id_ === queryFeature.id), 1);
+
+        //console.log(featureI.id);
+        //console.log(nearestFeature.id);
+        //console.log(aggFeature.getId());
+        //console.log(tree);
+
+        // Find another nearest feature - if there is another one
+        let indexedFeatures = knn(tree, newCoords[0], newCoords[1], 2, undefined, 1500);
+
+        if (indexedFeatures[1] !== undefined) {
+            if (recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues) === null) {
+                return aggFeature;
+            }
+            return recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues);
+        }
+        return aggFeature;
+    }
+    return null
+}
+
 /**
  * Finds intersection between two features.
  * turfintersect returns null if features are not intersecting
- * @param {Feature} feature1 - first feature
- * @param {Feature} feature2 - second feature
+ * @param {Feature} f1 - first feature
+ * @param {Feature} f2 - second feature
  * @returns {*} return null if the feature are identical (have same ID) or true if features are intersecting
  */
-export function findIntersection(feature1, feature2) {
-    if (feature1.id_ === feature2.id_) {
+export function findIntersection(f1, f2) {
+    if (f1.id === f2.id) {
         return null;
     }
-    let intersection = turfintersect.default(featureInfo[feature1.getId()].combinedSymbol.buffer, featureInfo[feature2.getId()].combinedSymbol.buffer);
+    let intersection = turfintersect.default(f1.combinedSymbol.buffer, f2.combinedSymbol.buffer);
     return intersection !== null;
 }
 
 /**
- * Adds turfgeometry object inside the featureInfo structure for every feature in array
+ * Adds feature info object inside the featureInfo structure for every feature in array
  * @param {Feature[]} features - array of features
- * @returns {featureInfo} returns featureInfo object
  */
-export function addTurfGeometry(features) {
+export function addFeatureInfo(features) {
     for (let feature of features) {
-        featureInfo[feature.getId()] = {
-            'wgs84': turfprojection.toWgs84(feature.getGeometry().getCoordinates()),
-            'turfGeometry': turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates())),
-            'combinedSymbol': null
-        };
+        if (featureInfo[feature.getId()] === undefined) {
+            featureInfo[feature.getId()] = {
+                'id': feature.getId(),
+                'olFeature': feature,
+                'coordinates': feature.getGeometry().getCoordinates(),
+                'wgs84': turfprojection.toWgs84(feature.getGeometry().getCoordinates()),
+                'turfGeometry': turfhelper.point(turfprojection.toWgs84(feature.getGeometry().getCoordinates())),
+                'combinedSymbol': null
+            };
+        }
+    }
+}
+
+export function getNewFeatures(features) {
+    let newFeatures = [];
+
+    for (let feature of features) {
+        if (featureInfo[feature.getId()] === undefined) {
+            newFeatures.push(feature);
+        }
     }
 
-    return featureInfo;
+    return newFeatures;
+}
+
+export function addFeatureToIndex(feature) {
+    let coordinates = feature.getGeometry().getCoordinates();
+    tree.insert({
+        id: feature.getId(),
+        x: coordinates[0],
+        y: coordinates[1]
+    });
+}
+
+export function addFeaturesToIndex(features) {
+    for (let feature of features) {
+        let coordinates = feature.getGeometry().getCoordinates();
+        tree.insert({
+            id: feature.getId(),
+            x: coordinates[0],
+            y: coordinates[1]
+        });
+    }
 }
 
 export function addVgiFeatures(features) {
@@ -206,12 +319,12 @@ export function updateTurfGeometry(feature) {
 
 /**
  * Returns position of the new centroid
- * @param {number[]} coord - coordinations of first feature
+ * @param {number[]} coords - coordinations of first feature
  * @param {number[]} other - coordinations of second feature
  * @returns {number[]} position of the new centroid
  */
-export function getNewCentroid(coord, other) {
-    return [(coord[0] + other[0]) / 2, (coord[1] + other[1]) / 2];
+export function getNewCentroid(coords, other) {
+    return [(coords[0] + other[0]) / 2, (coords[1] + other[1]) / 2];
 }
 
 /**

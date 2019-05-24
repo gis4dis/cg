@@ -10,18 +10,26 @@ import {
     sortProperties,
     containsFeature,
     findIntersection,
-    addTurfGeometry,
+    addFeatureInfo,
     getMinMaxValues,
     getNewCentroid,
     updateTurfGeometry,
     aggregateVgiToPolygon,
     addCrossreferences,
     addVgiFeatures,
+    addFeatureToIndex,
+    addFeaturesToIndex,
+    getNewFeatures,
+    recursiveAggregating
 } from './helpers';
 import CombinedSymbol from './symbolizers/CombinedSymbol';
 import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
 
-//import RBush from "rbush";
+import RBush from 'rbush';
+import knn from 'rbush-knn';
+
+let turfprojection = require('@turf/projection');
+let turfhelper = require('@turf/helpers');
 
 /**
  * Main generalization function
@@ -45,20 +53,19 @@ import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
 *   }
 *   */
 export let featureInfo = {};
+export let splicedFeatures = [];
+
 //let buffers = {};
+class PointRBush extends RBush {
+    toBBox(item) { return {minX: item.x, minY: item.y, maxX: item.x, maxY: item.y}; }
+    compareMinX(a, b) { return a.x - b.x; }
+    compareMinY(a, b) { return a.y - b.y; }
+}
+
+export const tree = new PointRBush(5);
 
 export default ({topic, primary_property, properties, features, vgi_data, value_idx, resolution}) => {
 
-    //Rbush test
-    /*const tree = new RBush();
-    const item = {
-        minX: 20,
-        minY: 40,
-        maxX: 30,
-        maxY: 50,
-        foo: 'bar'
-    };
-    tree.insert(item);*/
 
     // Assurance checks
     if (primary_property === null) {
@@ -91,10 +98,6 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     //     }
     // });
 
-    if (value_idx < 0) {
-        throw new Error('Value_idx values must be >= 0');
-    }
-
     let vgiFeatures = [];
     if (vgi_data !== undefined) {
         vgiFeatures = new GeoJSON().readFeatures(vgi_data, {
@@ -113,61 +116,68 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     });
     //console.log(parsedFeatures);
 
+    // Find new features. Features that are not inside the featureInfo. These features will be used for indexing
+    //TODO pravdepodobne i vgi featury
+    let newFeatures = getNewFeatures(parsedFeatures);
+
+    // Adding features into PointRBush index
+    addFeaturesToIndex(newFeatures);
+    //console.log(tree);
+
+    // Adding geometry in WGS84 to OL feature because of computing using turf.js
+    // Added to featureInfo variable
+    addFeatureInfo(newFeatures);
+
     // Sorting properties - primary property is top left box
     let sortedProperties = sortProperties(properties, primary_property);
 
-    // Adding geometry in WGS84 to OL feature because of computing using turf.js
-    featureInfo = addTurfGeometry(parsedFeatures);
-
     // Min and max values for normalization
     let minMaxValues = getMinMaxValues(sortedProperties, parsedFeatures);
+
+    // Adding combinedSymbol into featureInfo variable
+    // TODO tady bych si mohl nastavit jinak hodnotu abych nemusel vzdycky vytvaret CombinedSymbol
+    splicedFeatures = [...parsedFeatures];
 
     for (let feature of parsedFeatures) {
         featureInfo[feature.getId()].combinedSymbol = new CombinedSymbol(feature, sortedProperties, primary_property, resolution, value_idx, minMaxValues);
     }
 
-    // Caching the styles
-    /*if (Object.keys(cachedFeatureStyles).length === 0) {
-        let length = 0;
-        parsedFeatures.forEach(function(feature) {
-
-            sortedProperties.forEach(function(property) {
-                if (feature.values_.hasOwnProperty(property.name_id)) {
-                    length = feature.values_[property.name_id].values.length;
-                }
-            });
-
-            for (let i = 0; i < length; i++) {
-                let hash = Symbolizer.createHash(feature.id_, primary_property, i);
-                //console.log('HASH');
-                //console.log(hash);
-                // adding buffer from buffers object to feature
-                feature.setProperties({'buffer': buffers[hash]});
-
-                let symbolizer = new Symbolizer(primary_property, sortedProperties, feature, i, resolution, minMaxValues);
-                let featureStyle = symbolizer.createSymbol();
-
-                // adding style to a feature
-                feature.setProperties({'featureStyle': featureStyle});
-
-                //console.log('Feature');
-                //console.log(feature);
-
-                if (featureStyle instanceof Array) {
-                    for (let j in featureStyle) {
-                        featureStyle[j].getImage().load();
-                    }
-                } else {
-                    featureStyle.getImage().load();
-                }
-                cachedFeatureStyles[hash] = featureStyle;
-            }
-        });
-    }*/
-
+    // Aggregating of the features
     let aggFeatures = [];
+    let a = performance.now();
 
+    //TODO pridat tady i VGI az je budu agregovat
     for (let feature of parsedFeatures) {
+        let coordinates = feature.getGeometry().getCoordinates();
+        //TODO pocitat realnou vzdalenost podle velikosti symbolu
+
+        // Find two features - one as query feature and the nearest feature to the query feature
+        let indexedFeatures = knn(tree, coordinates[0], coordinates[1], 2, undefined, 1500);
+
+        if (indexedFeatures[1] !== undefined) {
+            let aggFeature = recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues);
+
+            // In the case there is no intersection between symbols during the first recursion
+            // The function returns null in this case
+            if (aggFeature !== null) {
+                aggFeatures.push(aggFeature);
+            }
+        }
+    }
+
+    let b = performance.now();
+    console.log(b-a);
+
+    // Features after aggregation
+    // TODO notice about VGI features
+    //console.log(aggFeatures);
+    //console.log(parsedFeatures);
+    let finalFeatures = aggFeatures.concat(splicedFeatures);
+
+
+
+
+    /*for (let feature of parsedFeatures) {
         for (let otherFeature of parsedFeatures) {
             if (feature.id_ !== otherFeature.id_) {
                 if (findIntersection(feature, otherFeature)) {
@@ -204,23 +214,23 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
                 }
             }
         }
-    }
+    }*/
 
     // Removing features of multiple aggregation
-    for (let feature of aggFeatures) {
+    /*for (let feature of aggFeatures) {
         for (let otherFeature of aggFeatures) {
             if (feature.id_.includes(otherFeature.id_)) {
                 aggFeatures.splice(aggFeatures.indexOf(otherFeature), 1);
             }
         }
-    }
+    }*/
 
     // Copy features without intersection
-    for (let feature of parsedFeatures) {
+    /*for (let feature of parsedFeatures) {
         if (!containsFeature(feature, aggFeatures)) {
             aggFeatures.push(feature);
         }
-    }
+    }*/
 
     /*
     let bufferFeatures = [];
@@ -241,14 +251,14 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     parsedFeatures.push(bufferFeatures[1]);
     */
     let polygonVgiFeatures = [];
-    if (vgiFeatures.length > 0) {
+    /*if (vgiFeatures.length > 0) {
         addTurfGeometry(vgiFeatures);
         //addVgiFeatures(vgiFeatures);
         addCrossreferences(vgiFeatures, aggFeatures);
         //find if there is some features for aggregating into the polygon
         polygonVgiFeatures = aggregateVgiToPolygon(vgiFeatures);
         //console.log(featureInfo);
-    }
+    }*/
 
     // adding VGI features into aggregated features
     let VGIAndFeatures = aggFeatures.concat(vgiFeatures).concat(polygonVgiFeatures);
@@ -257,10 +267,10 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         return ! (typeof window != 'undefined' && window.document);
     }
     //console.log(is_server());
-
+    //console.log(aggFeatures);
 
     return {
-        features: VGIAndFeatures,
+        features: finalFeatures,
         style: function (feature, resolution) {
             //TODO we don't need hash if we don't have caching
             //TODO try add caching on lower level of symbolization

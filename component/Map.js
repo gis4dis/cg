@@ -3,7 +3,7 @@ import ol_format_GeoJSON from 'ol/format/geojson';
 import generalize from './../src/cg/generalize';
 
 const geojson = require('./../data/test.json');
-const geojson_example = require('../data/example.json');
+const geojson_example = require('../data/big_example.json');
 const geojsonFeatures = (new ol_format_GeoJSON()).readFeatures(geojson, {
     dataProjection: 'EPSG:3857',
     featureProjection: 'EPSG:3857',
@@ -107,7 +107,7 @@ class Map extends React.PureComponent {
             features: geojson_example,
             vgi_data: vgi_data,
             value_idx: 1,
-            resolution: 4.777 //4.777 for zoom 15 --- 19.109 for zoom 13 -- 38.218 for zoom 12 -- 76.437 for zoom 11 -- 305.748 for zoom 9
+            resolution: 305.748 //4.777 for zoom 15 --- 19.109 for zoom 13 -- 38.218 for zoom 12 -- 76.437 for zoom 11 -- 305.748 for zoom 9
         });
 
         ol_Map = require('ol/map').default;
@@ -125,7 +125,7 @@ class Map extends React.PureComponent {
         const view = new ol_View({
             projection: projection,
             center: ol_proj.transform([16.6078411,49.2002211], 'EPSG:4326', projection),
-            zoom: 11
+            zoom: 9
         });
 
         const vectorLayer = getVectorLayer();
