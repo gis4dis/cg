@@ -3,7 +3,9 @@ import Icon from 'ol/style/icon';
 import Stroke from 'ol/style/stroke';
 import Fill from 'ol/style/fill';
 import Symbolizer from './Symbolizer';
+import {isServer} from '../helpers';
 
+const SYMBOL_PATH = '/static/symbolization/vgi';
 
 /** Represents Symbolizer for features. Contains set of operations including creating styles */
 export default class PolygonSymbolizer {
@@ -23,15 +25,31 @@ export default class PolygonSymbolizer {
      * @returns {Style} OpenLayers style object
      */
     buildStyle() {
-        return new Style({
-            stroke: new Stroke({
-                color: 'rgb(102, 51, 0)',
-                width: 3
-            }),
-            fill: new Fill({
-                color: 'rgba(204, 102, 0, 0.2)'
-            })
-        });
+        if (isServer()) {
+            return new Style({
+                stroke: new Stroke({
+                    color: 'rgb(102, 51, 0)',
+                    width: 3
+                }),
+                fill: new Fill({
+                    color: 'rgba(204, 102, 0, 0.2)'
+                })
+            });
+        } else {
+            // TODO set image based on aggregated VGI features
+            let cnv = document.createElement('canvas');
+            let ctx = cnv.getContext('2d');
+            let img = new Image();
+            img.src = `${SYMBOL_PATH}/vgi_drytree_pattern.svg`;
+            let pattern = ctx.createPattern(img, 'repeat');
+
+            return new Style({
+                fill: new Fill({
+                    color: pattern
+                })
+            });
+        }
+
     }
 
     /**

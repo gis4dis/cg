@@ -68,6 +68,7 @@ export const tree = new PointRBush(5);
 export const vgiTree = new PointRBush(5);
 
 export default ({topic, primary_property, properties, features, vgi_data, value_idx, resolution}) => {
+    let a = performance.now();
 
     // Assurance checks
     if (primary_property === null) {
@@ -140,7 +141,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
 
     // Aggregating of the features
     let aggFeatures = [];
-    let a = performance.now();
+
 
     //TODO pridat tady i VGI az je budu agregovat
     for (let feature of parsedFeatures) {
@@ -160,10 +161,9 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         }
     }
 
-    console.log(aggFeatures);
+    //console.log(aggFeatures);
 
-    let b = performance.now();
-    console.log(b-a);
+
 
     // Crossreferences
     for (let feature of vgiFeatures) {
@@ -237,7 +237,8 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
 
     let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);
 
-
+    let b = performance.now();
+    console.log(b-a);
 
     return {
         features: finalFeatures,
