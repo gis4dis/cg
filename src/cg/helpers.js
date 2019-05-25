@@ -1,4 +1,11 @@
-import {featureInfo, tree, splicedFeatures} from "./generalize";
+import {
+    featureInfo,
+    tree,
+    vgiTree,
+    splicedFeatures,
+    splicedVgiFeatures,
+    VGI_INDEX_DISTANCE,
+    INDEX_DISTANCE} from "./generalize";
 import Feature from "ol/feature";
 import Point from "ol/geom/point";
 import Polygon from "ol/geom/polygon";
@@ -54,6 +61,16 @@ export function aggregateVgiToPolygon(features) {
     return feature;
 }
 
+export function getConcatId(features) {
+    let id = '';
+
+    for (let feature of features) {
+        id = id + feature.getId();
+    }
+
+    return id;
+}
+
 /**
  * Checks if feature is inside the array
  * @param {Feature} feature - OpenLayer feature
@@ -68,6 +85,42 @@ export function containsFeature(feature, array) {
     }
 
     return false;
+}
+
+export function recursivePolygonAggregating(queryFeature, indexedFeature, vgiPolygonFeatures) {
+    // Get info about feature from featureInfo
+    let nearestFeature = featureInfo[indexedFeature.id];
+
+    // Remove features from RBush Index
+    vgiTree.remove(queryFeature, (a, b) => {
+        return a.id === b.id;
+    });
+    vgiTree.remove(indexedFeature, (a, b) => {
+        return a.id === b.id;
+    });
+
+    vgiPolygonFeatures.push(nearestFeature.olFeature);
+
+    // Remove features from RBush Index
+    vgiTree.remove(queryFeature, (a, b) => {
+        return a.id === b.id;
+    });
+    vgiTree.remove(indexedFeature, (a, b) => {
+        return a.id === b.id;
+    });
+
+    // Remove features from original featureCollection - these features was aggregated
+    splicedVgiFeatures.splice(splicedVgiFeatures.findIndex(f => f.id_ === indexedFeature.id), 1);
+    splicedVgiFeatures.splice(splicedVgiFeatures.findIndex(f => f.id_ === queryFeature.id), 1);
+
+    // Find another nearest feature - if there is another one
+    let indexedFeatures = knn(vgiTree, indexedFeature.x, indexedFeature.y, 2, undefined, VGI_INDEX_DISTANCE);
+
+    if (indexedFeatures[1] !== undefined) {
+        return recursivePolygonAggregating(indexedFeatures[0], indexedFeatures[1], vgiPolygonFeatures);
+    }
+    //TODO add check if there are more than 2 features
+    return vgiPolygonFeatures;
 }
 
 export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues) {
@@ -135,7 +188,7 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues)
         //console.log(tree);
 
         // Find another nearest feature - if there is another one
-        let indexedFeatures = knn(tree, newCoords[0], newCoords[1], 2, undefined, 1500);
+        let indexedFeatures = knn(tree, newCoords[0], newCoords[1], 2, undefined, INDEX_DISTANCE);
 
         if (indexedFeatures[1] !== undefined) {
             if (recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues) === null) {
@@ -182,6 +235,14 @@ export function addFeatureInfo(features) {
     }
 }
 
+export function getPolygonFeatures(features) {
+    let feats = [];
+    for (let feature of features) {
+        feats.push(feature.olFeature);
+    }
+    return feats;
+}
+
 export function getNewFeatures(features) {
     let newFeatures = [];
 
@@ -201,6 +262,17 @@ export function addFeatureToIndex(feature) {
         x: coordinates[0],
         y: coordinates[1]
     });
+}
+
+export function addFeaturesToVgiIndex(features) {
+    for (let feature of features) {
+        let coordinates = feature.getGeometry().getCoordinates();
+        vgiTree.insert({
+            id: feature.getId(),
+            x: coordinates[0],
+            y: coordinates[1]
+        });
+    }
 }
 
 export function addFeaturesToIndex(features) {

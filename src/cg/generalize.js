@@ -19,17 +19,24 @@ import {
     addVgiFeatures,
     addFeatureToIndex,
     addFeaturesToIndex,
+    addFeaturesToVgiIndex,
     getNewFeatures,
-    recursiveAggregating
+    recursiveAggregating,
+    recursivePolygonAggregating,
+    getPolygonFeatures,
+    getConcatId
 } from './helpers';
 import CombinedSymbol from './symbolizers/CombinedSymbol';
 import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
 
-import RBush from 'rbush';
+import PointRBush from './PointRBush';
 import knn from 'rbush-knn';
+import Polygon from "ol/geom/polygon";
 
 let turfprojection = require('@turf/projection');
 let turfhelper = require('@turf/helpers');
+let turfconcave = require('@turf/concave');
+let turfsmooth = require('@turf/polygon-smooth');
 
 /**
  * Main generalization function
@@ -44,28 +51,21 @@ let turfhelper = require('@turf/helpers');
  *  (https://github.com/gis4dis/poster/wiki/Interface-between-MC-client-&-CG)
  * @returns {{features: Array.<Feature>, style: function()}}
  */
-//let cachedFeatureStyles = {};
-/*
-* FeatureId: {
-*   wgs84: geometry in WGS84,
-*   turfGeometry: geometry,
-*   combinedSymbol: combinedSymbolObject
-*   }
-*   */
+
+export const VGI_INDEX_DISTANCE = 10;
+export const INDEX_DISTANCE = 1500;
+
 export let featureInfo = {};
 export let splicedFeatures = [];
+export let splicedVgiFeatures = [];
 
-//let buffers = {};
-class PointRBush extends RBush {
-    toBBox(item) { return {minX: item.x, minY: item.y, maxX: item.x, maxY: item.y}; }
-    compareMinX(a, b) { return a.x - b.x; }
-    compareMinY(a, b) { return a.y - b.y; }
-}
-
+// Create RBush index for aggregating symbols
 export const tree = new PointRBush(5);
 
-export default ({topic, primary_property, properties, features, vgi_data, value_idx, resolution}) => {
+// Create RBush index for VGI features - for aggregating into polygons
+export const vgiTree = new PointRBush(5);
 
+export default ({topic, primary_property, properties, features, vgi_data, value_idx, resolution}) => {
 
     // Assurance checks
     if (primary_property === null) {
@@ -87,17 +87,6 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         throw new Error('Value_idx values must be >= 0');
     }
 
-    //TODO create tests for property_values and property_anomaly_rates
-    // features.features.forEach(function (feature) {
-    //     if (feature.properties.property_values.length !== feature.properties.property_anomaly_rates.length) {
-    //         throw new Error('Property values and property anomaly rates has different length');
-    //     }
-    //
-    //     if (feature.properties.value_index_shift < 0) {
-    //         throw new Error('Value index shift must be >= 0');
-    //     }
-    // });
-
     let vgiFeatures = [];
     if (vgi_data !== undefined) {
         vgiFeatures = new GeoJSON().readFeatures(vgi_data, {
@@ -105,6 +94,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
             featureProjection: 'EPSG:3857',
         });
 
+        // Add prefix for VGI IDs
         for (let feature of vgiFeatures) {
             feature.setId(`vgi_${feature.getId()}`);
         }
@@ -114,19 +104,22 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         dataProjection: 'EPSG:3857',
         featureProjection: 'EPSG:3857',
     });
-    //console.log(parsedFeatures);
 
     // Find new features. Features that are not inside the featureInfo. These features will be used for indexing
     //TODO pravdepodobne i vgi featury
     let newFeatures = getNewFeatures(parsedFeatures);
+    let newVgiFeatures = getNewFeatures(vgiFeatures);
 
-    // Adding features into PointRBush index
+    // Adding features and VGI features into PointRBush index
+    //TODO add VGI into tree index
     addFeaturesToIndex(newFeatures);
-    //console.log(tree);
+    //addFeaturesToIndex(newVgiFeatures);
+    addFeaturesToVgiIndex(newVgiFeatures);
 
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
     // Added to featureInfo variable
     addFeatureInfo(newFeatures);
+    addFeatureInfo(newVgiFeatures);
 
     // Sorting properties - primary property is top left box
     let sortedProperties = sortProperties(properties, primary_property);
@@ -134,10 +127,11 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     // Min and max values for normalization
     let minMaxValues = getMinMaxValues(sortedProperties, parsedFeatures);
 
-    // Adding combinedSymbol into featureInfo variable
-    // TODO tady bych si mohl nastavit jinak hodnotu abych nemusel vzdycky vytvaret CombinedSymbol
+    // Copying array of station features and VGI features
     splicedFeatures = [...parsedFeatures];
+    splicedVgiFeatures = [...vgiFeatures];
 
+    // Creating combined symbols
     for (let feature of parsedFeatures) {
         featureInfo[feature.getId()].combinedSymbol = new CombinedSymbol(feature, sortedProperties, primary_property, resolution, value_idx, minMaxValues);
     }
@@ -149,10 +143,9 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     //TODO pridat tady i VGI az je budu agregovat
     for (let feature of parsedFeatures) {
         let coordinates = feature.getGeometry().getCoordinates();
-        //TODO pocitat realnou vzdalenost podle velikosti symbolu
 
         // Find two features - one as query feature and the nearest feature to the query feature
-        let indexedFeatures = knn(tree, coordinates[0], coordinates[1], 2, undefined, 1500);
+        let indexedFeatures = knn(tree, coordinates[0], coordinates[1], 2, undefined, INDEX_DISTANCE);
 
         if (indexedFeatures[1] !== undefined) {
             let aggFeature = recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues);
@@ -168,11 +161,61 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     let b = performance.now();
     console.log(b-a);
 
+    // Aggregating VGI features into polygons
+    let aggVgiFeatures = [];
+
+    for (let feature of vgiFeatures) {
+        let coordinates = feature.getGeometry().getCoordinates();
+
+        // Find two features - one as query feature and the nearest feature to the query feature
+        // TODO think about using buffers for VGI features
+        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 2, undefined, VGI_INDEX_DISTANCE);
+
+        if (indexedFeatures[1] !== undefined) {
+            let vgiPolygonFeatures = [];
+            vgiPolygonFeatures.push(featureInfo[indexedFeatures[0].id].olFeature);
+            vgiPolygonFeatures = recursivePolygonAggregating(indexedFeatures[0], indexedFeatures[1], vgiPolygonFeatures);
+
+            // Create polygon only if there are more 3 features at least
+            if (vgiPolygonFeatures.length >= 3) {
+
+                // Creating new polygon OL feature
+                let polygonFeature = new Feature({
+                    intersectedFeatures: vgiPolygonFeatures,
+                    geometry: new Polygon(turfsmooth.default(turfconcave.default(turfhelper.featureCollection(
+                        Array.from(vgiPolygonFeatures, f => featureInfo[f.getId()].turfGeometry))), {iterations: 3}).features[0].geometry.coordinates)
+                });
+
+                let concatId = getConcatId(vgiPolygonFeatures);
+                polygonFeature.setId(`vgi_poly_${concatId}`);
+
+                let wgs84Coordinates = polygonFeature.getGeometry().getCoordinates();
+                polygonFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+
+                // Add feature into featureInfo
+                featureInfo[polygonFeature.getId()] = {
+                    'id': polygonFeature.getId(),
+                    'olFeature': polygonFeature,
+                    'coordinates': polygonFeature.getGeometry().getCoordinates(),
+                    'wgs84': wgs84Coordinates,
+                    'turfGeometry': turfhelper.point(wgs84Coordinates),
+                    'combinedSymbol': null
+                };
+
+                aggVgiFeatures.push(polygonFeature);
+            } else {
+                // if there are 2 and less features. Only add not aggregated features
+                aggVgiFeatures.concat(vgiPolygonFeatures);
+            }
+        }
+    }
+
+    console.log(aggVgiFeatures);
     // Features after aggregation
     // TODO notice about VGI features
     //console.log(aggFeatures);
     //console.log(parsedFeatures);
-    let finalFeatures = aggFeatures.concat(splicedFeatures);
+    let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);
 
 
 
@@ -232,24 +275,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         }
     }*/
 
-    /*
-    let bufferFeatures = [];
-    for (let feature of parsedFeatures) {
-        let featureTest = new Feature({
-            name: 'buffer' + feature.id_,
-            geometry: new Polygon(featureInfo[feature.getId()].combinedSymbol.buffer.geometry.coordinates).transform('EPSG:4326', 'EPSG:3857')
-        });
-        let myStroke = new Stroke({
-            color : 'rgba(255,0,0,1.0)',
-            width : 2
-        });
-        featureTest.setStyle(new Style({stroke: myStroke}));
-        bufferFeatures.push(featureTest);
-    }
 
-    parsedFeatures.push(bufferFeatures[0]);
-    parsedFeatures.push(bufferFeatures[1]);
-    */
     let polygonVgiFeatures = [];
     /*if (vgiFeatures.length > 0) {
         addTurfGeometry(vgiFeatures);
@@ -261,7 +287,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     }*/
 
     // adding VGI features into aggregated features
-    let VGIAndFeatures = aggFeatures.concat(vgiFeatures).concat(polygonVgiFeatures);
+    //let VGIAndFeatures = aggFeatures.concat(vgiFeatures).concat(polygonVgiFeatures);
 
     function is_server() {
         return ! (typeof window != 'undefined' && window.document);
@@ -272,13 +298,6 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     return {
         features: finalFeatures,
         style: function (feature, resolution) {
-            //TODO we don't need hash if we don't have caching
-            //TODO try add caching on lower level of symbolization
-            //let hash = Symbolizer.createHash(feature.id_, primary_property, value_idx);
-
-            //if (cachedFeatureStyles.hasOwnProperty(hash)) {
-            //    return cachedFeatureStyles[hash]
-            //} else {
             if (feature.getId().startsWith('vgi_poly')) {
                 return new PolygonSymbolizer(feature).createSymbol();
             } else if (feature.getId().startsWith('vgi')) {
@@ -287,7 +306,6 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
                 let symbolizer = new Symbolizer(properties, feature, resolution, minMaxValues);
                 return symbolizer.createSymbol();
             }
-            //}
         }
     };
 }
