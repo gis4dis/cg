@@ -55,6 +55,7 @@ let turfsmooth = require('@turf/polygon-smooth');
 
 export const VGI_INDEX_DISTANCE = 1000;
 export const INDEX_DISTANCE = 1500;
+export const CROSSREFERENCE_DISTANCE = 1000;
 
 export let featureInfo = {};
 export let splicedFeatures = [];
@@ -164,6 +165,22 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     let b = performance.now();
     console.log(b-a);
 
+    // Crossreferences
+    for (let feature of vgiFeatures) {
+        let coordinates = feature.getGeometry().getCoordinates();
+
+        // Find two features - one as query feature and the nearest feature to the query feature
+        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 3, undefined, CROSSREFERENCE_DISTANCE);
+
+        // if there are more than one close VGI feature
+        if (indexedFeatures[2] !== undefined) {
+            featureInfo[feature.getId()]['crossReference'] = 'more';
+        } else if (indexedFeatures[1] !== undefined) {
+            // if there is only one VGI feature in maxDistance
+            featureInfo[feature.getId()]['crossReference'] = 'one';
+        }
+    }
+
     // Aggregating VGI features into polygons
     let aggVgiFeatures = [];
 
@@ -214,7 +231,6 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         }
     }
 
-    addCrossreferences(vgiFeatures, aggFeatures);
     //console.log(vgiFeatures);
     //console.log(aggVgiFeatures);
 

@@ -11,7 +11,6 @@ import Point from "ol/geom/point";
 import Polygon from "ol/geom/polygon";
 import knn from "rbush-knn";
 
-const CROSS_CONFIG = require('../../configuration/crossreferences.json');
 const DISTANCE_POLYGON = 0.5;
 
 let turfhelper = require('@turf/helpers');
@@ -312,7 +311,7 @@ export function addVgiFeatures(features) {
     }
 }
 
-function createCrossreferenceInfo(symbol, vgiProperties, phenomenon) {
+/*function createCrossreferenceInfo(symbol, vgiProperties, phenomenon) {
     for (let vgi_cr of vgiProperties) {
         if (phenomenon === vgi_cr.name) {
             return {
@@ -323,9 +322,9 @@ function createCrossreferenceInfo(symbol, vgiProperties, phenomenon) {
             };
         }
     }
-}
+}*/
 
-function getCrossreferenceInfo(phenomenon, feature) {
+/*function getCrossreferenceInfo(phenomenon, feature) {
     let pSymbol = feature.combinedSymbol.primarySymbol;
     let sSymbol = feature.combinedSymbol.secondarySymbol;
     let tSymbol = feature.combinedSymbol.tertiarySymbol;
@@ -348,9 +347,35 @@ function getCrossreferenceInfo(phenomenon, feature) {
     }
 
     throw new Error(`Can't find radius or anomalyValue for phenomenon: ${phenomenon}`);
-}
+}*/
 
-export function addCrossreferences(vgiFeatures, aggFeatures) {
+/*export function addCrossreferences(vgiFeatures) {
+
+    for (let f1 of vgiFeatures) {
+        if (f1.getId().startsWith('vgi')) {
+            for (let f2 of aggFeatures) {
+                //console.log(f1);
+                //console.log(f2);
+
+                //TODO prioritize closer measurement
+                let info = getCrossreferenceInfo(f1.values_.values[0].phenomenon.name, featureInfo[f2.getId()]);
+                let distance = turfdistance.default(featureInfo[f1.getId()].turfGeometry, featureInfo[f2.getId()].turfGeometry, {units: units});
+                //console.log(info);
+
+                if (distance <= info.radius) {
+                    // resolve anomalyValue
+                    if (info.anomalyValue >= 0.5) {
+                        featureInfo[f1.getId()]['crossReference'] = info.highAnomaly;
+                    } else {
+                        featureInfo[f1.getId()]['crossReference'] = info.lowAnomaly;
+                    }
+                }
+            }
+        }
+    }
+}*/
+
+/*export function addCrossreferences(vgiFeatures, aggFeatures) {
     let units = CROSS_CONFIG.units;
 
     for (let f1 of vgiFeatures) {
@@ -375,7 +400,9 @@ export function addCrossreferences(vgiFeatures, aggFeatures) {
             }
         }
     }
-}
+}*/
+
+
 
 /**
  * Sorts properties based on primary property

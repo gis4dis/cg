@@ -58,12 +58,17 @@ export default class VGISymbolizer {
             })
         });
 
-        let direction = featureInfo[this.feature.getId()].crossReference;
+        let oneOrMoreCrossreferences = featureInfo[this.feature.getId()].crossReference;
+
+        let anchor = [0, 0.9];
+        if (oneOrMoreCrossreferences === 'more') {
+            anchor = [-0.3, 1];
+        }
         let crossReferenceIcon = new Style({
             image: new Icon({
-                anchor: [0, 0.9],
+                anchor: anchor,
                 opacity: 1,
-                src: `${SYMBOL_PATH}/reference_${direction}.svg`,
+                src: `${SYMBOL_PATH}/reference_${oneOrMoreCrossreferences}.svg`,
                 scale: 0.25
             })
         });
