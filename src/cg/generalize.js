@@ -24,7 +24,8 @@ import {
     recursiveAggregating,
     recursivePolygonAggregating,
     getPolygonFeatures,
-    getConcatId
+    getConcatId,
+    isServer,
 } from './helpers';
 import CombinedSymbol from './symbolizers/CombinedSymbol';
 import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
@@ -52,7 +53,7 @@ let turfsmooth = require('@turf/polygon-smooth');
  * @returns {{features: Array.<Feature>, style: function()}}
  */
 
-export const VGI_INDEX_DISTANCE = 10;
+export const VGI_INDEX_DISTANCE = 1000;
 export const INDEX_DISTANCE = 1500;
 
 export let featureInfo = {};
@@ -158,6 +159,8 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         }
     }
 
+    console.log(aggFeatures);
+
     let b = performance.now();
     console.log(b-a);
 
@@ -169,6 +172,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
 
         // Find two features - one as query feature and the nearest feature to the query feature
         // TODO think about using buffers for VGI features
+        // TODO aggregate only same vgi features or change style for that features
         let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 2, undefined, VGI_INDEX_DISTANCE);
 
         if (indexedFeatures[1] !== undefined) {
@@ -210,90 +214,14 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         }
     }
 
-    console.log(aggVgiFeatures);
-    // Features after aggregation
-    // TODO notice about VGI features
-    //console.log(aggFeatures);
-    //console.log(parsedFeatures);
+    addCrossreferences(vgiFeatures, aggFeatures);
+    //console.log(vgiFeatures);
+    //console.log(aggVgiFeatures);
+
+
     let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);
 
 
-
-
-    /*for (let feature of parsedFeatures) {
-        for (let otherFeature of parsedFeatures) {
-            if (feature.id_ !== otherFeature.id_) {
-                if (findIntersection(feature, otherFeature)) {
-                    let newCoords = getNewCentroid(feature.getGeometry().getCoordinates(), otherFeature.getGeometry().getCoordinates());
-
-                    let aggFeature = new Feature({
-                        intersectedFeatures: [],
-                        geometry: new Point(newCoords)
-                    });
-                    aggFeature.setId(`agg_${feature.id_}:${otherFeature.id_}`);
-                    aggFeature.values_.intersectedFeatures.push(feature);
-                    aggFeature.values_.intersectedFeatures.push(otherFeature);
-
-                    featureInfo[aggFeature.getId()] = {
-                        'combinedSymbol': null,
-                        'turfGeometry': null,
-                        'wgs84': null
-                    };
-                    featureInfo[aggFeature.getId()].combinedSymbol = featureInfo[feature.getId()].combinedSymbol;
-                    featureInfo[aggFeature.getId()].combinedSymbol.aggregateSymbols(featureInfo[otherFeature.getId()].combinedSymbol);
-
-                    parsedFeatures.splice(parsedFeatures.indexOf(otherFeature), 1);
-                    parsedFeatures.splice(parsedFeatures.indexOf(feature), 1);
-
-                    updateTurfGeometry(aggFeature);
-                    featureInfo[aggFeature.getId()].combinedSymbol.setBuffer(aggFeature, minMaxValues);
-
-                    aggFeatures.push(aggFeature);
-
-                    //add feature for next iteration and break the inner cycle
-                    parsedFeatures.push(aggFeature);
-
-                    break;
-                }
-            }
-        }
-    }*/
-
-    // Removing features of multiple aggregation
-    /*for (let feature of aggFeatures) {
-        for (let otherFeature of aggFeatures) {
-            if (feature.id_.includes(otherFeature.id_)) {
-                aggFeatures.splice(aggFeatures.indexOf(otherFeature), 1);
-            }
-        }
-    }*/
-
-    // Copy features without intersection
-    /*for (let feature of parsedFeatures) {
-        if (!containsFeature(feature, aggFeatures)) {
-            aggFeatures.push(feature);
-        }
-    }*/
-
-
-    let polygonVgiFeatures = [];
-    /*if (vgiFeatures.length > 0) {
-        addTurfGeometry(vgiFeatures);
-        //addVgiFeatures(vgiFeatures);
-        addCrossreferences(vgiFeatures, aggFeatures);
-        //find if there is some features for aggregating into the polygon
-        polygonVgiFeatures = aggregateVgiToPolygon(vgiFeatures);
-        //console.log(featureInfo);
-    }*/
-
-    // adding VGI features into aggregated features
-    //let VGIAndFeatures = aggFeatures.concat(vgiFeatures).concat(polygonVgiFeatures);
-
-    function is_server() {
-        return ! (typeof window != 'undefined' && window.document);
-    }
-    //console.log(is_server());
-    //console.log(aggFeatures);
 
     return {
         features: finalFeatures,

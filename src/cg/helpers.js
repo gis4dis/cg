@@ -87,6 +87,10 @@ export function containsFeature(feature, array) {
     return false;
 }
 
+export function isServer() {
+    return ! (typeof window != 'undefined' && window.document);
+}
+
 export function recursivePolygonAggregating(queryFeature, indexedFeature, vgiPolygonFeatures) {
     // Get info about feature from featureInfo
     let nearestFeature = featureInfo[indexedFeature.id];
@@ -110,8 +114,16 @@ export function recursivePolygonAggregating(queryFeature, indexedFeature, vgiPol
     });
 
     // Remove features from original featureCollection - these features was aggregated
-    splicedVgiFeatures.splice(splicedVgiFeatures.findIndex(f => f.id_ === indexedFeature.id), 1);
-    splicedVgiFeatures.splice(splicedVgiFeatures.findIndex(f => f.id_ === queryFeature.id), 1);
+    let index1 = splicedVgiFeatures.findIndex(f => f.id_ === indexedFeature.id);
+    let index2 = splicedVgiFeatures.findIndex(f => f.id_ === queryFeature.id);
+
+    if (index1 !== -1) {
+        splicedVgiFeatures.splice(index1, 1);
+    }
+
+    if (index2 !== -1) {
+        splicedVgiFeatures.splice(index2, 1);
+    }
 
     // Find another nearest feature - if there is another one
     let indexedFeatures = knn(vgiTree, indexedFeature.x, indexedFeature.y, 2, undefined, VGI_INDEX_DISTANCE);
@@ -143,8 +155,13 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues)
         aggFeature.setId(`agg_${featureI.id}:${nearestFeature.id}`);
 
         // Add features into new aggregated Features
-        aggFeature.values_.intersectedFeatures.push(featureI.olFeature);
-        aggFeature.values_.intersectedFeatures.push(nearestFeature.olFeature);
+        if ('intersectedFeatures' in featureI.olFeature.values_) {
+            aggFeature.values_.intersectedFeatures = aggFeature.values_.intersectedFeatures.concat(featureI.olFeature.values_.intersectedFeatures);
+            aggFeature.values_.intersectedFeatures.push(nearestFeature.olFeature);
+        } else {
+            aggFeature.values_.intersectedFeatures.push(featureI.olFeature);
+            aggFeature.values_.intersectedFeatures.push(nearestFeature.olFeature);
+        }
 
         // Add feature into featureInfo
         featureInfo[aggFeature.getId()] = {
@@ -179,13 +196,16 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues)
         });
 
         // Remove features from original featureCollection - these features was aggregated
-        splicedFeatures.splice(splicedFeatures.findIndex(f => f.id_ === indexedFeature.id), 1);
-        splicedFeatures.splice(splicedFeatures.findIndex(f => f.id_ === queryFeature.id), 1);
+        let index1 = splicedFeatures.findIndex(f => f.id_ === indexedFeature.id);
+        let index2 = splicedFeatures.findIndex(f => f.id_ === queryFeature.id);
 
-        //console.log(featureI.id);
-        //console.log(nearestFeature.id);
-        //console.log(aggFeature.getId());
-        //console.log(tree);
+        if (index1 !== -1) {
+            splicedFeatures.splice(index1, 1);
+        }
+
+        if (index2 !== -1) {
+            splicedFeatures.splice(index2, 1);
+        }
 
         // Find another nearest feature - if there is another one
         let indexedFeatures = knn(tree, newCoords[0], newCoords[1], 2, undefined, INDEX_DISTANCE);
