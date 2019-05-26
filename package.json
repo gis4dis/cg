@@ -26,7 +26,7 @@
     "ol": "jirik/ol3#19c2797513b5b3983ff186d24a60aaf81ac97e3c",
     "proj4": "2.4.4",
     "rbush": "3.0.0",
-    "rbush-knn": "https://github.com/Bulva/rbush-knn.git",
+    "rbush-knn": "jirik/rbush-knn.git#4dbee79f7ffd43da6a4f1f3f1e0c1239a0b9c95b",
     "react": "16.3.1",
     "react-dom": "16.3.3",
     "react-markdown": "3.3.0"
