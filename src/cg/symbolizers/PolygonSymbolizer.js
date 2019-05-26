@@ -66,4 +66,16 @@ export default class PolygonSymbolizer {
 
         return styles;
     }
+
+    createDefaultSymbol() {
+        return new Style({
+            stroke: new Stroke({
+                color: 'rgb(102, 51, 0)',
+                width: 3
+            }),
+            fill: new Fill({
+                color: 'rgba(204, 102, 0, 0.2)'
+            })
+        });
+    }
 }

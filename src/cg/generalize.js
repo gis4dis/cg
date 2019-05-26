@@ -38,6 +38,9 @@ let turfprojection = require('@turf/projection');
 let turfhelper = require('@turf/helpers');
 let turfconcave = require('@turf/concave');
 let turfsmooth = require('@turf/polygon-smooth');
+let turfinterpolate = require('@turf/interpolate');
+let turfrandom = require('@turf/random');
+let turfmeta = require('@turf/meta');
 
 /**
  * Main generalization function
@@ -270,6 +273,46 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         }
     }
 
+    // Interpolate primary property into polygons
+    //TODO change installation of turf and turf imports
+    let points = [];
+
+    for (let feature of parsedFeatures) {
+        let f = featureInfo[feature.getId()];
+        let point = f.turfGeometry;
+
+        point.properties.primaryPropertyValue = f.combinedSymbol.primarySymbol.value;
+        points.push(point);
+    }
+
+    let pointCollection = turfhelper.featureCollection(points);
+    //let points = turfrandom.randomPoint(30, {bbox: [50, 30, 70, 50]});
+
+    //console.log(points);
+    let options = {gridType: 'square', property: 'primaryPropertyValue', units: 'kilometers'};
+    let grid = turfinterpolate.default(pointCollection, 0.1, options);
+
+    let counter = 0;
+    turfmeta.featureEach(grid, function(square) {
+        square.id = 'grid_poly' + counter;
+        counter += 1;
+    });
+    //console.log(grid);
+
+    let gridFeatures = new GeoJSON().readFeatures(grid, {
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
+    });
+
+
+    //let pointCollection = turfhelper.featureCollection([turfhelper.point([-75.343, 39.984], {name: 'Location A'}), turfhelper.point([-75.343, 39.984], {name: 'Location A'}), turfhelper.point([-75.343, 39.984], {name: 'Location A'})]);
+
+    //let options = {gridType: 'square', property: 'primaryPropertyValues', units: 'kilometers'};
+    //console.log(pointCollection);
+    //let grid = turfinterpolate.default((pointCollection, 100, options));
+    //console.log(grid);
+
+
     //console.log(featureInfo);
 
     /*for (let feature of splicedFeatures) {
@@ -279,7 +322,8 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     //console.log(aggFeatures);
 
 
-    let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);
+    let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures).concat(gridFeatures);
+    //console.log(finalFeatures);
 
     let b = performance.now();
     console.log(b-a);
@@ -291,6 +335,8 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
                 return new PolygonSymbolizer(feature).createSymbol();
             } else if (feature.getId().startsWith('vgi')) {
                 return new VGISymbolizer(feature, resolution, [0.5, 0.5]).createSymbol();
+            } else if (feature.getId().startsWith('grid_poly')) {
+                return new PolygonSymbolizer(feature).createDefaultSymbol();
             } else {
                 let symbolizer = new Symbolizer(properties, feature, resolution, minMaxValues);
                 return symbolizer.createSymbol();
