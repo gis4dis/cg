@@ -272,7 +272,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
             });
         }
     }
-
+    /*
     // Interpolate primary property into polygons
     //TODO change installation of turf and turf imports
     let points = [];
@@ -302,7 +302,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     let gridFeatures = new GeoJSON().readFeatures(grid, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
-    });
+    });*/
 
 
     //let pointCollection = turfhelper.featureCollection([turfhelper.point([-75.343, 39.984], {name: 'Location A'}), turfhelper.point([-75.343, 39.984], {name: 'Location A'}), turfhelper.point([-75.343, 39.984], {name: 'Location A'})]);
@@ -322,7 +322,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     //console.log(aggFeatures);
 
 
-    let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures).concat(gridFeatures);
+    let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);//.concat(gridFeatures);
     //console.log(finalFeatures);
 
     let b = performance.now();
