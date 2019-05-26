@@ -234,6 +234,50 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     //console.log(vgiFeatures);
     //console.log(aggVgiFeatures);
 
+    // Aggregate VGI into weather stations (aggregated or not)
+    //TODO add recursive aggregation
+    for (let feature of splicedFeatures) {
+        //console.log(feature);
+        let coordinates = feature.getGeometry().getCoordinates();
+        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 1, undefined, VGI_INDEX_DISTANCE);
+
+        //console.log(indexedFeatures);
+        if (indexedFeatures[0] !== undefined) {
+            let combinedSymbol = featureInfo[feature.getId()].combinedSymbol;
+            combinedSymbol.addVgiToOtherSymbols(featureInfo[indexedFeatures[0].id].olFeature);
+            featureInfo[feature.getId()].combinedSymbol = combinedSymbol;
+
+            vgiTree.remove(indexedFeatures[0], (a, b) => {
+                return a.id === b.id;
+            });
+        }
+    }
+
+    for (let feature of aggFeatures) {
+        //console.log(feature);
+        let coordinates = feature.getGeometry().getCoordinates();
+        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 1, undefined, VGI_INDEX_DISTANCE);
+
+        //console.log(indexedFeatures);
+        if (indexedFeatures[0] !== undefined) {
+            let combinedSymbol = featureInfo[feature.getId()].combinedSymbol;
+            combinedSymbol.addVgiToOtherSymbols(featureInfo[indexedFeatures[0].id].olFeature);
+            featureInfo[feature.getId()].combinedSymbol = combinedSymbol;
+
+            vgiTree.remove(indexedFeatures[0], (a, b) => {
+                return a.id === b.id;
+            });
+        }
+    }
+
+    //console.log(featureInfo);
+
+    /*for (let feature of splicedFeatures) {
+        console.log('');
+
+    }*/
+    //console.log(aggFeatures);
+
 
     let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);
 
@@ -246,7 +290,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
             if (feature.getId().startsWith('vgi_poly')) {
                 return new PolygonSymbolizer(feature).createSymbol();
             } else if (feature.getId().startsWith('vgi')) {
-                return new VGISymbolizer(feature, resolution).createSymbol();
+                return new VGISymbolizer(feature, resolution, [0.5, 0.5]).createSymbol();
             } else {
                 let symbolizer = new Symbolizer(properties, feature, resolution, minMaxValues);
                 return symbolizer.createSymbol();

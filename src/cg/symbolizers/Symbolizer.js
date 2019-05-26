@@ -1,14 +1,15 @@
 import Style from 'ol/style/style';
 import Icon from 'ol/style/icon';
 import {featureInfo} from '../generalize';
+import VGISymbolizer from "./VGISymbolizer";
 
 
 /* Constants of position of symbols */
 const POSITIONS = {
     'PRIMARY': [1, 1],
-    'SECONDARY': [0, 0],
+    'SECONDARY': [0, 1],
     'TERTIARY': [1, 0],
-    'OTHER': [0, 1]
+    'OTHER': [0, 0]
 };
 
 const SYMBOL_PATH = '/static/symbolization';
@@ -34,6 +35,7 @@ export default class Symbolizer {
         this.properties = properties;
         this.feature = feature;
         this.minMaxValues = minMaxValues;
+        this.resolution = resolution;
     }
 
     /**
@@ -148,8 +150,15 @@ export default class Symbolizer {
             styles.push(this.buildStyle(tertiaryCombinedSymbol, tertiaryNormalizedPropertyValue));
         }
 
-        for (let otherSymbol of featureInfo[this.feature.getId()].combinedSymbol.otherSymbols) {
-            if (otherSymbol.nameId !== null) {
+        let otherSymbols = featureInfo[this.feature.getId()].combinedSymbol.otherSymbols;
+        let counter = 0;
+        for (let otherSymbol of otherSymbols) {
+            // Symbolize VGI symbols inside other symbols
+            if (otherSymbol.hasOwnProperty('phenomenon')) {
+                counter += 1;
+                styles = styles.concat(new VGISymbolizer(otherSymbol.vgiFeature, this.resolution, [1 - counter, 0]).createSymbol());
+            } else if (otherSymbol.nameId !== null) {
+                counter += 1;
                 let otherNormalizedPropertyValue = this.getNormalizedPropertyValue(otherSymbol);
                 styles.push(this.buildStyle(otherSymbol, otherNormalizedPropertyValue));
             }

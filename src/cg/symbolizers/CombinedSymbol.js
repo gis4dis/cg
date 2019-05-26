@@ -281,4 +281,15 @@ export default class CombinedSymbol {
 
         return symbols;
     }
+
+    addVgiToOtherSymbols(vgiFeature) {
+        let phenomenon = vgiFeature.values_.values[0].phenomenon.name;
+        this.otherSymbols.push({
+            style: null,
+            phenomenon: phenomenon,
+            vgiFeature: vgiFeature,
+            values: vgiFeature.values_.values,
+            grouped: false
+        });
+    }
 }

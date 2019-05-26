@@ -22,7 +22,8 @@ export default class VGISymbolizer {
      * @param {number} resolution - resolution of OpenLayer map
      *  (https://github.com/gis4dis/cg/blob/master/data/vgi_data.json)
      */
-    constructor(feature, resolution) {
+    constructor(feature, resolution, anchor) {
+        this.anchor = anchor;
         this.feature = feature;
         this.resolution = resolution;
     }
@@ -52,6 +53,7 @@ export default class VGISymbolizer {
         }
         let icon = new Style({
             image: new Icon({
+                anchor: this.anchor, //default is [0.5, 0.5]
                 opacity: 1,
                 src: `${SYMBOL_PATH}/${iconName}.svg`,
                 scale: SYMBOL_SIZE
@@ -60,9 +62,9 @@ export default class VGISymbolizer {
 
         let oneOrMoreCrossreferences = featureInfo[this.feature.getId()].crossReference;
 
-        let anchor = [0, 0.9];
+        let anchor = [this.anchor[0] - 0.5, this.anchor[1] + 0.4];
         if (oneOrMoreCrossreferences === 'more') {
-            anchor = [-0.3, 1];
+            anchor = [anchor[0] - 0.3, anchor[1] + 0.1];
         }
         let crossReferenceIcon = new Style({
             image: new Icon({

@@ -44,12 +44,15 @@ export default class PolygonSymbolizer {
             let pattern = ctx.createPattern(img, 'repeat');
 
             return new Style({
+                stroke: new Stroke({
+                    color: 'rgb(102, 51, 0)',
+                    width: 3
+                }),
                 fill: new Fill({
                     color: pattern
                 })
             });
         }
-
     }
 
     /**

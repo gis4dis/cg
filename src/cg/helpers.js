@@ -22,7 +22,7 @@ let turfconcave = require('@turf/concave');
 let turfsmooth = require('@turf/polygon-smooth');
 
 
-export function aggregateVgiToPolygon(features) {
+/*export function aggregateVgiToPolygon(features) {
     let aggregatedFeatures = [];
     for (let f1 of features) {
         for (let f2 of features) {
@@ -58,7 +58,7 @@ export function aggregateVgiToPolygon(features) {
     //updateTurfGeometry(feature);
 
     return feature;
-}
+}*/
 
 export function getConcatId(features) {
     let id = '';
