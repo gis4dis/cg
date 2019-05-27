@@ -186,6 +186,9 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues,
             return a.id === b.id;
         });
 
+
+        delete featureInfo[indexedFeature.id];
+
         // Add new aggregated feature into RBush index
         tree.insert({
             id: aggFeature.getId(),
@@ -205,11 +208,13 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues,
             splicedFeatures.splice(index2, 1);
         }
 
+        delete featureInfo[queryFeature.id];
+
         // Find another nearest feature - if there is another one
         let indexedFeatures = knn(tree, newCoords[0], newCoords[1], 2, undefined, INDEX_DISTANCE);
 
         if (indexedFeatures[1] !== undefined) {
-            if (recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues, INDEX_DISTANCE) === null) {
+            if (!(findIntersection(featureInfo[indexedFeatures[0].id], featureInfo[indexedFeatures[1].id]))) {
                 return aggFeature;
             }
             return recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues, INDEX_DISTANCE);
@@ -227,8 +232,8 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues,
  * @returns {*} return null if the feature are identical (have same ID) or true if features are intersecting
  */
 export function findIntersection(f1, f2) {
-    if (f1.id === undefined || f2.id === undefined) {
-        return null;
+    if (f1 === undefined || f2 === undefined) {
+        return false;
     }
     if (f1.id === f2.id) {
         return null;

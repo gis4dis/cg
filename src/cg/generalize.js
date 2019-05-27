@@ -56,10 +56,6 @@ let turfmeta = require('@turf/meta');
  * @returns {{features: Array.<Feature>, style: function()}}
  */
 
-export const VGI_INDEX_DISTANCE = 1000;
-export const INDEX_DISTANCE = 1500;
-export const CROSSREFERENCE_DISTANCE = 1000;
-
 export let featureInfo = {};
 export let splicedFeatures = [];
 export let splicedVgiFeatures = [];
@@ -155,6 +151,10 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     //TODO pridat tady i VGI az je budu agregovat
     for (let feature of parsedFeatures) {
         let coordinates = feature.getGeometry().getCoordinates();
+
+        if (featureInfo[feature.getId()] === undefined) {
+            continue;
+        }
 
         // Find two features - one as query feature and the nearest feature to the query feature
         let indexedFeatures = knn(tree, coordinates[0], coordinates[1], 2, undefined, INDEX_DISTANCE);
@@ -329,7 +329,8 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
 
 
     let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);//.concat(gridFeatures);
-    //console.log(finalFeatures);
+    console.log('finalFeatures');
+    console.log(finalFeatures);
 
     let b = performance.now();
     console.log(b-a);
@@ -337,6 +338,8 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     return {
         features: finalFeatures,
         style: function (feature, resolution) {
+            console.log('styl');
+            console.log(feature);
             if (feature.getId().startsWith('vgi_poly')) {
                 return new PolygonSymbolizer(feature).createSymbol();
             } else if (feature.getId().startsWith('vgi')) {
