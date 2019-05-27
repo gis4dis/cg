@@ -132,6 +132,12 @@ export default class Symbolizer {
     createSymbol() {
         let styles = [];
 
+        let featureInfoElement = featureInfo[this.feature.getId()];
+        if (featureInfoElement === undefined) {
+            console.log('Error missing feature info for feature');
+            return null;
+        }
+
         let primaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.primarySymbol;
         if (primaryCombinedSymbol.nameId !== null) {
             let primaryNormalizedPropertyValue = this.getNormalizedPropertyValue(primaryCombinedSymbol);
