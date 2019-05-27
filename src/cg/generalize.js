@@ -71,6 +71,10 @@ export const tree = new PointRBush(5);
 export const vgiTree = new PointRBush(5);
 
 export default ({topic, primary_property, properties, features, vgi_data, value_idx, resolution}) => {
+    const VGI_INDEX_DISTANCE = 50 * Math.trunc(resolution); //1000
+    const INDEX_DISTANCE = 1500; //1500
+    const CROSSREFERENCE_DISTANCE = 50 * Math.trunc(resolution); //1000
+
     let a = performance.now();
 
     // Assurance checks
@@ -118,9 +122,11 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
 
     // Adding features and VGI features into PointRBush index
     //TODO add VGI into tree index
-    addFeaturesToIndex(newFeatures);
+    tree.clear();
+    addFeaturesToIndex(parsedFeatures);
     //addFeaturesToIndex(newVgiFeatures);
-    addFeaturesToVgiIndex(newVgiFeatures);
+    vgiTree.clear();
+    addFeaturesToVgiIndex(vgiFeatures);
 
     // Adding geometry in WGS84 to OL feature because of computing using turf.js
     // Added to featureInfo variable
@@ -154,7 +160,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         let indexedFeatures = knn(tree, coordinates[0], coordinates[1], 2, undefined, INDEX_DISTANCE);
 
         if (indexedFeatures[1] !== undefined) {
-            let aggFeature = recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues);
+            let aggFeature = recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues, INDEX_DISTANCE);
 
             // In the case there is no intersection between symbols during the first recursion
             // The function returns null in this case
@@ -198,7 +204,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         if (indexedFeatures[1] !== undefined) {
             let vgiPolygonFeatures = [];
             vgiPolygonFeatures.push(featureInfo[indexedFeatures[0].id].olFeature);
-            vgiPolygonFeatures = recursivePolygonAggregating(indexedFeatures[0], indexedFeatures[1], vgiPolygonFeatures);
+            vgiPolygonFeatures = recursivePolygonAggregating(indexedFeatures[0], indexedFeatures[1], vgiPolygonFeatures, VGI_INDEX_DISTANCE);
 
             // Create polygon only if there are more 3 features at least
             if (vgiPolygonFeatures.length >= 3) {

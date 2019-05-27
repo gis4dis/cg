@@ -4,8 +4,7 @@ import {
     vgiTree,
     splicedFeatures,
     splicedVgiFeatures,
-    VGI_INDEX_DISTANCE,
-    INDEX_DISTANCE} from "./generalize";
+    resolution} from "./generalize";
 import Feature from "ol/feature";
 import Point from "ol/geom/point";
 import Polygon from "ol/geom/polygon";
@@ -90,7 +89,7 @@ export function isServer() {
     return ! (typeof window != 'undefined' && window.document);
 }
 
-export function recursivePolygonAggregating(queryFeature, indexedFeature, vgiPolygonFeatures) {
+export function recursivePolygonAggregating(queryFeature, indexedFeature, vgiPolygonFeatures, VGI_INDEX_DISTANCE) {
     // Get info about feature from featureInfo
     let nearestFeature = featureInfo[indexedFeature.id];
 
@@ -128,13 +127,13 @@ export function recursivePolygonAggregating(queryFeature, indexedFeature, vgiPol
     let indexedFeatures = knn(vgiTree, indexedFeature.x, indexedFeature.y, 2, undefined, VGI_INDEX_DISTANCE);
 
     if (indexedFeatures[1] !== undefined) {
-        return recursivePolygonAggregating(indexedFeatures[0], indexedFeatures[1], vgiPolygonFeatures);
+        return recursivePolygonAggregating(indexedFeatures[0], indexedFeatures[1], vgiPolygonFeatures, VGI_INDEX_DISTANCE);
     }
     //TODO add check if there are more than 2 features
     return vgiPolygonFeatures;
 }
 
-export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues) {
+export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues, INDEX_DISTANCE) {
     // Get info about feature from featureInfo
     let featureI = featureInfo[queryFeature.id];
     let nearestFeature = featureInfo[indexedFeature.id];
@@ -164,7 +163,7 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues)
 
         // Add feature into featureInfo
         featureInfo[aggFeature.getId()] = {
-            'id': aggFeature.id_,
+            'id': aggFeature.getId(),
             'olFeature': aggFeature,
             'coordinates': newCoords,
             'wgs84': turfprojection.toWgs84(newCoords),
@@ -210,10 +209,10 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues)
         let indexedFeatures = knn(tree, newCoords[0], newCoords[1], 2, undefined, INDEX_DISTANCE);
 
         if (indexedFeatures[1] !== undefined) {
-            if (recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues) === null) {
+            if (recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues, INDEX_DISTANCE) === null) {
                 return aggFeature;
             }
-            return recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues);
+            return recursiveAggregating(indexedFeatures[0], indexedFeatures[1], minMaxValues, INDEX_DISTANCE);
         }
         return aggFeature;
     }
@@ -228,6 +227,9 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues)
  * @returns {*} return null if the feature are identical (have same ID) or true if features are intersecting
  */
 export function findIntersection(f1, f2) {
+    if (f1.id === undefined || f2.id === undefined) {
+        return null;
+    }
     if (f1.id === f2.id) {
         return null;
     }

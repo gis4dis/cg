@@ -189,6 +189,22 @@ export default class CombinedSymbol {
         return ((70 * scaleMaxValue) * Math.sqrt(2)) * this.resolution;
     }
 
+    static getMinProperty(minMaxValues) {
+        let minValue = minMaxValues.reduce((min, p) => p.min < min ? p.min : min, minMaxValues[0].min);
+        if (minValue === null) {
+            return 0;
+        }
+        return minValue;
+    }
+
+    static getMaxProperty(minMaxValues) {
+        let maxValue = minMaxValues.reduce((max, p) => p.max > max ? p.max : max, minMaxValues[0].max);
+        if (maxValue === null) {
+            return 0;
+        }
+        return maxValue;
+    }
+
     /**
      * Set the buffer of CombinedSymbol
      * @param {Feature} feature - OpenLayer feature
@@ -203,8 +219,8 @@ export default class CombinedSymbol {
         //TODO not should be this.primary but it should be name_id of biggest value property
         let scaleMaxValue = Symbolizer.normalize(
             maxValue,
-            minMaxValues[this.primaryProperty]['min'],
-            minMaxValues[this.primaryProperty]['max']
+            CombinedSymbol.getMinProperty(Object.values(minMaxValues)),
+            CombinedSymbol.getMaxProperty(Object.values(minMaxValues))
         );
 
         let radius = this.computeRadius(scaleMaxValue);
