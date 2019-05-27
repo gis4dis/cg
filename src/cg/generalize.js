@@ -329,17 +329,12 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
 
 
     let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);//.concat(gridFeatures);
-    console.log('finalFeatures');
-    console.log(finalFeatures);
 
     let b = performance.now();
-    console.log(b-a);
 
     return {
         features: finalFeatures,
         style: function (feature, resolution) {
-            console.log('styl');
-            console.log(feature);
             if (feature.getId().startsWith('vgi_poly')) {
                 return new PolygonSymbolizer(feature).createSymbol();
             } else if (feature.getId().startsWith('vgi')) {
