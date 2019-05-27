@@ -71,7 +71,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     const INDEX_DISTANCE = 1500; //1500
     const CROSSREFERENCE_DISTANCE = 50 * Math.trunc(resolution); //1000
 
-    let a = performance.now();
+    //let a = performance.now();
 
     // Assurance checks
     if (primary_property === null) {
@@ -330,7 +330,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
 
     let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);//.concat(gridFeatures);
 
-    let b = performance.now();
+    //let b = performance.now();
 
     return {
         features: finalFeatures,
