@@ -25,6 +25,15 @@ export default class PolygonSymbolizer {
      * @returns {Style} OpenLayers style object
      */
     buildStyle() {
+        return new Style({
+            stroke: new Stroke({
+                color: 'rgb(102, 51, 0)',
+                width: 3
+            }),
+            fill: new Fill({
+                color: 'rgba(204, 102, 0, 0.2)'
+            })
+        });
         if (isServer()) {
             return new Style({
                 stroke: new Stroke({
