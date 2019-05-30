@@ -135,6 +135,7 @@ export default class Symbolizer {
         let featureInfoElement = featureInfo[this.feature.getId()];
         if (featureInfoElement === undefined) {
             console.log('Error missing feature info for feature');
+            console.log(this.feature);
             return null;
         }
 
