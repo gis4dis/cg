@@ -14,7 +14,7 @@ const POSITIONS = {
 
 const SYMBOL_PATH = '/static/symbolization';
 
-const MIN_RANGE = 0.2;
+const MIN_RANGE = 0.4;
 const MAX_RANGE = 0.6;
 
 
