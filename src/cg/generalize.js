@@ -187,7 +187,8 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
 
     // Aggregating VGI features into polygons
     let aggVgiFeatures = [];
-
+    //TODO don't forget uncomment this
+/*
     for (let feature of vgiFeatures) {
         let coordinates = feature.getGeometry().getCoordinates();
 
@@ -234,7 +235,7 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
             }
         }
     }
-
+*/
     //console.log(vgiFeatures);
     //console.log(aggVgiFeatures);
 

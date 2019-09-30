@@ -36,6 +36,7 @@ export default class Symbolizer {
         this.feature = feature;
         this.minMaxValues = minMaxValues;
         this.resolution = resolution;
+        this.grouped = false;
     }
 
     /**
@@ -105,6 +106,7 @@ export default class Symbolizer {
 
         if (symbol.grouped === true) {
             anomalyInterval += '_agg';
+            this.grouped = true;
         }
 
         return new Style({
@@ -112,7 +114,7 @@ export default class Symbolizer {
                 anchor: coordinates,
                 opacity: 1,
                 src: `${SYMBOL_PATH}/${symbol.nameId}_${anomalyInterval}.svg`,
-                scale: normalizedPropertyValue
+                scale: normalizedPropertyValue,
             })
         });
     }
@@ -169,6 +171,22 @@ export default class Symbolizer {
                 counter += 1;
                 let otherNormalizedPropertyValue = this.getNormalizedPropertyValue(otherSymbol);
                 styles.push(this.buildStyle(otherSymbol, otherNormalizedPropertyValue));
+            }
+        }
+
+        // place a cross of location if there is only one symbol
+        if (styles.length === 1) {
+            // don't place a cross for grouped symbols
+            if (!this.grouped) {
+                styles.push(
+                    new Style({
+                        image: new Icon({
+                            opacity: 1,
+                            src: `${SYMBOL_PATH}/cross_position.svg`,
+                            scale: 0.1
+                        })
+                    })
+                );
             }
         }
 
