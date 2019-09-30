@@ -12,10 +12,10 @@ const POSITIONS = {
     'OTHER': [0, 0]
 };
 
-const SYMBOL_PATH = '/static/symbolization';
+const SYMBOL_PATH = '/static/symbolization_new';
 
-const MIN_RANGE = 0.4;
-const MAX_RANGE = 0.6;
+const MIN_RANGE = 0.3;
+const MAX_RANGE = 0.5;
 
 
 /** Represents Symbolizer for features. Contains set of operations including creating styles */
@@ -65,15 +65,16 @@ export default class Symbolizer {
 
     /**
      * Returning name of the interval base on anomaly rate value
+     * @param {CombinedSymbol} symbol - symbol
      * @returns {String} interval - interval (low, middle or high) of anomaly rate
      * */
-    static getAnomalyInterval(value) {
-        if (value < 0.5) {
+    getAnomalyInterval(symbol) {
+        if (symbol.anomalyValue > symbol.anomalyPercentile95) {
+            return 'high';
+        } else if (symbol.anomalyValue > symbol.anomalyPercentile80 && symbol.anomalyPercentile80 !== 0.0) {
             return 'middle';
-        } else if (value < 2.5) {
-            return 'low';
         }
-        return 'high';
+        return 'low';
     }
 
     /**
@@ -100,7 +101,7 @@ export default class Symbolizer {
         let anomalyInterval = '';
         let coordinates = this.getSymbolPosition(symbol.nameId);
 
-        anomalyInterval = Symbolizer.getAnomalyInterval(symbol.anomalyValue);
+        anomalyInterval = this.getAnomalyInterval(symbol);
 
         if (symbol.grouped === true) {
             anomalyInterval += '_agg';

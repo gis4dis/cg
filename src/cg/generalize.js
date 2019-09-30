@@ -34,13 +34,10 @@ import PointRBush from './PointRBush';
 import knn from 'rbush-knn';
 import Polygon from "ol/geom/polygon";
 
-let turfprojection = require('@turf/projection');
 let turfhelper = require('@turf/helpers');
 let turfconcave = require('@turf/concave');
 let turfsmooth = require('@turf/polygon-smooth');
-let turfinterpolate = require('@turf/interpolate');
-let turfrandom = require('@turf/random');
-let turfmeta = require('@turf/meta');
+//let turfinterpolate = require('@turf/interpolate');
 
 /**
  * Main generalization function
@@ -171,8 +168,6 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     }
 
     //console.log(aggFeatures);
-
-
 
     // Crossreferences
     for (let feature of vgiFeatures) {

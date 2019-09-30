@@ -25,15 +25,15 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="39.56346"
-     inkscape:cy="26.786707"
+     inkscape:zoom="1.4"
+     inkscape:cx="-79.723409"
+     inkscape:cy="-5.6182237"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
-     inkscape:window-width="1920"
-     inkscape:window-height="1025"
+     inkscape:window-width="1366"
+     inkscape:window-height="713"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1" />
@@ -45,7 +45,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -55,21 +55,24 @@
      id="layer1"
      transform="translate(0,-270.54165)">
     <g
-       transform="matrix(0.30973464,0,0,0.30973464,-13.78527,259.44742)"
-       id="g3869"
-       style="fill:#ff2a19;fill-opacity:1">
-      <circle
-         r="17.197916"
-         cy="104.04315"
-         cx="87.218002"
-         id="path3857"
-         style="opacity:1;fill:#ff2a19;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.26771665;stroke-opacity:1;paint-order:stroke fill markers" />
-      <path
-         id="rect3859"
-         transform="scale(0.26458333)"
-         d="M 329.63672,135.37695 A 29.636741,29.558617 0 0 0 300,164.93555 a 29.636741,29.558617 0 0 0 0.0156,0.4414 H 300 v 195 h 59.28516 v -195 h -0.0332 a 29.636741,29.558617 0 0 0 0.0215,-0.4414 29.636741,29.558617 0 0 0 -29.63672,-29.5586 z"
-         style="opacity:1;fill:#ff2a19;fill-opacity:1;stroke:none;stroke-width:1.88976383;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.26771665;stroke-opacity:1;paint-order:stroke fill markers"
-         inkscape:connector-curvature="0" />
+       id="g7314">
+      <g
+         style="fill:#ff2a19;fill-opacity:1"
+         id="g3869"
+         transform="matrix(0.30973464,0,0,0.30973464,-13.78527,259.44742)">
+        <circle
+           style="opacity:1;fill:#ff2a19;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.26771665;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path3857"
+           cx="87.218002"
+           cy="104.04315"
+           r="17.197916" />
+        <path
+           inkscape:connector-curvature="0"
+           style="opacity:1;fill:#ff2a19;fill-opacity:1;stroke:none;stroke-width:1.88976383;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.26771665;stroke-opacity:1;paint-order:stroke fill markers"
+           d="M 329.63672,135.37695 A 29.636741,29.558617 0 0 0 300,164.93555 a 29.636741,29.558617 0 0 0 0.0156,0.4414 H 300 v 195 h 59.28516 v -195 h -0.0332 a 29.636741,29.558617 0 0 0 0.0215,-0.4414 29.636741,29.558617 0 0 0 -29.63672,-29.5586 z"
+           transform="scale(0.26458333)"
+           id="rect3859" />
+      </g>
     </g>
   </g>
 </svg>

@@ -13,12 +13,8 @@ import knn from "rbush-knn";
 const DISTANCE_POLYGON = 0.5;
 
 let turfhelper = require('@turf/helpers');
-let turfbuffer = require('@turf/buffer');
 let turfintersect = require('@turf/intersect');
 let turfprojection = require('@turf/projection');
-let turfdistance = require('@turf/distance');
-let turfconcave = require('@turf/concave');
-let turfsmooth = require('@turf/polygon-smooth');
 
 
 /*export function aggregateVgiToPolygon(features) {
@@ -226,10 +222,10 @@ export function recursiveAggregating(queryFeature, indexedFeature, minMaxValues,
 
 /**
  * Finds intersection between two features.
- * turfintersect returns null if features are not intersecting
+ * turf.intersect returns null when features are not intersecting
  * @param {Feature} f1 - first feature
  * @param {Feature} f2 - second feature
- * @returns {*} return null if the feature are identical (have same ID) or true if features are intersecting
+ * @returns {*} returns null when features are the same (ID) or true when features collide
  */
 export function findIntersection(f1, f2) {
     if (f1 === undefined || f2 === undefined) {

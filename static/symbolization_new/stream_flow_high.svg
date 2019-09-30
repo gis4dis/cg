@@ -144,13 +144,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="127.4416"
+     inkscape:cx="65.834457"
      inkscape:cy="27.143849"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1025"
+     inkscape:window-width="1366"
+     inkscape:window-height="713"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -164,7 +164,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -173,15 +173,18 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-270.54165)">
-    <path
-       style="fill:none;stroke:#ff2a19;stroke-width:0.71543497;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 23.454782,275.71088 v 15.76215 H 2.6458329"
-       id="path7849-2"
-       inkscape:connector-curvature="0" />
-    <path
-       style="opacity:1;fill:#ff2a19;fill-opacity:1;stroke:none;stroke-width:0.25922081;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.26771665;stroke-opacity:1;paint-order:stroke fill markers"
-       d="m 2.6465213,286.13695 v -5.29816 l 0.380563,-0.35584 c 0.424343,-0.39678 1.2684388,-0.85799 1.8291711,-0.99946 0.5067102,-0.12785 1.5464551,-0.11197 2.0625201,0.0315 1.0018744,0.27851 1.9922102,0.84393 2.8013336,1.5994 0.5265309,0.49161 1.1440889,0.87235 1.7318649,1.06773 0.683129,0.22707 1.936564,0.22316 2.644983,-0.008 0.959912,-0.31356 1.755337,-0.80174 2.778912,-1.70551 0.832162,-0.73476 1.711795,-1.07471 2.778907,-1.07394 1.083419,7.8e-4 2.119531,0.37233 3.215377,1.15303 l 0.400547,0.28536 v 5.30117 5.30116 H 12.958608 2.6465213 Z"
-       id="path7891"
-       inkscape:connector-curvature="0" />
+    <g
+       id="g3414">
+      <path
+         inkscape:connector-curvature="0"
+         id="path7849-2"
+         d="m 23.454782,275.71088 v 15.76215 H 2.6458329"
+         style="fill:none;stroke:#ff2a19;stroke-width:0.71543497;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path7891"
+         d="m 2.6465213,286.13695 v -5.29816 l 0.380563,-0.35584 c 0.424343,-0.39678 1.2684388,-0.85799 1.8291711,-0.99946 0.5067102,-0.12785 1.5464551,-0.11197 2.0625201,0.0315 1.0018744,0.27851 1.9922102,0.84393 2.8013336,1.5994 0.5265309,0.49161 1.1440889,0.87235 1.7318649,1.06773 0.683129,0.22707 1.936564,0.22316 2.644983,-0.008 0.959912,-0.31356 1.755337,-0.80174 2.778912,-1.70551 0.832162,-0.73476 1.711795,-1.07471 2.778907,-1.07394 1.083419,7.8e-4 2.119531,0.37233 3.215377,1.15303 l 0.400547,0.28536 v 5.30117 5.30116 H 12.958608 2.6465213 Z"
+         style="opacity:1;fill:#ff2a19;fill-opacity:1;stroke:none;stroke-width:0.25922081;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.26771665;stroke-opacity:1;paint-order:stroke fill markers" />
+    </g>
   </g>
 </svg>

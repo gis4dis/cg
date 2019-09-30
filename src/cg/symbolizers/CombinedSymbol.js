@@ -31,25 +31,51 @@ export default class CombinedSymbol {
             nameId: this.setPrimarySymbol(feature),
             value: null,
             anomalyValue: null,
-            grouped: false
+            grouped: false,
+            anomalyPercentile80: null,
+            anomalyPercentile95: null
         };
         this.secondarySymbol = {
             nameId: this.setSymbol(properties, feature),
             value: null,
             anomalyValue: null,
-            grouped: false
+            grouped: false,
+            anomalyPercentile80: null,
+            anomalyPercentile95: null
         };
         this.tertiarySymbol = {
             nameId: this.setSymbol(properties, feature),
             value: null,
             anomalyValue: null,
-            grouped: false
+            grouped: false,
+            anomalyPercentile80: null,
+            anomalyPercentile95: null
         };
         this.otherSymbols = this.setOtherSymbols(properties, feature);
         this.setPhenomenonValues(feature, valueIdx);
 
         this.buffer = null;
         this.setBuffer(feature, minMaxValues);
+    }
+
+    /**
+     * Returns percentile value
+     * @param {String} nameId - name of the property
+     * @param {Feature} feature - OpenLayer feature
+     * @param {String} type - type of the value (value or anomaly_rate)
+     * @param {String} percentile - percentile
+     * @returns {Number} - percentile value
+     */
+    static selectPercentileValue(nameId, feature, type, percentile) {
+        if (nameId !== null) {
+            let value = feature.values_[nameId][type][percentile];
+
+            if (value === undefined) {
+                return null
+            }
+            return value;
+        }
+        return null;
     }
 
     /**
@@ -79,15 +105,29 @@ export default class CombinedSymbol {
      * @param {number} valueIdx - index of array where is value stored
      */
     setPhenomenonValues(feature, valueIdx) {
+        // set property values
         this.primarySymbol.value = CombinedSymbol.selectValue(this.primarySymbol.nameId, feature, valueIdx, 'values');
         this.secondarySymbol.value = CombinedSymbol.selectValue(this.secondarySymbol.nameId, feature, valueIdx, 'values');
         this.tertiarySymbol.value = CombinedSymbol.selectValue(this.tertiarySymbol.nameId, feature, valueIdx, 'values');
         this.setOtherValues(feature, valueIdx);
 
+        // set anomaly values
         this.primarySymbol.anomalyValue = CombinedSymbol.selectValue(this.primarySymbol.nameId, feature, valueIdx, 'anomaly_rates');
         this.secondarySymbol.anomalyValue = CombinedSymbol.selectValue(this.secondarySymbol.nameId, feature, valueIdx, 'anomaly_rates');
         this.tertiarySymbol.anomalyValue = CombinedSymbol.selectValue(this.tertiarySymbol.nameId, feature, valueIdx, 'anomaly_rates');
         this.setOtherAnomalyValues(feature, valueIdx);
+
+        // set anomaly percentile values
+        this.primarySymbol.anomalyPercentile80 = CombinedSymbol.selectPercentileValue(this.primarySymbol.nameId, feature, 'property_anomaly_percentiles', '80');
+        this.primarySymbol.anomalyPercentile95 = CombinedSymbol.selectPercentileValue(this.primarySymbol.nameId, feature, 'property_anomaly_percentiles', '95');
+
+        this.secondarySymbol.anomalyPercentile80 = CombinedSymbol.selectPercentileValue(this.secondarySymbol.nameId, feature, 'property_anomaly_percentiles', '80');
+        this.secondarySymbol.anomalyPercentile95 = CombinedSymbol.selectPercentileValue(this.secondarySymbol.nameId, feature, 'property_anomaly_percentiles', '95');
+
+        this.tertiarySymbol.anomalyPercentile80 = CombinedSymbol.selectPercentileValue(this.tertiarySymbol.nameId, feature, 'property_anomaly_percentiles', '80');
+        this.tertiarySymbol.anomalyPercentile95 = CombinedSymbol.selectPercentileValue(this.tertiarySymbol.nameId, feature, 'property_anomaly_percentiles', '95');
+
+        this.setOtherAnomalyPercentileValues(feature);
     }
 
     /**
@@ -121,6 +161,27 @@ export default class CombinedSymbol {
         for (let i in this.otherSymbols) {
             this.otherSymbols[i] = CombinedSymbol.compareSymbols(this.otherSymbols[i], other.otherSymbols[i]);
         }
+    }
+
+    /**
+     * Sets anomaly values for other symbols inside CombinedSymbol
+     * @param {Feature} feature - OpenLayer feature
+     * @param {number} valueIdx - index of array where is value stored
+     * @returns {number[]} - returns array of values
+     */
+    setOtherAnomalyPercentileValues(feature) {
+        let values = [];
+
+        for (let symbol of this.otherSymbols) {
+            if (symbol.nameId === null) {
+                continue;
+            }
+
+            symbol.anomalyPercentile80 = feature.values_[symbol.nameId]['property_anomaly_percentiles'][80];
+            symbol.anomalyPercentile95 = feature.values_[symbol.nameId]['property_anomaly_percentiles'][95];
+            values.push(symbol.anomalyPercentile80, symbol.anomalyPercentile95);
+        }
+        return values;
     }
 
     /**
@@ -286,11 +347,21 @@ export default class CombinedSymbol {
                         nameId: property.name_id,
                         value: null,
                         anomalyValue: null,
-                        grouped: false
+                        grouped: false,
+                        anomalyPercentile80: null,
+                        anomalyPercentile95: null
                     });
                 } else {
                     this.usedProperties.push(property.name_id);
-                    symbols.push({style: null, nameId: null, value: null, anomalyValue: null, grouped: false});
+                    symbols.push({
+                        style: null,
+                        nameId: null,
+                        value: null,
+                        anomalyValue: null,
+                        grouped: false,
+                        anomalyPercentile80: null,
+                        anomalyPercentile95: null
+                    });
                 }
             }
         }
