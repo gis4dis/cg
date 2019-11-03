@@ -16,7 +16,7 @@
         "name": "Brno, botanical garden PřF MU",
         "air_temperature": {
           "values": [
-            9.504,
+            15.504,
             9.532,
             9.69,
             10.03,
@@ -792,7 +792,7 @@
         "precipitation": {
           "values": [
             0.0,
-            0.0,
+            0.2,
             0.0,
             0.0,
             0.0,

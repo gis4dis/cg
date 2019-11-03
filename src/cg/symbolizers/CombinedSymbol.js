@@ -247,7 +247,7 @@ export default class CombinedSymbol {
      * @returns {number} - radius
      */
     computeRadius(scaleMaxValue) {
-        return ((70 * scaleMaxValue) * Math.sqrt(2)) * this.resolution;
+        return ((105 * scaleMaxValue) * Math.sqrt(2)) * this.resolution;
     }
 
     static getMinProperty(minMaxValues) {
@@ -277,7 +277,6 @@ export default class CombinedSymbol {
         other.push(this.primarySymbol.value, this.secondarySymbol.value, this.tertiarySymbol.value);
         let maxValue = Math.max(...other);
 
-        //TODO not should be this.primary but it should be name_id of biggest value property
         let scaleMaxValue = Symbolizer.normalize(
             maxValue,
             CombinedSymbol.getMinProperty(Object.values(minMaxValues)),

@@ -3,8 +3,8 @@ import Icon from 'ol/style/icon';
 import {featureInfo} from '../generalize';
 
 
-const SYMBOL_PATH = '/static/symbolization/vgi';
-const SYMBOL_SIZE = 0.25;
+const SYMBOL_PATH = '/static/symbolization_new2/vgi';
+const SYMBOL_SIZE = 0.35;
 
 const ICONS = [
         {phenomenonName: 'Dry vegetation (trees)', iconName: 'vgi_drytree'},
@@ -12,7 +12,7 @@ const ICONS = [
     ];
 
 
-/** Represents Symbolizer for features. Contains set of operations including creating styles */
+/** Represents Symbolizer for VGI features. Contains set of operations including creating styles */
 export default class VGISymbolizer {
 
     /**
@@ -23,9 +23,9 @@ export default class VGISymbolizer {
      *  (https://github.com/gis4dis/cg/blob/master/data/vgi_data.json)
      */
     constructor(feature, resolution, anchor) {
-        this.anchor = anchor;
         this.feature = feature;
         this.resolution = resolution;
+        this.anchor = anchor;
     }
 
     /**
@@ -55,27 +55,12 @@ export default class VGISymbolizer {
             image: new Icon({
                 anchor: this.anchor, //default is [0.5, 0.5]
                 opacity: 1,
-                src: `${SYMBOL_PATH}/${iconName}.svg`,
+                src: `${SYMBOL_PATH}/${iconName}_${featureInfo[this.feature.getId()]['crossReference']}.svg`,
                 scale: SYMBOL_SIZE
             })
         });
 
-        let oneOrMoreCrossreferences = featureInfo[this.feature.getId()].crossReference;
-
-        let anchor = [this.anchor[0] - 0.5, this.anchor[1] + 0.4];
-        if (oneOrMoreCrossreferences === 'more') {
-            anchor = [anchor[0] - 0.3, anchor[1] + 0.1];
-        }
-        let crossReferenceIcon = new Style({
-            image: new Icon({
-                anchor: anchor,
-                opacity: 1,
-                src: `${SYMBOL_PATH}/reference_${oneOrMoreCrossreferences}.svg`,
-                scale: 0.25
-            })
-        });
-
-        return [icon, crossReferenceIcon];
+        return icon;
     }
 
     /**

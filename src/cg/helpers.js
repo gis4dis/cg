@@ -85,47 +85,32 @@ export function isServer() {
     return ! (typeof window != 'undefined' && window.document);
 }
 
-export function recursivePolygonAggregating(queryFeature, indexedFeature, vgiPolygonFeatures, VGI_INDEX_DISTANCE) {
+export function recursivePolygonAggregating(indexedFeature, vgiPolygonFeatures, VGI_INDEX_DISTANCE) {
     // Get info about feature from featureInfo
     let nearestFeature = featureInfo[indexedFeature.id];
 
     // Remove features from RBush Index
-    vgiTree.remove(queryFeature, (a, b) => {
-        return a.id === b.id;
-    });
     vgiTree.remove(indexedFeature, (a, b) => {
         return a.id === b.id;
     });
 
     vgiPolygonFeatures.push(nearestFeature.olFeature);
 
-    // Remove features from RBush Index
-    vgiTree.remove(queryFeature, (a, b) => {
-        return a.id === b.id;
-    });
-    vgiTree.remove(indexedFeature, (a, b) => {
-        return a.id === b.id;
-    });
-
     // Remove features from original featureCollection - these features was aggregated
     let index1 = splicedVgiFeatures.findIndex(f => f.id_ === indexedFeature.id);
-    let index2 = splicedVgiFeatures.findIndex(f => f.id_ === queryFeature.id);
 
+    /*console.log('odstranuju helper');
+    console.log(indexedFeature.id);
     if (index1 !== -1) {
         splicedVgiFeatures.splice(index1, 1);
-    }
-
-    if (index2 !== -1) {
-        splicedVgiFeatures.splice(index2, 1);
-    }
+    }*/
 
     // Find another nearest feature - if there is another one
-    let indexedFeatures = knn(vgiTree, indexedFeature.x, indexedFeature.y, 2, undefined, VGI_INDEX_DISTANCE);
+    let indexedFeatures = knn(vgiTree, indexedFeature.x, indexedFeature.y, 1, undefined, VGI_INDEX_DISTANCE);
 
-    if (indexedFeatures[1] !== undefined) {
-        return recursivePolygonAggregating(indexedFeatures[0], indexedFeatures[1], vgiPolygonFeatures, VGI_INDEX_DISTANCE);
+    if (indexedFeatures[0] !== undefined) {
+        return recursivePolygonAggregating(indexedFeatures[0], vgiPolygonFeatures, VGI_INDEX_DISTANCE);
     }
-    //TODO add check if there are more than 2 features
     return vgiPolygonFeatures;
 }
 
@@ -313,99 +298,6 @@ export function addVgiFeatures(features) {
         featureInfo[feature.getId()]['vgiFeature'] = feature;
     }
 }
-
-/*function createCrossreferenceInfo(symbol, vgiProperties, phenomenon) {
-    for (let vgi_cr of vgiProperties) {
-        if (phenomenon === vgi_cr.name) {
-            return {
-                "radius": vgi_cr.radius,
-                "anomalyValue": symbol.anomalyValue,
-                "highAnomaly": vgi_cr.high_anomaly,
-                "lowAnomaly": vgi_cr.low_anomaly,
-            };
-        }
-    }
-}*/
-
-/*function getCrossreferenceInfo(phenomenon, feature) {
-    let pSymbol = feature.combinedSymbol.primarySymbol;
-    let sSymbol = feature.combinedSymbol.secondarySymbol;
-    let tSymbol = feature.combinedSymbol.tertiarySymbol;
-    let oSymbols = feature.combinedSymbol.otherSymbols;
-
-    for (let cr of CROSS_CONFIG.crossreferences) {
-        if (cr.property === pSymbol.nameId) {
-            return createCrossreferenceInfo(pSymbol, cr.vgi_properties, phenomenon);
-        } else if (cr.property === sSymbol.nameId) {
-            return createCrossreferenceInfo(sSymbol, cr.vgi_properties, phenomenon);
-        } else if (cr.property === tSymbol.nameId) {
-            return createCrossreferenceInfo(tSymbol, cr.vgi_properties, phenomenon);
-        } else {
-            for (let s of oSymbols) {
-                if (cr.property === s.nameId) {
-                    return createCrossreferenceInfo(sSymbol, cr.vgi_properties, phenomenon);
-                }
-            }
-        }
-    }
-
-    throw new Error(`Can't find radius or anomalyValue for phenomenon: ${phenomenon}`);
-}*/
-
-/*export function addCrossreferences(vgiFeatures) {
-
-    for (let f1 of vgiFeatures) {
-        if (f1.getId().startsWith('vgi')) {
-            for (let f2 of aggFeatures) {
-                //console.log(f1);
-                //console.log(f2);
-
-                //TODO prioritize closer measurement
-                let info = getCrossreferenceInfo(f1.values_.values[0].phenomenon.name, featureInfo[f2.getId()]);
-                let distance = turfdistance.default(featureInfo[f1.getId()].turfGeometry, featureInfo[f2.getId()].turfGeometry, {units: units});
-                //console.log(info);
-
-                if (distance <= info.radius) {
-                    // resolve anomalyValue
-                    if (info.anomalyValue >= 0.5) {
-                        featureInfo[f1.getId()]['crossReference'] = info.highAnomaly;
-                    } else {
-                        featureInfo[f1.getId()]['crossReference'] = info.lowAnomaly;
-                    }
-                }
-            }
-        }
-    }
-}*/
-
-/*export function addCrossreferences(vgiFeatures, aggFeatures) {
-    let units = CROSS_CONFIG.units;
-
-    for (let f1 of vgiFeatures) {
-        if (f1.getId().startsWith('vgi')) {
-            for (let f2 of aggFeatures) {
-                //console.log(f1);
-                //console.log(f2);
-
-                //TODO prioritize closer measurement
-                let info = getCrossreferenceInfo(f1.values_.values[0].phenomenon.name, featureInfo[f2.getId()]);
-                let distance = turfdistance.default(featureInfo[f1.getId()].turfGeometry, featureInfo[f2.getId()].turfGeometry, {units: units});
-                //console.log(info);
-
-                if (distance <= info.radius) {
-                    // resolve anomalyValue
-                    if (info.anomalyValue >= 0.5) {
-                        featureInfo[f1.getId()]['crossReference'] = info.highAnomaly;
-                    } else {
-                        featureInfo[f1.getId()]['crossReference'] = info.lowAnomaly;
-                    }
-                }
-            }
-        }
-    }
-}*/
-
-
 
 /**
  * Sorts properties based on primary property

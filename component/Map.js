@@ -2,8 +2,8 @@ import React from 'react';
 import ol_format_GeoJSON from 'ol/format/geojson';
 import generalize from './../src/cg/generalize';
 
-const geojson = require('./../data/big_percentiles.json');
-const geojson_example = require('../data/big_percentiles.json');
+const geojson = require('./../data/example_new.json');
+const geojson_example = require('../data/example_new.json');
 const geojsonFeatures = (new ol_format_GeoJSON()).readFeatures(geojson, {
     dataProjection: 'EPSG:3857',
     featureProjection: 'EPSG:3857',
@@ -106,8 +106,8 @@ class Map extends React.PureComponent {
             primary_property: "air_temperature",
             features: geojson_example,
             vgi_data: vgi_data,
-            value_idx: 1,
-            resolution: 19.109 //4.777 for zoom 15 --- 19.109 for zoom 13 -- 38.218 for zoom 12 -- 76.437 for zoom 11 -- 305.748 for zoom 9
+            value_idx: 0,
+            resolution: 76.437 //4.777 for zoom 15 --- 19.109 for zoom 13 -- 38.218 for zoom 12 -- 76.437 for zoom 11 -- 305.748 for zoom 9
         });
 
         ol_Map = require('ol/map').default;
@@ -125,7 +125,7 @@ class Map extends React.PureComponent {
         const view = new ol_View({
             projection: projection,
             center: ol_proj.transform([16.6078411,49.2002211], 'EPSG:4326', projection),
-            zoom: 9
+            zoom:11
         });
 
         const vectorLayer = getVectorLayer();

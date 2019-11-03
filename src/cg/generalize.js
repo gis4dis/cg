@@ -109,12 +109,10 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     });
 
     // Find new features. Features that are not inside the featureInfo. These features will be used for indexing
-    //TODO pravdepodobne i vgi featury
     let newFeatures = getNewFeatures(parsedFeatures);
     let newVgiFeatures = getNewFeatures(vgiFeatures);
 
     // Adding features and VGI features into PointRBush index
-    //TODO add VGI into tree index
     tree.clear();
     addFeaturesToIndex(parsedFeatures);
     //addFeaturesToIndex(newVgiFeatures);
@@ -143,7 +141,6 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
 
     // Aggregating of the features
     let aggFeatures = [];
-
 
     //TODO pridat tady i VGI az je budu agregovat
     for (let feature of parsedFeatures) {
@@ -176,34 +173,42 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
         // Find two features - one as query feature and the nearest feature to the query feature
         let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 3, undefined, CROSSREFERENCE_DISTANCE);
 
-        // if there are more than one close VGI feature
-        if (indexedFeatures[2] !== undefined) {
-            featureInfo[feature.getId()]['crossReference'] = 'more';
-        } else if (indexedFeatures[1] !== undefined) {
-            // if there is only one VGI feature in maxDistance
-            featureInfo[feature.getId()]['crossReference'] = 'one';
+        // if there are one or more than one close VGI feature
+        if (indexedFeatures[1] !== undefined) {
+            featureInfo[feature.getId()]['crossReference'] = 'one_or_more';
+        } else {
+            // if there is no VGI feature in maxDistance
+            featureInfo[feature.getId()]['crossReference'] = 'none';
         }
     }
 
     // Aggregating VGI features into polygons
     let aggVgiFeatures = [];
-    //TODO don't forget uncomment this
-/*
+
     for (let feature of vgiFeatures) {
         let coordinates = feature.getGeometry().getCoordinates();
 
         // Find two features - one as query feature and the nearest feature to the query feature
-        // TODO think about using buffers for VGI features
-        // TODO aggregate only same vgi features or change style for that features
         let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 2, undefined, VGI_INDEX_DISTANCE);
 
         if (indexedFeatures[1] !== undefined) {
             let vgiPolygonFeatures = [];
             vgiPolygonFeatures.push(featureInfo[indexedFeatures[0].id].olFeature);
-            vgiPolygonFeatures = recursivePolygonAggregating(indexedFeatures[0], indexedFeatures[1], vgiPolygonFeatures, VGI_INDEX_DISTANCE);
+
+            vgiTree.remove(indexedFeatures[0], (a, b) => {
+                return a.id === b.id;
+            });
+
+            vgiPolygonFeatures = recursivePolygonAggregating(indexedFeatures[1], vgiPolygonFeatures, VGI_INDEX_DISTANCE);
 
             // Create polygon only if there are more 3 features at least
             if (vgiPolygonFeatures.length >= 3) {
+                for (let featPoly of vgiPolygonFeatures) {
+                    let index = splicedVgiFeatures.findIndex(f => f.id_ === featPoly.getId());
+                    if (index !== -1) {
+                        splicedVgiFeatures.splice(index, 1);
+                    }
+                }
 
                 // Creating new polygon OL feature
                 let polygonFeature = new Feature({
@@ -231,35 +236,45 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
                 aggVgiFeatures.push(polygonFeature);
             } else {
                 // if there are 2 and less features. Only add not aggregated features
+                for (let featPoly of vgiPolygonFeatures) {
+                    let coordinates = featPoly.getGeometry().getCoordinates();
+                    vgiTree.insert({
+                        id: featPoly.getId(),
+                        x: coordinates[0],
+                        y: coordinates[1]
+                    });
+                }
                 aggVgiFeatures.concat(vgiPolygonFeatures);
             }
         }
     }
-*/
-    //console.log(vgiFeatures);
     //console.log(aggVgiFeatures);
 
     // Aggregate VGI into weather stations (aggregated or not)
     //TODO add recursive aggregation
     for (let feature of splicedFeatures) {
-        //console.log(feature);
         let coordinates = feature.getGeometry().getCoordinates();
-        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 1, undefined, VGI_INDEX_DISTANCE);
+        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 100, undefined, ((70 * 0.4) * Math.sqrt(2)) * resolution);
 
-        //console.log(indexedFeatures);
-        if (indexedFeatures[0] !== undefined) {
-            let combinedSymbol = featureInfo[feature.getId()].combinedSymbol;
-            combinedSymbol.addVgiToOtherSymbols(featureInfo[indexedFeatures[0].id].olFeature);
-            featureInfo[feature.getId()].combinedSymbol = combinedSymbol;
+        for (let indexedFeature of indexedFeatures) {
+            if (indexedFeature !== undefined) {
+                let combinedSymbol = featureInfo[feature.getId()].combinedSymbol;
+                combinedSymbol.addVgiToOtherSymbols(featureInfo[indexedFeature.id].olFeature);
+                featureInfo[feature.getId()].combinedSymbol = combinedSymbol;
 
-            vgiTree.remove(indexedFeatures[0], (a, b) => {
-                return a.id === b.id;
-            });
+                vgiTree.remove(indexedFeature, (a, b) => {
+                    return a.id === b.id;
+                });
+
+                let index = splicedVgiFeatures.findIndex(f => f.id_ === indexedFeature.id);
+                if (index !== -1) {
+                    splicedVgiFeatures.splice(index, 1);
+                }
+            }
         }
     }
 
     for (let feature of aggFeatures) {
-        //console.log(feature);
         let coordinates = feature.getGeometry().getCoordinates();
         let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 1, undefined, VGI_INDEX_DISTANCE);
 
@@ -272,6 +287,11 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
             vgiTree.remove(indexedFeatures[0], (a, b) => {
                 return a.id === b.id;
             });
+
+            let index = splicedVgiFeatures.findIndex(f => f.id_ === indexedFeatures[0].id);
+            if (index !== -1) {
+                splicedVgiFeatures.splice(index, 1);
+            }
         }
     }
     /*
