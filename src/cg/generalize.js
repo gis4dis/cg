@@ -63,7 +63,7 @@ export const tree = new PointRBush(5);
 // Create RBush index for VGI features - for aggregating into polygons
 export const vgiTree = new PointRBush(5);
 
-export default ({topic, primary_property, properties, features, vgi_data, value_idx, resolution}) => {
+export default ({topic, primary_property, properties, features, vgi_features, value_idx, resolution}) => {
     const VGI_INDEX_DISTANCE = 50 * Math.trunc(resolution); //1000
     const INDEX_DISTANCE = 85 * Math.trunc(resolution); //1500
     const CROSSREFERENCE_DISTANCE = 50 * Math.trunc(resolution); //1000
@@ -91,8 +91,8 @@ export default ({topic, primary_property, properties, features, vgi_data, value_
     }
 
     let vgiFeatures = [];
-    if (vgi_data !== undefined) {
-        vgiFeatures = new GeoJSON().readFeatures(vgi_data, {
+    if (vgi_features !== undefined) {
+        vgiFeatures = new GeoJSON().readFeatures(vgi_features, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857',
         });
