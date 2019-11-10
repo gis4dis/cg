@@ -1,33 +1,21 @@
-import Style from 'ol/style/style';
-import Stroke from 'ol/style/stroke';
-import Fill from 'ol/style/fill';
 import GeoJSON from 'ol/format/geojson';
 import Symbolizer from './symbolizers/Symbolizer';
 import VGISymbolizer from './symbolizers/VGISymbolizer';
+import LineSymbolizer from './symbolizers/LineSymbolizer';
 import Feature from 'ol/feature';
-import Point from 'ol/geom/point';
 import {
     sortProperties,
-    containsFeature,
-    findIntersection,
     addFeatureInfo,
     getMinMaxValues,
-    getNewCentroid,
-    updateTurfGeometry,
-    aggregateVgiToPolygon,
-    addCrossreferences,
-    addVgiFeatures,
-    addFeatureToIndex,
     addFeaturesToIndex,
     addFeaturesToVgiIndex,
     getNewFeatures,
     recursiveAggregating,
     recursivePolygonAggregating,
-    getPolygonFeatures,
     getConcatId,
-    isServer,
 } from './helpers';
 import CombinedSymbol from './symbolizers/CombinedSymbol';
+import Isolines from './symbolizers/Isolines';
 import PolygonSymbolizer from "./symbolizers/PolygonSymbolizer";
 
 import PointRBush from './PointRBush';
@@ -37,7 +25,6 @@ import Polygon from "ol/geom/polygon";
 let turfhelper = require('@turf/helpers');
 let turfconcave = require('@turf/concave');
 let turfsmooth = require('@turf/polygon-smooth');
-//let turfinterpolate = require('@turf/interpolate');
 
 /**
  * Main generalization function
@@ -139,10 +126,19 @@ export default ({topic, primary_property, properties, features, vgi_features, va
         featureInfo[feature.getId()].combinedSymbol = new CombinedSymbol(feature, sortedProperties, primary_property, resolution, value_idx, minMaxValues);
     }
 
+    // Creating isolines
+    let isolineFeatures = new GeoJSON().readFeatures(new Isolines('all', 20).createIsolines(), {
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
+    });
+    for (let feature of isolineFeatures) {
+        feature.setId(`isoline_${feature.values_.value}`);
+    }
+    console.log(isolineFeatures);
+
     // Aggregating of the features
     let aggFeatures = [];
 
-    //TODO pridat tady i VGI az je budu agregovat
     for (let feature of parsedFeatures) {
         let coordinates = feature.getGeometry().getCoordinates();
 
@@ -344,7 +340,7 @@ export default ({topic, primary_property, properties, features, vgi_features, va
     //console.log(aggFeatures);
 
 
-    let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures);//.concat(gridFeatures);
+    let finalFeatures = aggFeatures.concat(splicedFeatures).concat(aggVgiFeatures).concat(splicedVgiFeatures).concat(isolineFeatures);
 
     //let b = performance.now();
 
@@ -355,8 +351,8 @@ export default ({topic, primary_property, properties, features, vgi_features, va
                 return new PolygonSymbolizer(feature).createSymbol();
             } else if (feature.getId().startsWith('vgi')) {
                 return new VGISymbolizer(feature, resolution, [0.5, 0.5]).createSymbol();
-            } else if (feature.getId().startsWith('grid_poly')) {
-                return new PolygonSymbolizer(feature).createDefaultSymbol();
+            } else if (feature.getId().startsWith('isoline')) {
+                return new LineSymbolizer(feature).createDefaultSymbol();
             } else {
                 let symbolizer = new Symbolizer(properties, feature, resolution, minMaxValues);
                 return symbolizer.createSymbol();

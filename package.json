@@ -16,6 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "@turf/helpers": "latest",
+    "@turf/isolines": "^5.1.5",
     "@turf/polygon-smooth": "^5.0.1",
     "@turf/turf": "5.1.6",
     "@weco/next-plugin-transpile-modules": "0.0.2",
@@ -30,7 +31,8 @@
     "rbush-knn": "Bulva/rbush-knn.git#4e65e455d74571ae7344d69df24b8d1c86b60487",
     "react": "16.3.1",
     "react-dom": "16.3.3",
-    "react-markdown": "3.3.0"
+    "react-markdown": "3.3.0",
+    "turf-jenks": "^1.0.1"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
