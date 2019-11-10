@@ -66,7 +66,7 @@ export const vgiTree = new PointRBush(5);
 export default ({topic, primary_property, properties, features, vgi_features, value_idx, resolution}) => {
     const VGI_INDEX_DISTANCE = 50 * Math.trunc(resolution); //1000
     const INDEX_DISTANCE = 85 * Math.trunc(resolution); //1500
-    const CROSSREFERENCE_DISTANCE = 50 * Math.trunc(resolution); //1000
+    const CROSSREFERENCE_DISTANCE = 100 * Math.trunc(resolution); //1000
 
     //let a = performance.now();
 
