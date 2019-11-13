@@ -254,7 +254,7 @@ export default ({topic, primary_property, properties, features, vgi_features, va
     //TODO add recursive aggregation
     for (let feature of splicedFeatures) {
         let coordinates = feature.getGeometry().getCoordinates();
-        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 100, undefined, ((70 * 0.4) * Math.sqrt(2)) * resolution);
+        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 100, undefined, VGI_INDEX_DISTANCE);
 
         for (let indexedFeature of indexedFeatures) {
             if (indexedFeature !== undefined) {
@@ -276,21 +276,22 @@ export default ({topic, primary_property, properties, features, vgi_features, va
 
     for (let feature of aggFeatures) {
         let coordinates = feature.getGeometry().getCoordinates();
-        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 1, undefined, VGI_INDEX_DISTANCE);
+        let indexedFeatures = knn(vgiTree, coordinates[0], coordinates[1], 100, undefined, VGI_INDEX_DISTANCE);
 
-        //console.log(indexedFeatures);
-        if (indexedFeatures[0] !== undefined) {
-            let combinedSymbol = featureInfo[feature.getId()].combinedSymbol;
-            combinedSymbol.addVgiToOtherSymbols(featureInfo[indexedFeatures[0].id].olFeature);
-            featureInfo[feature.getId()].combinedSymbol = combinedSymbol;
+        for (let indexedFeature of indexedFeatures) {
+            if (indexedFeature !== undefined) {
+                let combinedSymbol = featureInfo[feature.getId()].combinedSymbol;
+                combinedSymbol.addVgiToOtherSymbols(featureInfo[indexedFeature.id].olFeature);
+                featureInfo[feature.getId()].combinedSymbol = combinedSymbol;
 
-            vgiTree.remove(indexedFeatures[0], (a, b) => {
-                return a.id === b.id;
-            });
+                vgiTree.remove(indexedFeature, (a, b) => {
+                    return a.id === b.id;
+                });
 
-            let index = splicedVgiFeatures.findIndex(f => f.id_ === indexedFeatures[0].id);
-            if (index !== -1) {
-                splicedVgiFeatures.splice(index, 1);
+                let index = splicedVgiFeatures.findIndex(f => f.id_ === indexedFeature.id);
+                if (index !== -1) {
+                    splicedVgiFeatures.splice(index, 1);
+                }
             }
         }
     }

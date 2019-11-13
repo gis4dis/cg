@@ -184,18 +184,20 @@ export default class Symbolizer {
         }
 
         let otherSymbols = featureInfo[this.feature.getId()].combinedSymbol.otherSymbols;
-        let counter = 0;
-        let reversedOtherSymbols = otherSymbols.slice().reverse();
+        let filteredSymbols = otherSymbols.filter(function(value, index, arr) {
+            return value.nameId !== null;
+        })
+        let counter = (filteredSymbols.length - 1) * 0.5 * -1;
+        let reversedOtherSymbols = filteredSymbols.slice().reverse();
         for (let otherSymbol of reversedOtherSymbols) {
-            console.log(reversedOtherSymbols);
             // Symbolize VGI symbols inside other symbols
             if (otherSymbol.hasOwnProperty('phenomenon')) {
                 styles = styles.concat(new VGISymbolizer(otherSymbol.vgiFeature, this.resolution, [counter - Symbolizer.getCoeficient(0.4), 0 - Symbolizer.getCoeficient(0.4)]).createSymbol());
-                counter -= 0.5;
+                counter += 0.5;
             } else if (otherSymbol.nameId !== null) {
                 let otherNormalizedPropertyValue = this.getNormalizedPropertyValue(otherSymbol);
                 styles.push(this.buildStyle(otherSymbol, otherNormalizedPropertyValue, counter));
-                counter -= 0.5;
+                counter += 0.5;
             }
         }
 
