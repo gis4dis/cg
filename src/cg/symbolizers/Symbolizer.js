@@ -186,7 +186,7 @@ export default class Symbolizer {
         let otherSymbols = featureInfo[this.feature.getId()].combinedSymbol.otherSymbols;
         let filteredSymbols = otherSymbols.filter(function(value, index, arr) {
             return value.nameId !== null;
-        })
+        });
         let counter = (filteredSymbols.length - 1) * 0.5 * -1;
         let reversedOtherSymbols = filteredSymbols.slice().reverse();
         for (let otherSymbol of reversedOtherSymbols) {

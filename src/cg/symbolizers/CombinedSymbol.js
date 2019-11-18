@@ -137,6 +137,16 @@ export default class CombinedSymbol {
      * @returns {CombinedSymbol.symbol}
      */
     static compareSymbols(symbol, other) {
+        if (symbol.nameId === null && other.nameId !== null) {
+            other.grouped = false;
+            return other;
+        }
+
+        if (symbol.nameId !== null && other.nameId === null) {
+            symbol.grouped = false;
+            return symbol;
+        }
+
         if (symbol.anomalyValue < other.anomalyValue) {
             if (symbol.nameId !== null && other.nameId !== null) {
                 other.grouped = true;
