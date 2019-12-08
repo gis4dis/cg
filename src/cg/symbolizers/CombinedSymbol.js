@@ -285,15 +285,8 @@ export default class CombinedSymbol {
         let other = this.getOtherValues();
 
         other.push(this.primarySymbol.value, this.secondarySymbol.value, this.tertiarySymbol.value);
-        let maxValue = Math.max(...other);
 
-        let scaleMaxValue = Symbolizer.normalize(
-            maxValue,
-            CombinedSymbol.getMinProperty(Object.values(minMaxValues)),
-            CombinedSymbol.getMaxProperty(Object.values(minMaxValues))
-        );
-
-        let radius = this.computeRadius(scaleMaxValue);
+        let radius = this.computeRadius(0.3);
 
         this.buffer = turfbuffer.default(featureInfo[feature.getId()].turfGeometry, radius, {units: 'meters'});
 

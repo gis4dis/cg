@@ -37,6 +37,7 @@ import Polygon from "ol/geom/polygon";
 let turfhelper = require('@turf/helpers');
 let turfconcave = require('@turf/concave');
 let turfsmooth = require('@turf/polygon-smooth');
+let turftransform = require('@turf/transform-scale');
 //let turfinterpolate = require('@turf/interpolate');
 
 /**
@@ -213,8 +214,8 @@ export default ({topic, primary_property, properties, features, vgi_features, va
                 // Creating new polygon OL feature
                 let polygonFeature = new Feature({
                     intersectedFeatures: vgiPolygonFeatures,
-                    geometry: new Polygon(turfsmooth.default(turfconcave.default(turfhelper.featureCollection(
-                        Array.from(vgiPolygonFeatures, f => featureInfo[f.getId()].turfGeometry))), {iterations: 3}).features[0].geometry.coordinates)
+                    geometry: new Polygon(turftransform.default(turfsmooth.default(turfconcave.default(turfhelper.featureCollection(
+                        Array.from(vgiPolygonFeatures, f => featureInfo[f.getId()].turfGeometry))), {iterations: 3}), 1.3).features[0].geometry.coordinates)
                 });
 
                 let concatId = getConcatId(vgiPolygonFeatures);

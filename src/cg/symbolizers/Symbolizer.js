@@ -5,19 +5,17 @@ import VGISymbolizer from './VGISymbolizer';
 
 
 /* Constants of position of symbols */
-const positions = {
-    'PRIMARY': [1, 1],
-    'SECONDARY': [0, 1],
-    'TERTIARY': [1, 0],
-    'OTHER': [0, 0]
+const POSITIONS = {
+    'PRIMARY': [1.1, 1.1],
+    'SECONDARY': [-0.1, 1.1],
+    'TERTIARY': [1.1, -0.1],
+    'OTHER': [-0.1, -0.1]
 };
 
 
 
 const SYMBOL_PATH = '/static/symbolization_new2';
-
-const MIN_RANGE = 0.3;
-const MAX_RANGE = 0.5;
+const SYMBOL_SIZE = 0.3;
 
 
 /** Represents Symbolizer for features. Contains set of operations including creating styles */
@@ -39,20 +37,6 @@ export default class Symbolizer {
         this.minMaxValues = minMaxValues;
         this.resolution = resolution;
         this.grouped = false;
-    }
-
-    /**
-     * Normalize value to MIN_RANGE-MAX_RANGE range
-     * @param {number} value - value for normalization
-     * @param {number} min - minimum value of array
-     * @param {number} max - maximum value of array
-     * @returns {number} normalized value
-     */
-    static normalize(value, min, max) {
-        if (max === min) {
-            return (MAX_RANGE + MIN_RANGE) / 2;
-        }
-        return (value - min) / (max - min) * (MAX_RANGE - MIN_RANGE) + MIN_RANGE;
     }
 
     /**
@@ -80,34 +64,15 @@ export default class Symbolizer {
         return 'low';
     }
 
-    static getCoeficient(normalizedPropertyValue) {
-        return (0.5 - normalizedPropertyValue) * 1.5;
-    }
-
-    centerSymbols(propertyPosition, normalizedPropertyValue, counter) {
-        let coeficient = Symbolizer.getCoeficient(normalizedPropertyValue);
-        if (propertyPosition === 'PRIMARY') {
-            return [positions[propertyPosition][0] + coeficient, positions[propertyPosition][1] + coeficient];
-        } else if (propertyPosition === 'SECONDARY') {
-            return [positions[propertyPosition][0] - coeficient, positions[propertyPosition][1] + coeficient];
-        } else if (propertyPosition === 'TERTIARY') {
-            return [positions[propertyPosition][0] + coeficient, positions[propertyPosition][1] - coeficient];
-        } else if (propertyPosition === 'OTHER') {
-            return [positions[propertyPosition][0] - counter - coeficient, positions[propertyPosition][1] - coeficient];
-        } else {
-            throw new Error(`Wrong property position parameter: ${propertyPosition}`);
-        }
-    }
-
     /**
      * Returns position of symbol based on property nameId
      * @param {String} nameId - name of the property (air_temperature...)
      * @returns {number[]} x and y coordinates in array
      */
-    getSymbolPosition(nameId, normalizedPropertyValue, counter) {
+    getSymbolPosition(nameId) {
         for (let property of this.properties) {
             if (property.name_id === nameId) {
-                return this.centerSymbols(property.position, normalizedPropertyValue, counter);
+                return POSITIONS[property.position];
             }
         }
         throw new Error('Property symbol position not found');
@@ -116,12 +81,11 @@ export default class Symbolizer {
     /**
      * Builds OpenLayers style based on combinedSymbol and normalized property value
      * @param {CombinedSymbol} symbol - symbol
-     * @param {number} normalizedPropertyValue - normalized property value (to a range MIN_RANGE and MAX_RANGE)
      * @returns {Style} OpenLayers style object
      */
-    buildStyle(symbol, normalizedPropertyValue, counter) {
+    buildStyle(symbol) {
         let anomalyInterval = '';
-        let coordinates = this.getSymbolPosition(symbol.nameId, normalizedPropertyValue, counter);
+        let coordinates = this.getSymbolPosition(symbol.nameId);
 
         anomalyInterval = this.getAnomalyInterval(symbol);
 
@@ -137,7 +101,7 @@ export default class Symbolizer {
                 anchorYUnits: 'fraction',
                 opacity: 1,
                 src: `${SYMBOL_PATH}/${symbol.nameId}_${anomalyInterval}.svg`,
-                scale: normalizedPropertyValue,
+                scale: SYMBOL_SIZE,
             })
         });
     }
@@ -167,20 +131,17 @@ export default class Symbolizer {
 
         let primaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.primarySymbol;
         if (primaryCombinedSymbol.nameId !== null) {
-            let primaryNormalizedPropertyValue = this.getNormalizedPropertyValue(primaryCombinedSymbol);
-            styles.push(this.buildStyle(primaryCombinedSymbol, primaryNormalizedPropertyValue, 0));
+            styles.push(this.buildStyle(primaryCombinedSymbol));
         }
 
         let secondaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.secondarySymbol;
         if (secondaryCombinedSymbol.nameId !== null) {
-            let secondaryNormalizedPropertyValue = this.getNormalizedPropertyValue(secondaryCombinedSymbol);
-            styles.push(this.buildStyle(secondaryCombinedSymbol, secondaryNormalizedPropertyValue, 0));
+            styles.push(this.buildStyle(secondaryCombinedSymbol));
         }
 
         let tertiaryCombinedSymbol = featureInfo[this.feature.getId()].combinedSymbol.tertiarySymbol;
         if (tertiaryCombinedSymbol.nameId !== null) {
-            let tertiaryNormalizedPropertyValue = this.getNormalizedPropertyValue(tertiaryCombinedSymbol);
-            styles.push(this.buildStyle(tertiaryCombinedSymbol, tertiaryNormalizedPropertyValue, 0));
+            styles.push(this.buildStyle(tertiaryCombinedSymbol));
         }
 
         let otherSymbols = featureInfo[this.feature.getId()].combinedSymbol.otherSymbols;
@@ -192,24 +153,23 @@ export default class Symbolizer {
         for (let otherSymbol of reversedOtherSymbols) {
             // Symbolize VGI symbols inside other symbols
             if (otherSymbol.hasOwnProperty('phenomenon')) {
-                styles = styles.concat(new VGISymbolizer(otherSymbol.vgiFeature, this.resolution, [counter - Symbolizer.getCoeficient(0.4), 0 - Symbolizer.getCoeficient(0.4)]).createSymbol());
+                styles = styles.concat(new VGISymbolizer(otherSymbol.vgiFeature, this.resolution, [counter - 0.1, 0]).createSymbol());
                 counter += 0.5;
             } else if (otherSymbol.nameId !== null) {
-                let otherNormalizedPropertyValue = this.getNormalizedPropertyValue(otherSymbol);
-                styles.push(this.buildStyle(otherSymbol, otherNormalizedPropertyValue, counter));
+                styles.push(this.buildStyle(otherSymbol, counter));
                 counter += 0.5;
             }
         }
 
-        // place a cross of location if there is only one symbol
-        if (styles.length === 1) {
+        // place a cross of location if there is no aggregated symbol
+        if (!this.feature.getId().startsWith('agg_')) {
             // don't place a cross for grouped symbols
             styles.push(
                 new Style({
                     image: new Icon({
                         opacity: 1,
                         src: `${SYMBOL_PATH}/cross_position.svg`,
-                        scale: 0.1
+                        scale: 0.15
                     })
                 })
             );

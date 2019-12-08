@@ -2,8 +2,8 @@ import React from 'react';
 import ol_format_GeoJSON from 'ol/format/geojson';
 import generalize from './../src/cg/generalize';
 
-const geojson = require('./../data/example_new.json');
-const geojson_example = require('../data/example_new.json');
+const geojson = require('./../data/big_percentiles.json');
+const geojson_example = require('../data/big_percentiles.json');
 const geojsonFeatures = (new ol_format_GeoJSON()).readFeatures(geojson, {
     dataProjection: 'EPSG:3857',
     featureProjection: 'EPSG:3857',
